@@ -1,0 +1,16 @@
+<!ENTITY autoValidate.URLCol.label "URL Pattern (Regular Expression)">
+<!ENTITY autoValidate.label "Automatically Validate URLs:">
+<!ENTITY dockwinMinimize.label "Minimize">
+<!ENTITY dockwinMaximize.label "Maximize (Detach)">
+<!ENTITY dockwinClose.label "Close">
+<!ENTITY extensionName "Omnivalidator">
+<!ENTITY extensionVersion "0.1">
+<!ENTITY preferences.label "Omnivalidator Preferences">
+<!ENTITY prefgroup.autoValidate.label "Automatic Validation">
+<!ENTITY prefgroup.validators.label "Validation Service">
+<!ENTITY toolbarButton.label "Omnivalidator">
+<!ENTITY validatePage.label "Validate with Omnivalidator">
+<!ENTITY validatorType.label "Validator Type:">
+<!ENTITY validatorType.validatorNu.label "Validator.nu">
+<!ENTITY validatorType.w3c.label "W3C Validator">
+<!ENTITY validatorURL.label "Validator URL:">

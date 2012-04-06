@@ -1,0 +1,23 @@
+# Chrome manifest
+#
+# This file is part of the Omnivalidator extension for Firefox.
+# It is licensed under the terms of the MIT License.
+# The complete text of the license is available in the project documentation.
+#
+# Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+
+content	omnivalidator	content/
+
+resource	omnivalidator	resource/
+
+overlay	chrome://browser/content/browser.xul	chrome://omnivalidator/content/browser-overlay.xul
+overlay	chrome://browser/content/browser.xul	chrome://omnivalidator/content/browser-statusbar.xul application={ec8030f7-c20a-464f-9b0e-13a3a9e97384} appversion<4.0
+overlay	chrome://browser/content/browser.xul	chrome://omnivalidator/content/browser-toolbar.xul application={ec8030f7-c20a-464f-9b0e-13a3a9e97384} appversion>=4.0
+
+locale	omnivalidator	en-US	locale/en-US/
+
+skin	omnivalidator	classic	skin/classic/
+skin	omnivalidator-os	classic	skin/classic/win/
+skin	omnivalidator-os	classic	skin/classic/mac/    os=Darwin
+
+style	chrome://global/content/customizeToolbar.xul	chrome://omnivalidator/skin/skin.css

@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<!--
+    Browser window overlay
+
+    This file is part of the Omnivalidator extension for Firefox.
+    It is licensed under the terms of the MIT License.
+    The complete text of the license is available in the project documentation.
+
+    Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+-->
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<!-- Console styles -->
+<?xml-stylesheet href="chrome://omnivalidator/content/validationConsole.css" type="text/css"?>
+<?xml-stylesheet href="chrome://global/skin/console/console.css" type="text/css"?>
+<?xml-stylesheet href="chrome://global/content/console.css" type="text/css"?>
+<?xml-stylesheet href="chrome://omnivalidator/skin/consolebox.css" type="text/css"?>
+<!-- Other styles -->
+<?xml-stylesheet href="chrome://omnivalidator/skin/statusbutton.css" type="text/css"?>
+<?xml-stylesheet href="chrome://omnivalidator-os/skin/dockedwin.css" type="text/css"?>
+
+<!DOCTYPE overlay SYSTEM "chrome://omnivalidator/locale/omnivalidator.dtd">
+
+<!--
+    Defines the "panel" which displays in the browser window
+-->
+<overlay id="omnivalidator-browser-overlay"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <script type="application/javascript" src="browser-bootstrap.js" />
+
+    <menupopup id="menu_viewPopup">
+        <menuitem id="omnivalidator-view-showitem"
+                command="omnivalidator-showcommand"
+                label="&extensionName;" />
+    </menupopup>
+
+    <popup id="contentAreaContextMenu">
+        <menuseparator />
+        <menuitem id="omnivalidator-ctxmenu-showitem"
+                command="omnivalidator-showcommand"
+                label="&validatePage.label;" />
+    </popup>
+
+    <menupopup id="omnivalidator-quickmenu">
+        <menuitem id="omnivalidator-quickmenu-showitem"
+                command="omnivalidator-showcommand"
+                label="&validatePage.label;" />
+    </menupopup>
+
+    <commandset>
+        <command id="omnivalidator-showcommand" />
+    </commandset>
+
+    <keyset>
+        <key id="omnivalidator-validatekey"
+                command="omnivalidator-showcommand"
+                key="V"
+                modifiers="accel ctrl shift" />
+    </keyset>
+
+    <window id="appcontent">
+        <splitter id="omnivalidator-appcontent-splitter"
+                class="omnivalidator-dockedwin-splitter" collapsed="false" />
+        <vbox id="omnivalidator-dockedwin"
+                collapsed="false" persist="height,width">
+            <hbox id="omnivalidator-dockedwin-header">
+                <spacer flex="1" />
+
+                <hbox id="omnivalidator-dockedwin-winbuttons">
+                    <toolbarbutton id="omnivalidator-dockedwin-winbutton-minimize"
+                        class="omnivalidator-dockedwin-winbutton"
+                        tooltiptext="&dockwinMinimize.label;" />
+                    <toolbarbutton id="omnivalidator-dockedwin-winbutton-maximize"
+                        class="omnivalidator-dockedwin-winbutton"
+                        tooltiptext="&dockwinMaximize.label;" />
+                    <toolbarbutton id="omnivalidator-dockedwin-winbutton-close"
+                        class="omnivalidator-dockedwin-winbutton"
+                        tooltiptext="&dockwinClose.label;" />
+                </hbox>
+            </hbox>
+            <box id="omnivalidator-console-box"
+                class="omnivalidator-console-box"
+                flex="1">
+            </box>
+        </vbox>
+    </window>
+</overlay>
+<!-- vi: set sts=4 sw=4 et : -->

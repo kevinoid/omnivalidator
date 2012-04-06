@@ -1,0 +1,55 @@
+/* Styles for the docked window frame on Windows/Linux
+ *
+ * This file is part of the Omnivalidator extension for Firefox.
+ * It is licensed under the terms of the MIT License.
+ * The complete text of the license is available in the project documentation.
+ *
+ * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+ */
+
+#omnivalidator-dockedwin-header {
+    background: -moz-linear-gradient(
+        bottom,
+        rgba(0, 0, 0, 0.25) 1px,
+        rgba(0, 0, 0, 0.15) 1px,
+        rgba(0, 0, 0, 0));
+    border-bottom: 1px solid threedshadow;
+    padding: 0;
+    overflow: hidden;
+}
+
+#omnivalidator-dockedwin-winbuttons {
+    margin-right: 4px;
+    padding: 5px 0 6px 0;
+}
+
+/*** Window buttons (Minimize, Maximize, Close) ***/
+.omnivalidator-dockedwin-winbutton {
+    background: transparent;
+    border: none;
+    padding: 0;
+    -moz-appearance: none;
+    -moz-image-region: rect(0, 16px, 16px, 0);
+}
+
+.omnivalidator-dockedwin-winbutton:hover {
+    -moz-image-region: rect(16px, 16px, 32px, 0);
+}
+
+.omnivalidator-dockedwin-winbutton:active {
+    -moz-image-region: rect(32px, 16px, 48px, 0);
+}
+
+#omnivalidator-dockedwin-winbutton-close {
+    list-style-image: url(uibuttons/close.png);
+}
+
+#omnivalidator-dockedwin-winbutton-maximize {
+    list-style-image: url(uibuttons/detach.png);
+}
+
+#omnivalidator-dockedwin-winbutton-minimize {
+    list-style-image: url(uibuttons/min.png);
+}
+
+/* vi: set sts=4 sw=4 et : */

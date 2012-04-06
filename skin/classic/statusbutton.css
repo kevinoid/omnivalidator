@@ -1,0 +1,51 @@
+/* Styles for the status buttons
+ *
+ * This file is part of the Omnivalidator extension for Firefox.
+ * It is licensed under the terms of the MIT License.
+ * The complete text of the license is available in the project documentation.
+ *
+ * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+ */
+
+/*** Status Button ***/
+.omnivalidator-statusbutton {
+	list-style-image: url("icon-inactive-24.png");
+}
+
+.omnivalidator-statusbutton.omnivalidator-status-invalid {
+	list-style-image: url("icon-invalid-24.png");
+}
+
+.omnivalidator-statusbutton.omnivalidator-status-unknown {
+	list-style-image: url("icon-unknown-24.png");
+}
+
+.omnivalidator-statusbutton.omnivalidator-status-valid {
+	list-style-image: url("icon-valid-24.png");
+}
+
+.omnivalidator-statusbutton.omnivalidator-status-warn {
+	list-style-image: url("icon-warn-24.png");
+}
+
+toolbar[iconsize="small"] .omnivalidator-statusbutton {
+	list-style-image: url("icon-inactive-16.png");
+}
+
+toolbar[iconsize="small"] .omnivalidator-statusbutton.omnivalidator-status-invalid {
+	list-style-image: url("icon-invalid-16.png");
+}
+
+toolbar[iconsize="small"] .omnivalidator-statusbutton.omnivalidator-status-unknown {
+	list-style-image: url("icon-unknown-16.png");
+}
+
+toolbar[iconsize="small"] .omnivalidator-statusbutton.omnivalidator-status-valid {
+	list-style-image: url("icon-valid-16.png");
+}
+
+toolbar[iconsize="small"] .omnivalidator-statusbutton.omnivalidator-status-warn {
+	list-style-image: url("icon-warn-16.png");
+}
+
+/* vi: set sts=8 sw=8 noet : */

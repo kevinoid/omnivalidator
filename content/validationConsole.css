@@ -1,0 +1,13 @@
+/* Binding application for our modified console box
+ *
+ * This file is part of the Omnivalidator extension for Firefox.
+ * It is licensed under the terms of the MIT License.
+ * The complete text of the license is available in the project documentation.
+ *
+ * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+ */
+.omnivalidator-console-box {
+	-moz-binding: url("chrome://omnivalidator/content/validationConsoleBindings.xml#validation-console-box");
+}
+
+/* vi: set sts=8 sw=8 noet : */

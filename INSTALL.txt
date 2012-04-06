@@ -1,0 +1,14 @@
+Installation Instructions
+=========================
+
+To install this extension from source, use the following procedure:
+1.  Add all files in the project to a zip archive
+2.  Change the file extension from .zip to .xpi
+3.  Install the XPI file in a browser which is compatible with Firefox
+    extensions according to the instructions specific to that browser.
+
+Configuration Instructions
+==========================
+
+After installation, user-configurable preferences can be modified through the
+Add-ons Manager by clicking the Preferences button for this Add-on.

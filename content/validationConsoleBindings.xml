@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+    XBL bindings for our modified console box
+
+    This file is part of the Omnivalidator extension for Firefox.
+    It is licensed under the terms of the MIT License.
+    The complete text of the license is available in the project documentation.
+
+    Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+-->
+<bindings id="validationConsoleBindings"
+        xmlns="http://www.mozilla.org/xbl"
+        xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:xbl="http://www.mozilla.org/xbl">
+    <binding id="validation-console-box"
+            extends="chrome://global/content/consoleBindings.xml#console-box">
+        <implementation>
+            <constructor>
+                /* The consoleBindings.xml#console-box constructor connects
+                 * to the message service to receive console messages in its
+                 * constructor.  This constructor is run after, so we
+                 * disconnect and clear any messages which were delivered
+                 * immediately.
+                 */
+                // FIXME:  Is there a way to prevent initial registration?
+                this.mCService.unregisterListener(this.mConsoleListener);
+                this.clearConsole();
+            </constructor>
+        </implementation>
+    </binding>
+</bindings>
+<!-- vi: set sts=4 sw=4 et : -->

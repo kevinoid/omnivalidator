@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+    Addon bar button (for Firefox >= 4.0)
+
+    This file is part of the Omnivalidator extension for Firefox.
+    It is licensed under the terms of the MIT License.
+    The complete text of the license is available in the project documentation.
+
+    Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+-->
+<?xml-stylesheet href="chrome://omnivalidator/skin/statusbutton.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://omnivalidator/locale/omnivalidator.dtd">
+<overlay id="omnivalidator-overlay"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <toolbarpalette id="BrowserToolbarPalette">
+        <toolbarbutton id="omnivalidator-toolbarbutton"
+                class="omnivalidator-statusbutton"
+                command="omnivalidator-showcommand"
+                label="&extensionName;"
+                tooltiptext="&extensionName; &extensionVersion;"
+                type="menu-button">
+            <menupopup id="omnivalidator-quickmenu" />
+        </toolbarbutton>
+    </toolbarpalette>
+</overlay>
+<!-- vi: set sts=4 sw=4 et : -->

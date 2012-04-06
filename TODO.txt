@@ -1,0 +1,14 @@
+* Sandbox HTTP connections to validators to avoid leaking information or
+  polluting user state/cookies <https://developer.mozilla.org/en/Creating_Sandboxed_HTTP_Connections>
+* Filtering and searching of messages in the console
+
+Things to Test:
+* Test validation of non-cacheable pages works correctly
+    * HTTPS and Cache-Control: no-cache
+* Test that slow validator responses and fast tab/page change doesn't result in showing results that are not applicable to the current page
+* Test validation of non-text content
+* Test automatic validation of pages which contain frames which are slow to load (make sure validation starts before frame finishes loading).
+
+When dropping support for Firefox 3.6:
+* Remove JSON imports
+* Remove objutils.getOwnPropertyNames, objutils.hasOwnProperties

@@ -1,0 +1,47 @@
+/* Styles for the docked window frame on Mac
+ *
+ * This file is part of the Omnivalidator extension for Firefox.
+ * It is licensed under the terms of the MIT License.
+ * The complete text of the license is available in the project documentation.
+ *
+ * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+ */
+
+#omnivalidator-dockedwin-header {
+    background: #e0e0e0 -moz-linear-gradient(bottom, #D7D7D7, #EDEDED) repeat-x;
+    border-bottom: 1px solid #BBB9BA;
+    padding: 0;
+    overflow: hidden;
+}
+
+#omnivalidator-dockedwin-winbuttons {
+    margin-right: 4px;
+    padding: 7px 0 7px 0;
+}
+
+/*** Window buttons (Minimize, Maximize, Close) ***/
+.omnivalidator-dockedwin-winbutton {
+    -moz-image-region: rect(0, 16px, 16px, 0);
+}
+
+.omnivalidator-dockedwin-winbutton:hover {
+    -moz-image-region: rect(16px, 16px, 32px, 0);
+}
+
+.omnivalidator-dockedwin-winbutton:active {
+    -moz-image-region: rect(32px, 16px, 48px, 0);
+}
+
+#omnivalidator-dockedwin-winbutton-close {
+    list-style-image: url(uibuttons/off.png);
+}
+
+#omnivalidator-dockedwin-winbutton-maximize {
+    list-style-image: url(uibuttons/detach.png);
+}
+
+#omnivalidator-dockedwin-winbutton-minimize {
+    list-style-image: url(uibuttons/min.png);
+}
+
+/* vi: set sts=4 sw=4 et : */
