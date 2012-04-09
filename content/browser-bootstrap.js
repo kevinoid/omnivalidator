@@ -56,6 +56,7 @@
             function setupShowCommand(showCommand) {
                 showCommand.addEventListener("command", function () {
                     var dockedWin,
+                        results,
                         splitter;
 
                     dockedWin = document.getElementById("omnivalidator-dockedwin");
@@ -64,7 +65,12 @@
                     if (dockedWin.collapsed) {
                         dockedWin.collapsed = false;
                         splitter.collapsed = false;
-                        vManager.validate();
+
+                        // If the page has not been validated yet, validate it
+                        results = vManager.getValidationResults();
+                        if (!objutils.hasOwnProperties(results)) {
+                            vManager.validate();
+                        }
                     } else {
                         dockedWin.collapsed = true;
                         splitter.collapsed = true;
