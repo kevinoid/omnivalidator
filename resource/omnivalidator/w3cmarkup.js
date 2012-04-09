@@ -16,12 +16,13 @@ define(
         "log4moz",
         "omnivalidator/cacheutils",
         "omnivalidator/domutils",
+        "omnivalidator/locale",
         "omnivalidator/mediatypeutils",
         "omnivalidator/multipartformdata",
         "omnivalidator/validator",
         "omnivalidator/validatormessage"
     ],
-    function (Cc, Ci, log4moz, cacheutils, domutils, mediatypeutils,
+    function (Cc, Ci, log4moz, cacheutils, domutils, locale, mediatypeutils,
             MultipartFormData, Validator, ValidatorMessage) {
         "use strict";
 
@@ -329,10 +330,16 @@ define(
                         validatorName + " for " + resourceid.uri);
 
                 if (xhr.status !== 200) {
-                    errorMsg = validatorName + " returned status " +
-                        xhr.statusText + "(" + xhr.status + ") validating " +
-                        resourceid.uri;
-                    logger.error(errorMsg);
+                    logger.error(validatorName + " returned HTTP status " +
+                        xhr.status + " (" + xhr.statusText + ") validating " +
+                        resourceid.uri);
+                    errorMsg = locale.format(
+                        "validator.errorHttpStatus",
+                        validatorName,
+                        xhr.status,
+                        xhr.statusText,
+                        resourceid.uri
+                    );
                     callbackValidate(
                         thisValidator,
                         resourceid,
@@ -349,10 +356,16 @@ define(
                 }
 
                 if (!xhr.responseXML) {
-                    errorMsg = "Unable to parse response from " +
+                    logger.error("Unable to parse response from " +
                         validatorName + " validating " + resourceid.uri +
-                        " as XML";
-                    logger.error(errorMsg);
+                        " as XML");
+                    errorMsg = locale.format(
+                        "validator.errorParseFormat",
+                        validatorName,
+                        resourceid.uri,
+                        "XML",
+                        ""
+                    );
                     callbackValidate(
                         thisValidator,
                         resourceid,
@@ -368,13 +381,18 @@ define(
                         callbackValidate
                     );
                 } catch (ex) {
-                    errorMsg = "Error processing response from " +
-                            validatorName + " for " + resourceid.uri;
-                    logger.error(errorMsg, ex);
+                    logger.error("Error processing response from " +
+                        validatorName + " for " + resourceid.uri,
+                        ex);
+                    errorMsg = locale.format(
+                        "validator.errorProcessing",
+                        validatorName,
+                        resourceid.uri
+                    );
                     callbackValidate(
                         thisValidator,
                         resourceid,
-                        {message: new ValidatorMessage(errorMsg + ": " + ex)}
+                        {message: new ValidatorMessage(errorMsg)}
                     );
                     return;
                 }

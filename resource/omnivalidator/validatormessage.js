@@ -12,9 +12,10 @@
 define(
     [
         "gecko/components/interfaces",
-        "gecko/components/results"
+        "gecko/components/results",
+        "omnivalidator/locale"
     ],
-    function (Ci, Cr) {
+    function (Ci, Cr, locale) {
         "use strict";
 
         function ValidatorMessage(message) {
@@ -75,26 +76,28 @@ define(
         };
 
         ValidatorMessage.prototype.toString = function () {
-            var str;
+            var levelStr;
 
             switch (this.level) {
             case ValidatorMessage.ERROR:
-                str = "Error: ";
+                levelStr = locale.get("message.levelError");
                 break;
             case ValidatorMessage.WARNING:
-                str = "Warning: ";
+                levelStr = locale.get("message.levelWarning");
                 break;
             case ValidatorMessage.INFO:
-                str = "Info: ";
+                levelStr = locale.get("message.levelInfo");
                 break;
             default:
-                str = this.level + ": ";
+                levelStr = this.level;
                 break;
             }
 
-            str += this.message || "";
-
-            return str;
+            return locale.format(
+                "message.format",
+                levelStr,
+                this.message || ""
+            );
         };
 
         return ValidatorMessage;

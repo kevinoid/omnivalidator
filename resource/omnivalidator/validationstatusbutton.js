@@ -13,16 +13,16 @@
 define(
     [
         "omnivalidator/cssutils",
+        "omnivalidator/locale",
         "underscore"
     ],
-    function (cssutils, underscore) {
+    function (cssutils, locale, underscore) {
         "use strict";
 
         var CSS_STATUS_PREFIX = "omnivalidator-status-";
 
         function ValidationStatusButton(toolbarButton) {
-            var tooltip,
-                totals,
+            var totals,
                 // Sorted list of summaries by validator
                 textSummaries;
 
@@ -44,10 +44,11 @@ define(
 
             function getTooltip() {
                 if (textSummaries.length === 0) {
-                    return "Not validated";
+                    return locale.get("status.notValidated");
                 }
 
-                return "Validation Results:\n" + textSummaries.join("\n");
+                return locale.get("status.validationResults") + "\n" +
+                    textSummaries.join("\n");
             }
 
             function update() {
@@ -72,11 +73,20 @@ define(
                 totals.warnCount += summary.warnCount;
 
                 textSummary =
-                    validator.name + ": " +
-                    summary.errorCount +
-                    " Errors, " +
-                    summary.warnCount +
-                    " Warnings";
+                    locale.format(
+                        "status.validatorResult",
+                        validator.name,
+                        locale.formatPlural(
+                            summary.errorCount,
+                            "status.validatorErrors",
+                            summary.errorCount
+                        ),
+                        locale.formatPlural(
+                            summary.warnCount,
+                            "status.validatorWarnings",
+                            summary.warnCount
+                        )
+                    );
 
                 textSummaries.splice(
                     underscore.sortedIndex(textSummary),
@@ -89,7 +99,6 @@ define(
 
             this.reset = function () {
                 textSummaries = [];
-                tooltip = "Not validated";
                 totals = {
                     errorCount: 0,
                     valCount: 0,
