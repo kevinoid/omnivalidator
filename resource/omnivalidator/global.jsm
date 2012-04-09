@@ -116,6 +116,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     }
 
     defineJSM("log4moz");
+    defineJSM("pluralform", "resource://gre/modules/PluralForm.jsm");
     definePlain("underscore");
     definePlain(
         "chrome/global/contentareautils",
