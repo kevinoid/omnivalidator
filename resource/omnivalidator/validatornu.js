@@ -74,7 +74,7 @@ define(
                     lineNumber = vmessage.lastLine;
                 }
 
-                logger.debug(validatorName + " validating " + resourceid.uri +
+                logger.trace(validatorName + " validating " + resourceid.uri +
                         " message: " +
                         messageText +
                         " of type " +
