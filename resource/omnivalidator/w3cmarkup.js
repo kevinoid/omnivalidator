@@ -202,6 +202,7 @@ define(
             function handleResponseDoc(valResponseDoc, resourceid,
                     callbackValidate) {
                 var errorCount,
+                    intVal,
                     msgNode,
                     mvrCount,
                     warnCount,
@@ -231,15 +232,34 @@ define(
 
                 errorCount = valResponseDoc.evaluate(
                     "/env:Envelope/env:Body/m:markupvalidationresponse" +
-                        "/m:errors/m:errorCount/text()",
+                        "/m:errors/m:errorcount/text()",
                     valResponseDoc.documentElement,
                     namespaceResolver,
                     XPathResult.STRING_TYPE,
                     null
                 ).stringValue;
-                errorCount = parseInt(errorCount, 10);
-                if (isNaN(errorCount)) {
-                    errorCount = null;
+                if (errorCount) {
+                    intVal = parseInt(errorCount, 10);
+                    if (!isNaN(intVal)) {
+                        errorCount = intVal;
+                    } else {
+                        logger.warn("Unable to parse errorcount content " +
+                            '"' + errorCount + '"' +
+                            " as an integer for " +
+                            validatorName + " for " + resourceid.uri);
+                        errorCount = "";
+                    }
+                }
+                if (errorCount === "") {
+                    // Count error elements as a fallback
+                    errorCount = valResponseDoc.evaluate(
+                        "count(/env:Envelope/env:Body/m:markupvalidationresponse" +
+                            "/m:errors/m:errorlist/m:error)",
+                        valResponseDoc.documentElement,
+                        namespaceResolver,
+                        XPathResult.NUMBER_TYPE,
+                        null
+                    ).numberValue;
                 }
 
                 warnCount = valResponseDoc.evaluate(
@@ -250,9 +270,28 @@ define(
                     XPathResult.STRING_TYPE,
                     null
                 ).stringValue;
-                warnCount = parseInt(warnCount, 10);
-                if (isNaN(warnCount)) {
-                    warnCount = null;
+                if (warnCount) {
+                    intVal = parseInt(warnCount, 10);
+                    if (!isNaN(intVal)) {
+                        warnCount = intVal;
+                    } else {
+                        logger.warn("Unable to parse warningcount content " +
+                            '"' + warnCount + '"' +
+                            " as an integer for " +
+                            validatorName + " for " + resourceid.uri);
+                        warnCount = "";
+                    }
+                }
+                if (warnCount === "") {
+                    // Count warning elements as a fallback
+                    warnCount = valResponseDoc.evaluate(
+                        "count(/env:Envelope/env:Body/m:markupvalidationresponse" +
+                            "/m:warnings/m:warninglist/m:warning)",
+                        valResponseDoc.documentElement,
+                        namespaceResolver,
+                        XPathResult.NUMBER_TYPE,
+                        null
+                    ).numberValue;
                 }
 
                 xpathItr = valResponseDoc.evaluate(
