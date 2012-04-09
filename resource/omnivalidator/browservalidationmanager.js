@@ -28,6 +28,8 @@ define(
             var currentResourceID = null,
                 listeners = [],
                 progressListener,   // Must be referenced in closure to avoid gc
+                // Holds {messages, summary} for each validator by name
+                // Empty indicates validation incomplete
                 results = {},
                 thisBVM = this,
                 validator;
@@ -76,8 +78,27 @@ define(
 
                 currentResourceID = CacheID.fromDocument(doc);
                 for (i = 0; i < validators.length; ++i) {
+                    results[validators[i].name] = { messages: [], summary: {} };
                     validators[i].validate(currentResourceID, onValidate);
                 }
+            }
+
+            // Return only validators which have not yet been run for the
+            // current page
+            function filterValidators(validators) {
+                var filtered = [],
+                    i;
+
+                for (i = 0; i < validators.length; ++i) {
+                    if (!results.hasOwnProperty(validators[i].name)) {
+                        filtered.push(validators[i]);
+                    } else {
+                        logger.trace("Excluding " + validators[i].name +
+                            " from validation request, already run on this page");
+                    }
+                }
+
+                return filtered;
             }
 
             function onStateStop(loadedWindow) {
@@ -90,7 +111,10 @@ define(
                 if (autoValidators.length > 0) {
                     logger.debug("Running automatic validators for " +
                         loadedWindow.location);
-                    applyValidators(autoValidators, loadedWindow.document);
+                    applyValidators(
+                        filterValidators(autoValidators),
+                        loadedWindow.document
+                    );
                 } else {
                     logger.debug("No automatic validators configured for " +
                         loadedWindow.location);
@@ -126,6 +150,11 @@ define(
                 listeners.remove(listener);
             };
 
+            this.revalidate = function () {
+                this.clear();
+                this.validate();
+            };
+
             this.validate = function () {
                 var validators;
 
@@ -137,7 +166,10 @@ define(
 
                 if (validators.length > 0) {
                     logger.debug("Running manual validators.");
-                    applyValidators(validators, browser.contentDocument);
+                    applyValidators(
+                        filterValidators(validators),
+                        browser.contentDocument
+                    );
                 } else {
                     logger.debug("No manual validators registered.");
                 }
