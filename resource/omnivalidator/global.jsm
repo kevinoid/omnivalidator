@@ -90,10 +90,11 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     }
 
     // Provide RequireJS wrappers for JavaScript Modules (JSMs)
-    function defineJSM(moduleName) {
+    function defineJSM(moduleName, moduleURL) {
         define(moduleName, function () {
-            var module = {},
-                moduleURL = baseURL + "/" + moduleName + ".jsm";
+            var module = {};
+
+            moduleURL = moduleURL || baseURL + "/" + moduleName + ".jsm";
 
             Components.utils.import(moduleURL, module);
 
