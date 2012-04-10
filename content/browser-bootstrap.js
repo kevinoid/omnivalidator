@@ -39,6 +39,7 @@
 
             function setWinCollapsed(collapsed) {
                 var dockedWin,
+                    menuitem,
                     splitter;
 
                 dockedWin = document.getElementById("omnivalidator-dockedwin");
@@ -46,6 +47,9 @@
 
                 dockedWin.collapsed = collapsed;
                 splitter.collapsed = collapsed;
+
+                menuitem = document.getElementById("omnivalidator-view-showitem");
+                menuitem.setAttribute("checked", !collapsed);
             }
 
             function toggleWinCollapsed() {

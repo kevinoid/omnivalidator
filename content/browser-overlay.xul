@@ -32,7 +32,8 @@
     <menupopup id="menu_viewPopup">
         <menuitem id="omnivalidator-view-showitem"
                 command="omnivalidator-command-toggle"
-                label="&extensionName;" />
+                label="&extensionName;"
+                type="checkbox" />
     </menupopup>
 
     <popup id="contentAreaContextMenu">
