@@ -71,12 +71,14 @@
                 <spacer flex="1" />
 
                 <hbox id="omnivalidator-dockedwin-winbuttons">
+                    <!-- TODO:  Define behavior for min/maximize
                     <toolbarbutton id="omnivalidator-dockedwin-winbutton-minimize"
                         class="omnivalidator-dockedwin-winbutton"
                         tooltiptext="&dockwinMinimize.label;" />
                     <toolbarbutton id="omnivalidator-dockedwin-winbutton-maximize"
                         class="omnivalidator-dockedwin-winbutton"
                         tooltiptext="&dockwinMaximize.label;" />
+                    -->
                     <toolbarbutton id="omnivalidator-dockedwin-winbutton-close"
                         class="omnivalidator-dockedwin-winbutton"
                         command="omnivalidator-command-hide"
