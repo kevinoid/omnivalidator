@@ -16,7 +16,7 @@
     // Map exports from the extension global namespace into this variable
     var omnivalidator = {};
 
-    Components.utils.import(
+    Components.utils["import"](
         "resource://omnivalidator/omnivalidator/global.jsm",
         omnivalidator
     );

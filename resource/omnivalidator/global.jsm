@@ -59,7 +59,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     // Provide access to JSON through RequireJS
     if (typeof JSON === "undefined") {
         // Should only happen in Gecko 1.9
-        Components.utils.import("resource://gre/modules/JSON.jsm");
+        Components.utils["import"]("resource://gre/modules/JSON.jsm");
     }
     define("json", JSON);
 
@@ -96,7 +96,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
 
             moduleURL = moduleURL || baseURL + "/" + moduleName + ".jsm";
 
-            Components.utils.import(moduleURL, module);
+            Components.utils["import"](moduleURL, module);
 
             return unwrapSingleProp(module);
         });
