@@ -31,30 +31,31 @@
 
     <menupopup id="menu_viewPopup">
         <menuitem id="omnivalidator-view-showitem"
-                command="omnivalidator-command-show"
+                command="omnivalidator-command-toggle"
                 label="&extensionName;" />
     </menupopup>
 
     <popup id="contentAreaContextMenu">
         <menuseparator />
         <menuitem id="omnivalidator-ctxmenu-showitem"
-                command="omnivalidator-command-show"
+                command="omnivalidator-command-validate"
                 label="&validatePage.label;" />
     </popup>
 
     <menupopup id="omnivalidator-quickmenu">
         <menuitem id="omnivalidator-quickmenu-showitem"
-                command="omnivalidator-command-show"
+                command="omnivalidator-command-validate"
                 label="&validatePage.label;" />
     </menupopup>
 
     <commandset>
-        <command id="omnivalidator-command-show" />
+        <command id="omnivalidator-command-toggle" />
+        <command id="omnivalidator-command-validate" />
     </commandset>
 
     <keyset>
         <key id="omnivalidator-validatekey"
-                command="omnivalidator-command-show"
+                command="omnivalidator-command-validate"
                 key="V"
                 modifiers="accel ctrl shift" />
     </keyset>

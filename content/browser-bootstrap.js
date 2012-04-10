@@ -37,6 +37,26 @@
             var logger = log4moz.repository.getLogger("omnivalidator.browserinit"),
                 vManager;
 
+            function setWinCollapsed(collapsed) {
+                var dockedWin,
+                    splitter;
+
+                dockedWin = document.getElementById("omnivalidator-dockedwin");
+                splitter = document.getElementById("omnivalidator-appcontent-splitter");
+
+                dockedWin.collapsed = collapsed;
+                splitter.collapsed = collapsed;
+            }
+
+            function toggleWinCollapsed() {
+                var collapsed;
+
+                collapsed =
+                    !document.getElementById("omnivalidator-dockedwin").collapsed;
+                setWinCollapsed(collapsed);
+                return collapsed;
+            }
+
             function setupConsoleBox(consoleBox) {
                 vManager.addListener(function (wvm, vStatus) {
                     var msg;
@@ -53,27 +73,19 @@
                 });
             }
 
-            function setupShowCommand(showCommand) {
-                showCommand.addEventListener("command", function () {
-                    var dockedWin,
-                        results,
-                        splitter;
+            function setupToggleCommand(command) {
+                command.addEventListener("command", function () {
+                    var collapsed,
+                        results;
 
-                    dockedWin = document.getElementById("omnivalidator-dockedwin");
-                    splitter = document.getElementById("omnivalidator-appcontent-splitter");
+                    collapsed = toggleWinCollapsed();
 
-                    if (dockedWin.collapsed) {
-                        dockedWin.collapsed = false;
-                        splitter.collapsed = false;
-
+                    if (!collapsed) {
                         // If the page has not been validated yet, validate it
                         results = vManager.getValidationResults();
                         if (!objutils.hasOwnProperties(results)) {
                             vManager.validate();
                         }
-                    } else {
-                        dockedWin.collapsed = true;
-                        splitter.collapsed = true;
                     }
                 });
             }
@@ -96,6 +108,20 @@
                 });
             }
 
+            function setupValidateCommand(command) {
+                command.addEventListener("command", function () {
+                    var results;
+
+                    setWinCollapsed(false);
+
+                    // If the page has not been validated yet, validate it
+                    results = vManager.getValidationResults();
+                    if (!objutils.hasOwnProperties(results)) {
+                        vManager.validate();
+                    }
+                });
+            }
+
             window.addEventListener("load", function onLoad() {
                 var i, toolbarButtons;
 
@@ -104,8 +130,12 @@
                 logger.trace("Creating validation manager for new window");
                 vManager = new WindowValidationManager(gBrowser);
 
-                setupShowCommand(
-                    document.getElementById("omnivalidator-command-show")
+                setupToggleCommand(
+                    document.getElementById("omnivalidator-command-toggle")
+                );
+
+                setupValidateCommand(
+                    document.getElementById("omnivalidator-command-validate")
                 );
 
                 setupConsoleBox(
