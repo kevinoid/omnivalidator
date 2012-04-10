@@ -30,7 +30,7 @@
     <script type="application/javascript" src="browser-bootstrap.js" />
 
     <menupopup id="menu_viewPopup">
-        <menuitem id="omnivalidator-view-showitem"
+        <menuitem id="omnivalidator-menuitem-viewtoggle"
                 command="omnivalidator-command-toggle"
                 label="&extensionName;"
                 type="checkbox" />
@@ -38,12 +38,12 @@
 
     <popup id="contentAreaContextMenu">
         <menuseparator />
-        <menuitem id="omnivalidator-ctxmenu-showitem"
+        <menuitem id="omnivalidator-menuitem-ctxvalidate"
                 command="omnivalidator-command-validate"
                 label="&validatePage.label;" />
     </popup>
 
-    <menupopup id="omnivalidator-quickmenu">
+    <menupopup id="omnivalidator-menupopup-main">
         <menuitem id="omnivalidator-quickmenu-showitem"
                 command="omnivalidator-command-validate"
                 label="&validatePage.label;" />
@@ -56,7 +56,7 @@
     </commandset>
 
     <keyset>
-        <key id="omnivalidator-validatekey"
+        <key id="omnivalidator-key-validate"
                 command="omnivalidator-command-validate"
                 key="V"
                 modifiers="accel ctrl shift" />

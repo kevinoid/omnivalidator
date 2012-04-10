@@ -20,7 +20,7 @@
                 label="&extensionName;"
                 tooltiptext="&extensionName; &extensionVersion;"
                 type="menu-button">
-            <menupopup id="omnivalidator-quickmenu" />
+            <menupopup id="omnivalidator-menupopup-main" />
         </toolbarbutton>
     </toolbarpalette>
 </overlay>

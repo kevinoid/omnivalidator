@@ -48,7 +48,7 @@
                 dockedWin.collapsed = collapsed;
                 splitter.collapsed = collapsed;
 
-                menuitem = document.getElementById("omnivalidator-view-showitem");
+                menuitem = document.getElementById("omnivalidator-menuitem-viewtoggle");
                 menuitem.setAttribute("checked", !collapsed);
             }
 
