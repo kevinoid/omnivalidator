@@ -17,7 +17,7 @@
         <statusbarpanel
                 id="omnivalidator-statusbarbutton"
                 class="omnivalidator-statusbutton"
-                command="omnivalidator-showcommand"
+                command="omnivalidator-command-show"
                 label="&extensionName;"
                 tooltiptext="&extensionName; &extensionVersion;" />
     </statusbar>

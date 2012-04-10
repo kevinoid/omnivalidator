@@ -16,7 +16,7 @@
     <toolbarpalette id="BrowserToolbarPalette">
         <toolbarbutton id="omnivalidator-toolbarbutton"
                 class="omnivalidator-statusbutton"
-                command="omnivalidator-showcommand"
+                command="omnivalidator-command-show"
                 label="&extensionName;"
                 tooltiptext="&extensionName; &extensionVersion;"
                 type="menu-button">

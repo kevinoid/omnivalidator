@@ -105,7 +105,7 @@
                 vManager = new WindowValidationManager(gBrowser);
 
                 setupShowCommand(
-                    document.getElementById("omnivalidator-showcommand")
+                    document.getElementById("omnivalidator-command-show")
                 );
 
                 setupConsoleBox(
