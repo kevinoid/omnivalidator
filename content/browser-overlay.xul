@@ -50,6 +50,7 @@
     </menupopup>
 
     <commandset>
+        <command id="omnivalidator-command-hide" />
         <command id="omnivalidator-command-toggle" />
         <command id="omnivalidator-command-validate" />
     </commandset>
@@ -78,6 +79,7 @@
                         tooltiptext="&dockwinMaximize.label;" />
                     <toolbarbutton id="omnivalidator-dockedwin-winbutton-close"
                         class="omnivalidator-dockedwin-winbutton"
+                        command="omnivalidator-command-hide"
                         tooltiptext="&dockwinClose.label;" />
                 </hbox>
             </hbox>

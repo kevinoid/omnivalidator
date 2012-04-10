@@ -77,6 +77,12 @@
                 });
             }
 
+            function setupHideCommand(command) {
+                command.addEventListener("command", function () {
+                    setWinCollapsed(true);
+                });
+            }
+
             function setupToggleCommand(command) {
                 command.addEventListener("command", function () {
                     var collapsed,
@@ -133,6 +139,10 @@
                 // is null errors
                 logger.trace("Creating validation manager for new window");
                 vManager = new WindowValidationManager(gBrowser);
+
+                setupHideCommand(
+                    document.getElementById("omnivalidator-command-hide")
+                );
 
                 setupToggleCommand(
                     document.getElementById("omnivalidator-command-toggle")
