@@ -12,3 +12,4 @@ Things to Test:
 When dropping support for Firefox 3.6:
 * Remove JSON imports
 * Remove objutils.getOwnPropertyNames, objutils.hasOwnProperties
+* Freeze objects returned from validatorregistry (and possibly others)
