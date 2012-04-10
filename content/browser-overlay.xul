@@ -61,9 +61,9 @@
 
     <window id="appcontent">
         <splitter id="omnivalidator-appcontent-splitter"
-                class="omnivalidator-dockedwin-splitter" collapsed="false" />
+                class="omnivalidator-dockedwin-splitter" collapsed="true" />
         <vbox id="omnivalidator-dockedwin"
-                collapsed="false" persist="height,width">
+                collapsed="true" persist="height,width">
             <hbox id="omnivalidator-dockedwin-header">
                 <spacer flex="1" />
 
