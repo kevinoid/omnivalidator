@@ -29,6 +29,7 @@
 
     <script type="application/javascript" src="browser-bootstrap.js" />
 
+    <!-- Firefox View menu (from menu bar) -->
     <menupopup id="menu_viewPopup">
         <menuitem id="omnivalidator-menuitem-viewtoggle"
                 command="omnivalidator-command-toggle"
@@ -36,6 +37,27 @@
                 type="checkbox" />
     </menupopup>
 
+    <!-- Firefox Web Developer menu (from Tools menu) -->
+    <menupopup id="menuWebDeveloperPopup">
+        <menu id="omnivalidator-menu-toolswebdev"
+                class="omnivalidator-copy-menupopup-main"
+                insertbefore="devToolsEndSeparator"
+                label="&extensionName;">
+            <!-- Content copied from omnivalidator-menupopup-main -->
+        </menu>
+    </menupopup>
+
+    <!-- Firefox Web Developer menu (from FF button) -->
+    <menupopup id="appmenu_webDeveloper_popup">
+        <menu id="omnivalidator-menu-appwebdev"
+                class="omnivalidator-copy-menupopup-main"
+                insertbefore="appmenu_devToolsEndSeparator"
+                label="&extensionName;">
+            <!-- Content copied from omnivalidator-menupopup-main -->
+        </menu>
+    </menupopup>
+
+    <!-- Firefox page context menu -->
     <popup id="contentAreaContextMenu">
         <menuseparator />
         <menuitem id="omnivalidator-menuitem-ctxvalidate"
@@ -43,14 +65,32 @@
                 label="&validatePage.label;" />
     </popup>
 
-    <menupopup id="omnivalidator-menupopup-main">
-        <menuitem id="omnivalidator-quickmenu-showitem"
-                command="omnivalidator-command-validate"
-                label="&validatePage.label;" />
+    <!-- Important:  Copied to menus above.  Avoid id attributes. -->
+    <menupopup id="omnivalidator-menupopup-main"
+            class="omnivalidator-menupopup-main">
+        <menu label="&validateWithAll.label;">
+            <menupopup class="omnivalidator-menupopup-main-validators">
+                <menuitem
+                    label="&validatorListAll.label;"
+                    value="(All)" />
+                <menuseparator />
+                <!-- Filled with menuitems for all configured validators -->
+            </menupopup>
+        </menu>
+        <menuseparator />
+        <menuitem
+            command="omnivalidator-command-prefs"
+            label="&preferences.label;" />
+        <menuseparator />
+        <menuitem
+            command="omnivalidator-command-about"
+            label="&about.label;" />
     </menupopup>
 
     <commandset>
+        <command id="omnivalidator-command-about" />
         <command id="omnivalidator-command-hide" />
+        <command id="omnivalidator-command-prefs" />
         <command id="omnivalidator-command-toggle" />
         <command id="omnivalidator-command-validate" />
     </commandset>
