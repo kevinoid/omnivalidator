@@ -28,12 +28,14 @@
             "gecko/components/interfaces",
             "gecko/components/results",
             "log4moz",
+            "omnivalidator/globaldefs",
             "omnivalidator/objutils",
             "omnivalidator/validationstatusbutton",
+            "omnivalidator/validatorregistry",
             "omnivalidator/windowvalidationmanager"
         ],
-        function (Cc, Ci, Cr, log4moz, objutils,
-                ValidationStatusButton, WindowValidationManager) {
+        function (Cc, Ci, Cr, log4moz, globaldefs, objutils,
+                ValidationStatusButton, vregistry, WindowValidationManager) {
             var logger = log4moz.repository.getLogger("omnivalidator.browserinit"),
                 vManager;
 
@@ -81,6 +83,59 @@
                 command.addEventListener("command", function () {
                     setWinCollapsed(true);
                 });
+            }
+
+            function setupMainMenuValidators(menu, validatorNames) {
+                var i,
+                    menuitem;
+
+                for (i = 0; i < validatorNames.length; ++i) {
+                    menuitem = document.createElementNS(
+                        globaldefs.XUL_NS,
+                        "menuitem"
+                    );
+                    menuitem.setAttribute("label", validatorNames[i]);
+                    menuitem.setAttribute("value", validatorNames[i]);
+                    menu.appendChild(menuitem);
+                }
+
+                menu.addEventListener("command", function (evt) {
+                    logger.debug("Menu command to validate using " +
+                        evt.originalTarget.value);
+                    if (evt.originalTarget.value === "(All)") {
+                        vManager.validate();
+                    } else {
+                        vManager.validate(evt.originalTarget.value);
+                    }
+                });
+            }
+
+            function setupMainMenu(mainMenu) {
+                var i,
+                    menu,
+                    menus,
+                    menuVals,
+                    validatorNames;
+
+                menus =
+                    document.getElementsByClassName("omnivalidator-copy-menupopup-main");
+                for (i = 0; i < menus.length; ++i) {
+                    menu = mainMenu.cloneNode(true);
+                    menu.removeAttribute("id");
+                    menus[i].appendChild(menu);
+                }
+
+                menuVals =
+                    document.getElementsByClassName(
+                        "omnivalidator-menupopup-main-validators"
+                    );
+                validatorNames = objutils.getOwnPropertyNames(
+                    vregistry.getAllByName()
+                );
+                validatorNames.sort();
+                for (i = 0; i < menuVals.length; ++i) {
+                    setupMainMenuValidators(menuVals[i], validatorNames);
+                }
             }
 
             function setupToggleCommand(command) {
@@ -133,7 +188,8 @@
             }
 
             window.addEventListener("load", function onLoad() {
-                var i, toolbarButtons;
+                var i,
+                    toolbarButtons;
 
                 // Note:  Must be done after load to avoid browser.xml docShell
                 // is null errors
@@ -161,6 +217,10 @@
                 for (i = 0; i < toolbarButtons.length; ++i) {
                     setupToolbarButton(toolbarButtons[i]);
                 }
+
+                setupMainMenu(
+                    document.getElementById("omnivalidator-menupopup-main")
+                );
             });
         }
     );
