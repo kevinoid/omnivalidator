@@ -19,7 +19,7 @@
                 class="omnivalidator-statusbutton"
                 command="omnivalidator-command-toggle"
                 label="&extensionName;"
-                tooltiptext="&extensionName; &extensionVersion;" />
+                tooltiptext="&extensionName;" />
     </statusbar>
 </overlay>
 <!-- vi: set sts=4 sw=4 et : -->
