@@ -427,12 +427,16 @@ define(
                     xhr;
 
                 // Note:  Filename only used by validator internally
-                url = Cc["@mozilla.org/network/io-service;1"]
-                    .getService(Ci.nsIIOService)
-                    .newURI(resourceid.uri, null, null)
-                    .QueryInterface(Ci.nsIURL);
-                filename = (url.fileBaseName || "index") +
-                    "." + (url.fileExtension || "htm");
+                try {
+                    url = Cc["@mozilla.org/network/io-service;1"]
+                        .getService(Ci.nsIIOService)
+                        .newURI(resourceid.uri, null, null)
+                        .QueryInterface(Ci.nsIURL);
+                    filename = (url.fileBaseName || "index") +
+                        "." + (url.fileExtension || "htm");
+                } catch (ex) {
+                    filename = "index.htm";
+                }
 
                 channel = cacheutils.getChannel(resourceid);
                 // Note:  Must open channel before getting Content-Type
