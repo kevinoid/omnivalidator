@@ -45,6 +45,9 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     define("omnivalidator/globaldefs", {
         CSS_PREFIX: "omnivalidator-",
         EXT_PREF_PREFIX: "extensions.omnivalidator",
+        // Should match em:version in install.rdf
+        // Note:  Could read it from install.rdf, rather than defining it here,
+        // but only async, which introduces issues.
         VERSION: "0.1",
         XHTML_NS: "http://www.w3.org/1999/xhtml",
         XUL_NS: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
