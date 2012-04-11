@@ -26,6 +26,7 @@ define(
 
         var logger = log4moz.repository.getLogger("omnivalidator.validatorregistry"),
             allValidators,
+            allValidatorsByName,
             autoURLMatcher,
             autoValidators,
             clickValidators;
@@ -45,7 +46,10 @@ define(
         }
 
         function clearValidators() {
-            allValidators = autoValidators = clickValidators = undefined;
+            allValidators =
+                allValidatorsByName =
+                autoValidators =
+                clickValidators = undefined;
         }
 
         function loadValidators() {
@@ -56,6 +60,7 @@ define(
             logger.debug("Loading validators");
 
             allValidators = [];
+            allValidatorsByName = {};
             autoValidators = [];
             clickValidators = [];
 
@@ -81,6 +86,7 @@ define(
                     );
 
                 allValidators.push(validator);
+                allValidatorsByName[validator.name] = validator;
                 if (vPrefs[i].auto) {
                     autoValidators.push(validator);
                 }
@@ -94,6 +100,16 @@ define(
             if (!allValidators) {
                 loadValidators();
             }
+        }
+
+        function getAll() {
+            ensureValidators();
+            return allValidators;
+        }
+
+        function getAllByName() {
+            ensureValidators();
+            return allValidatorsByName;
         }
 
         function getAutoFor(url) {
@@ -126,6 +142,8 @@ define(
             .addObserver(clearValidators);
 
         return {
+            getAll: getAll,
+            getAllByName: getAllByName,
             getAutoFor: getAutoFor,
             getClickFor: getClickFor
         };
