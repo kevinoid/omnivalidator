@@ -155,24 +155,47 @@ define(
                 this.validate();
             };
 
-            this.validate = function () {
-                var validators;
+            this.validate = function (validatorNames) {
+                var allValidators,
+                    i,
+                    validator,
+                    validators;
 
-                logger.debug("Manual validation requested.");
+                if (validatorNames) {
+                    if (typeof validatorNames === "string") {
+                        validatorNames = [ validatorNames ];
+                    }
 
-                validators = vregistry.getClickFor(
-                    browser.contentDocument.location
-                );
+                    logger.debug("Validation with " +
+                        validatorNames.join(", ") + " requested.");
 
-                if (validators.length > 0) {
-                    logger.debug("Running manual validators.");
-                    applyValidators(
-                        filterValidators(validators),
-                        browser.contentDocument
-                    );
+                    allValidators = vregistry.getAllByName();
+                    validators = [];
+                    for (i = 0; i < validatorNames.length; ++i) {
+                        validator = allValidators[validatorNames[i]];
+                        if (validator) {
+                            validators.push(validator);
+                        } else {
+                            logger.warn("Request to validate with unrecognized validator " +
+                                validatorNames[i]);
+                        }
+                    }
                 } else {
-                    logger.debug("No manual validators registered.");
+                    logger.debug("Manual validation requested.");
+
+                    validators = vregistry.getClickFor(
+                        browser.contentDocument.location
+                    );
+
+                    if (validators.length === 0) {
+                        logger.debug("No manual validators registered.");
+                    }
                 }
+
+                applyValidators(
+                    filterValidators(validators),
+                    browser.contentDocument
+                );
             };
 
             progressListener = {
