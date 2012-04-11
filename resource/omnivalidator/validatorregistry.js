@@ -72,6 +72,20 @@ define(
                     continue;
                 }
 
+                if (!vPrefs[i].name) {
+                    logger.error("Unable to construct validator " + i +
+                            " from module " + vPrefs[i].module +
+                            " due to missing/empty name.");
+                    continue;
+                }
+
+                if (allValidatorsByName.hasOwnProperty(vPrefs[i].name)) {
+                    logger.error("Unable to construct validator " + i +
+                            " from module " + vPrefs[i].module +
+                            " with duplicate name " + vPrefs[i].name);
+                    continue;
+                }
+
                 logger.debug("Constructing validator " + i +
                         " (" + vPrefs[i].name + ")" +
                         " from module " + vPrefs[i].module +
