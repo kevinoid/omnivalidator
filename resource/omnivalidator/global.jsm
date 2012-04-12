@@ -66,6 +66,21 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     }
     define("json", JSON);
 
+    // Extend the target object with properties from the source object
+    // FIXME:  Overlap with objutils.extend, but can't require that here
+    function extendProperties(target, source, props) {
+        var i, prop;
+
+        for (i = 0; i < props.length; ++i) {
+            prop = props[i];
+            if (source.hasOwnProperty(prop)) {
+                target[prop] = source[prop];
+            }
+        }
+
+        return target;
+    }
+
     // If object contains only one property, return the value of that property
     // Otherwise return the object
     function unwrapSingleProp(obj) {
@@ -93,7 +108,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     }
 
     // Provide RequireJS wrappers for JavaScript Modules (JSMs)
-    function defineJSM(moduleName, moduleURL) {
+    function defineJSM(moduleName, moduleURL, props) {
         define(moduleName, function () {
             var module = {};
 
@@ -101,18 +116,26 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
 
             Components.utils["import"](moduleURL, module);
 
+            if (props) {
+                module = extendProperties({}, module, props);
+            }
+
             return unwrapSingleProp(module);
         });
     }
 
     // Provide RequireJS wrappers for non-AMD files
-    function definePlain(moduleName, moduleURL, namespace) {
+    function definePlain(moduleName, moduleURL, props, namespace) {
         define(moduleName, function () {
             moduleURL = moduleURL || baseURL + "/" + moduleName + ".js";
             namespace = namespace || {};
 
             // Run the script in its own module namespace
             scriptLoader.loadSubScript(moduleURL, namespace);
+
+            if (props) {
+                namespace = extendProperties({}, namespace, props);
+            }
 
             return unwrapSingleProp(namespace);
         });
@@ -124,6 +147,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     definePlain(
         "chrome/global/contentareautils",
         "chrome://global/content/contentAreaUtils.js",
+        null,
         // Note:  contentAreaUtils uses navigator.appVersion
         // FIXME:  Is there a better way to get a navigator (or appVersion)?
         {
