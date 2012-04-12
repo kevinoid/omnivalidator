@@ -1,0 +1,37 @@
+Authors of Omnivalidator
+========================
+
+Current Developers/Maintainers
+------------------------------
+The following people are responsible for the continued development and
+maintenance of this software:
+
+* Kevin Locke
+
+
+Contributors
+------------
+Omnivalidator includes contributions from the following people/organizations:
+
+
+Original Author
+---------------
+Omnivalidator was originally written by Kevin Locke.
+
+
+Dependencies
+------------
+Omnivalidator makes use of several libraries, tools, and platforms during
+the development process, build process, and at run time to function.
+There are far too many to list them all, but a few notable projects are:
+
+* Firefox from Mozilla Foundation and many contributors
+* Validator.nu from Henri Sivonen, Simon Pieters, and Mozilla Foundation
+* W3C Markup Validator from Gerald Oskoboiny and W3C
+* RequireJS from James Burke and The Dojo Foundation
+* Underscore.js from Jeremy Ashkenas and DocumentCloud Inc.
+* JSLint from Douglas Crockford
+* Vim from Bram Moolenaar et al.
+* And many others.
+
+_Thanks to everyone who has made Omnivalidator possible!_
