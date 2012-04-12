@@ -63,6 +63,16 @@
                 return collapsed;
             }
 
+            function setupAboutCommand(command) {
+                command.addEventListener("command", function () {
+                    window.open(
+                        "chrome://omnivalidator/content/aboutdialog.xul",
+                        "omnivalidator-about",
+                        "chrome"
+                    );
+                });
+            }
+
             function setupConsoleBox(consoleBox) {
                 vManager.addListener(function (wvm, vStatus) {
                     var msg;
@@ -195,6 +205,10 @@
                 // is null errors
                 logger.trace("Creating validation manager for new window");
                 vManager = new WindowValidationManager(gBrowser);
+
+                setupAboutCommand(
+                    document.getElementById("omnivalidator-command-about")
+                );
 
                 setupHideCommand(
                     document.getElementById("omnivalidator-command-hide")
