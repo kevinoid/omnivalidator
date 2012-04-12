@@ -141,6 +141,11 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
         });
     }
 
+    defineJSM(
+        "addonmanager",
+        "resource://gre/modules/AddonManager.jsm",
+        [ "AddonManager" ]
+    );
     defineJSM("log4moz");
     defineJSM("pluralform", "resource://gre/modules/PluralForm.jsm");
     definePlain("underscore");
