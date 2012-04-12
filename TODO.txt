@@ -14,3 +14,4 @@ When dropping support for Firefox 3.6:
 * Remove objutils.getOwnPropertyNames, objutils.hasOwnProperties
 * Freeze objects returned from validatorregistry (and possibly others)
 * Remove addonutils and use AddonManager directly
+* Remove hard-coding of aboutURL and homepageURL outside of install.rdf

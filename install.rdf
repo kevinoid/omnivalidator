@@ -19,6 +19,7 @@
         <em:type>2</em:type>
         <em:creator>Kevin Locke</em:creator>
 
+        <em:aboutURL>chrome://omnivalidator/content/aboutdialog.xul</em:aboutURL>
         <em:description>Validate content using any number of configurable validation services.</em:description>
         <em:homepageURL>https://github.com/kevinoid/omnivalidator</em:homepageURL>
 

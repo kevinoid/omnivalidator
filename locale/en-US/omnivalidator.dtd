@@ -1,6 +1,12 @@
 <!ENTITY extensionName "Omnivalidator">
 
 <!ENTITY about.label "About...">
+<!ENTITY aboutDialog.title "About &extensionName;">
+<!ENTITY aboutHomepage.label "&extensionName; Homepage">
+<!ENTITY aboutTabAuthors.label "Authors">
+<!ENTITY aboutTabLicense.label "License">
+<!ENTITY aboutTabChangeLog.label "ChangeLog">
+<!ENTITY aboutWebsite.label "&extensionName; Website">
 <!ENTITY autoValidate.URLCol.label "URL Pattern (Regular Expression)">
 <!ENTITY autoValidate.label "Automatically Validate URLs:">
 <!ENTITY dockwinMinimize.label "Minimize">

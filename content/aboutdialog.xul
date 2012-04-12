@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!--
+    About dialog box
+
+    This file is part of the Omnivalidator extension for Firefox.
+    It is licensed under the terms of the MIT License.
+    The complete text of the license is available in the project documentation.
+
+    Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+-->
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://omnivalidator/skin/aboutdialog.css" type="text/css"?>
+
+<!DOCTYPE overlay SYSTEM "chrome://omnivalidator/locale/omnivalidator.dtd">
+
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        id="omnivalidator-dialog-about"
+        title="&aboutDialog.title;"
+        role="dialog">
+
+    <script type="application/javascript" src="aboutdialog.js" />
+
+    <box id="omnivalidator-about-header">
+        <image id="omnivalidator-about-icon" />
+        <box id="omnivalidator-about-header-text">
+            <label class="header omnivalidator-about-header">&extensionName;</label>
+            <label id="omnivalidator-about-version"
+                    class="header omnivalidator-about-subheader" />
+            <label id="omnivalidator-about-homepage"
+                    class="text-link"
+                    href="https://github.com/kevinoid/omnivalidator">&aboutHomepage.label;</label>
+        </box>
+    </box>
+
+    <tabbox id="omnivalidator-about-tabbox" flex="1">
+        <tabs>
+            <tab label="&aboutTabAuthors.label;" />
+            <tab label="&aboutTabLicense.label;" />
+            <tab label="&aboutTabChangeLog.label;" />
+        </tabs>
+        <tabpanels>
+            <tabpanel id="omnivalidator-tabpanel-authors">
+                <iframe id="omnivalidator-frame-authors" />
+            </tabpanel>
+            <tabpanel id="omnivalidator-tabpanel-license">
+                <iframe id="omnivalidator-frame-license" />
+            </tabpanel>
+            <tabpanel id="omnivalidator-tabpanel-changelog">
+                <iframe id="omnivalidator-frame-changelog" />
+            </tabpanel>
+        </tabpanels>
+    </tabbox>
+</window>
+<!-- vi: set sts=4 sw=4 et : -->

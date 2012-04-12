@@ -44,6 +44,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     // Shared global definitions
     define("omnivalidator/globaldefs", {
         CSS_PREFIX: "omnivalidator-",
+        EXT_ID: "omnivalidator@kevinlocke.name",
         EXT_PREF_PREFIX: "extensions.omnivalidator",
         // Should match em:version in install.rdf
         // Note:  Could read it from install.rdf, rather than defining it here,

@@ -1,0 +1,48 @@
+/* Styles for the About dialog
+ *
+ * This file is part of the Omnivalidator extension for Firefox.
+ * It is licensed under the terms of the MIT License.
+ * The complete text of the license is available in the project documentation.
+ *
+ * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+ */
+
+tabpanel > iframe {
+	min-height: 10em;
+	min-width: 70ex;
+	-moz-box-flex: 1;
+}
+
+.omnivalidator-about-header {
+	font-size: xx-large;
+}
+
+.omnivalidator-about-subheader {
+	font-size: large;
+}
+
+#omnivalidator-about-header-text {
+	height: 125px;
+	margin: 10px 0;
+	-moz-box-orient: vertical;
+	-moz-box-pack: center;
+}
+
+#omnivalidator-about-icon {
+	height: 125px;
+	list-style-image: url("chrome://omnivalidator/skin/icon.svg");
+	margin: 10px;
+}
+
+#omnivalidator-about-tabbox,
+#omnivalidator-about-tabbox tabpanels,
+#omnivalidator-about-tabbox tabpanel
+{
+	-moz-box-flex: 1;
+}
+
+#omnivalidator-dialog-about {
+	margin: 5px;
+}
+
+/* vi: set sts=8 sw=8 noet : */
