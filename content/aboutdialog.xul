@@ -38,6 +38,7 @@
             <tab label="&aboutTabAuthors.label;" />
             <tab label="&aboutTabLicense.label;" />
             <tab label="&aboutTabChangeLog.label;" />
+            <tab label="&aboutTabEventLog.label;" />
         </tabs>
         <tabpanels>
             <tabpanel id="omnivalidator-tabpanel-authors">
@@ -48,6 +49,9 @@
             </tabpanel>
             <tabpanel id="omnivalidator-tabpanel-changelog">
                 <iframe id="omnivalidator-frame-changelog" />
+            </tabpanel>
+            <tabpanel id="omnivalidator-tabpanel-eventlog">
+                <iframe id="omnivalidator-frame-eventlog" />
             </tabpanel>
         </tabpanels>
     </tabbox>
