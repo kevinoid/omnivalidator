@@ -19,6 +19,7 @@ pref("extensions.omnivalidator.validators.1.module", "omnivalidator/w3cmarkup");
 pref("extensions.omnivalidator.validators.1.name", "W3C Markup Validator");
 
 // Diagnostic logging preferences
-pref("extensions.omnivalidator.logLevel", 50);
+pref("extensions.omnivalidator.log.consoleLevel", 50);
+pref("extensions.omnivalidator.log.fileLevel", 20);
 
 // vi: set sts=4 sw=4 et :

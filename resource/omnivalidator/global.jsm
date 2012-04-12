@@ -46,6 +46,8 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
         CSS_PREFIX: "omnivalidator-",
         EXT_ID: "omnivalidator@kevinlocke.name",
         EXT_PREF_PREFIX: "extensions.omnivalidator",
+        EXT_PROF_DIR: "omnivalidator",
+        LOG_FILE_NAME: "omnivalidator.log",
         // Should match em:version in install.rdf
         // Note:  Could read it from install.rdf, rather than defining it here,
         // but only async, which introduces issues.
@@ -180,26 +182,69 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
             "omnivalidator/globaldefs"
         ],
         function (Cc, Ci, log4moz, globaldefs) {
-            var appender, formatter, logLevel, prefs, rootLogger;
+            var consoleAppender,
+                consoleFormatter,
+                consoleLevel,
+                extProfDir,
+                fileAppender,
+                fileFormatter,
+                fileLevel,
+                logFile,
+                prefs,
+                rootLogger;
 
             prefs = Cc["@mozilla.org/preferences-service;1"]
                 .getService(Ci.nsIPrefService)
                 .getBranch(globaldefs.EXT_PREF_PREFIX + ".");
 
             rootLogger = log4moz.repository.rootLogger;
-            logLevel = prefs.getIntPref("logLevel");
-            rootLogger.level = logLevel;
+            consoleLevel = prefs.getIntPref("log.consoleLevel");
+            fileLevel = prefs.getIntPref("log.fileLevel");
+            rootLogger.level = Math.max(consoleLevel, fileLevel);
 
-            formatter = {
+            consoleFormatter = {
                 format: function (msg) {
                     return "Omnivalidator (" + msg.levelDesc + "): " +
                         msg.message +
                         (msg.error ? ":\n" + msg.error : "");
                 }
             };
-            appender = new log4moz.ConsoleAppender(formatter);
-            appender.level = logLevel;
-            rootLogger.addAppender(appender);
+            consoleAppender = new log4moz.ConsoleAppender(consoleFormatter);
+            consoleAppender.level = consoleLevel;
+            rootLogger.addAppender(consoleAppender);
+
+            try {
+                extProfDir = Cc["@mozilla.org/file/directory_service;1"]
+                    .getService(Ci.nsIProperties)
+                    .get("ProfD", Ci.nsIFile);
+                extProfDir.append(globaldefs.EXT_PROF_DIR);
+
+                if (!extProfDir.exists() || !extProfDir.isDirectory()) {
+                    extProfDir.create(
+                        Ci.nsIFile.DIRECTORY_TYPE,
+                        // Note:  Octal literals forbidden in strict mode
+                        parseInt("0774", 8)
+                    );
+                }
+
+                logFile = extProfDir.clone();
+                logFile.append(globaldefs.LOG_FILE_NAME);
+                if (logFile.exists()) {
+                    logFile.remove(true);
+                }
+
+                fileFormatter = new log4moz.BasicFormatter();
+                fileAppender = new log4moz.FileAppender(logFile, fileFormatter);
+                // Send a test message to confirm file stream works
+                fileAppender.doAppend("Omnivalidator Log\n");
+
+                rootLogger.debug("Logging messages to " + logFile.path);
+                rootLogger.addAppender(fileAppender);
+            } catch (ex) {
+                rootLogger.error("Unable to open log file", ex);
+            }
+
+            rootLogger.trace("Logging setup complete");
         }
     );
 
