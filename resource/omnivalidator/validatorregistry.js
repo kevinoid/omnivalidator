@@ -122,6 +122,31 @@ define(
             return clickValidators;
         }
 
+        function getNewValidatorID() {
+            var i, id, vid;
+
+            id = Math.floor(Math.random() * 10000);
+            vid = String(id);
+
+            // Add leading 0s to pad everything to 4 digits
+            for (i = 10; i < 10000; i *= 10) {
+                if (id < i) {
+                    vid = "0" + vid;
+                }
+            }
+
+            vid = "v" + vid;
+            logger.trace("Generated new validator ID " + vid);
+
+            // If the vid is already in use (unlikely), try again
+            if (getValidatorPrefsBranch().getValue(vid + ".name")) {
+                logger.debug("Collision generating new validator ID");
+                return getNewValidatorID();
+            }
+
+            return vid;
+        }
+
         // Get the validator names without constructing all the validator
         // objects
         function getNames() {
@@ -163,7 +188,8 @@ define(
             getAll: getAll,
             getAutoFor: getAutoFor,
             getClickFor: getClickFor,
-            getNames: getNames
+            getNames: getNames,
+            getNewValidatorID: getNewValidatorID
         };
     }
 );
