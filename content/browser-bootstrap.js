@@ -95,17 +95,21 @@
                 });
             }
 
-            function setupMainMenuValidators(menu, validatorNames) {
+            function setupMainMenuValidators(menu, validatorIDs,
+                    validatorNames) {
                 var i,
                     menuitem;
 
-                for (i = 0; i < validatorNames.length; ++i) {
+                for (i = 0; i < validatorIDs.length; ++i) {
                     menuitem = document.createElementNS(
                         globaldefs.XUL_NS,
                         "menuitem"
                     );
-                    menuitem.setAttribute("label", validatorNames[i]);
-                    menuitem.setAttribute("value", validatorNames[i]);
+                    menuitem.setAttribute(
+                        "label",
+                        validatorNames[validatorIDs[i]]
+                    );
+                    menuitem.setAttribute("value", validatorIDs[i]);
                     menu.appendChild(menuitem);
                 }
 
@@ -125,6 +129,7 @@
                     menu,
                     menus,
                     menuVals,
+                    validatorIDs,
                     validatorNames;
 
                 menus =
@@ -139,12 +144,17 @@
                     document.getElementsByClassName(
                         "omnivalidator-menupopup-main-validators"
                     );
-                validatorNames = objutils.getOwnPropertyNames(
-                    vregistry.getAllByName()
-                );
-                validatorNames.sort();
+                validatorNames = vregistry.getNames();
+                validatorIDs = objutils.getOwnPropertyNames(validatorNames);
+                validatorIDs.sort(function (a, b) {
+                    return validatorNames[a].localeCompare(validatorNames[b]);
+                });
                 for (i = 0; i < menuVals.length; ++i) {
-                    setupMainMenuValidators(menuVals[i], validatorNames);
+                    setupMainMenuValidators(
+                        menuVals[i],
+                        validatorIDs,
+                        validatorNames
+                    );
                 }
             }
 

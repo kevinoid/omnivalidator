@@ -155,29 +155,29 @@ define(
                 this.validate();
             };
 
-            this.validate = function (validatorNames) {
+            this.validate = function (validatorIDs) {
                 var allValidators,
                     i,
                     validator,
                     validators;
 
-                if (validatorNames) {
-                    if (typeof validatorNames === "string") {
-                        validatorNames = [ validatorNames ];
+                if (validatorIDs) {
+                    if (typeof validatorIDs === "string") {
+                        validatorIDs = [ validatorIDs ];
                     }
 
                     logger.debug("Validation with " +
-                        validatorNames.join(", ") + " requested.");
+                        validatorIDs.join(", ") + " requested.");
 
-                    allValidators = vregistry.getAllByName();
+                    allValidators = vregistry.getAll();
                     validators = [];
-                    for (i = 0; i < validatorNames.length; ++i) {
-                        validator = allValidators[validatorNames[i]];
+                    for (i = 0; i < validatorIDs.length; ++i) {
+                        validator = allValidators[validatorIDs[i]];
                         if (validator) {
                             validators.push(validator);
                         } else {
                             logger.warn("Request to validate with unrecognized validator " +
-                                validatorNames[i]);
+                                validatorIDs[i]);
                         }
                     }
                 } else {

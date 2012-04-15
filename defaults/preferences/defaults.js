@@ -5,18 +5,14 @@
 pref("extensions.omnivalidator.autoValidate", "[]");
 
 // Validator preferences
-pref("extensions.omnivalidator.validators.0.args.validatorURL",
+pref("extensions.omnivalidator.validators.v7625.args.validatorURL",
         "http://localhost:8888");
-pref("extensions.omnivalidator.validators.0.auto", false);
-pref("extensions.omnivalidator.validators.0.click", true);
-pref("extensions.omnivalidator.validators.0.module", "omnivalidator/validatornu");
-pref("extensions.omnivalidator.validators.0.name", "Validator.nu");
-pref("extensions.omnivalidator.validators.1.args.validatorURL",
+pref("extensions.omnivalidator.validators.v7625.type", "omnivalidator/validatornu");
+pref("extensions.omnivalidator.validators.v7625.name", "Validator.nu");
+pref("extensions.omnivalidator.validators.v8812.args.validatorURL",
         "http://localhost/w3c-markup-validator/check");
-pref("extensions.omnivalidator.validators.1.auto", false);
-pref("extensions.omnivalidator.validators.1.click", true);
-pref("extensions.omnivalidator.validators.1.module", "omnivalidator/w3cmarkup");
-pref("extensions.omnivalidator.validators.1.name", "W3C Markup Validator");
+pref("extensions.omnivalidator.validators.v8812.type", "omnivalidator/w3cmarkup");
+pref("extensions.omnivalidator.validators.v8812.name", "W3C Markup Validator");
 
 // Diagnostic logging preferences
 pref("extensions.omnivalidator.log.consoleLevel", 50);

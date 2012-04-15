@@ -26,7 +26,6 @@ define(
 
         var logger = log4moz.repository.getLogger("omnivalidator.validatorregistry"),
             allValidators,
-            allValidatorsByName,
             autoURLMatcher,
             autoValidators,
             clickValidators;
@@ -51,67 +50,50 @@ define(
 
         function clearValidators() {
             allValidators =
-                allValidatorsByName =
                 autoValidators =
                 clickValidators = undefined;
         }
 
         function loadValidators() {
-            var i,
-                validator,
+            var validator,
+                vid,
                 vPrefs = getValidatorPrefs();
 
             logger.debug("Loading validators");
 
-            allValidators = [];
-            allValidatorsByName = {};
+            allValidators = {};
             autoValidators = [];
             clickValidators = [];
 
-            for (i = 0; i < vPrefs.length; ++i) {
-                if (typeof vPrefs[i].module !== "string") {
+            for (vid in vPrefs) { if (vPrefs.hasOwnProperty(vid)) {
+                if (typeof vPrefs[vid].type !== "string") {
                     logger.error("Preferences error:  \"" +
-                            String(vPrefs[i].module) +
-                            "\" is not a valid module name");
+                            String(vPrefs[vid].type) +
+                            "\" is not a valid type name");
                     continue;
                 }
 
-                if (!vPrefs[i].name) {
-                    logger.error("Unable to construct validator " + i +
-                            " from module " + vPrefs[i].module +
-                            " due to missing/empty name.");
-                    continue;
-                }
-
-                if (allValidatorsByName.hasOwnProperty(vPrefs[i].name)) {
-                    logger.error("Unable to construct validator " + i +
-                            " from module " + vPrefs[i].module +
-                            " with duplicate name " + vPrefs[i].name);
-                    continue;
-                }
-
-                logger.debug("Constructing validator " + i +
-                        " (" + vPrefs[i].name + ")" +
-                        " from module " + vPrefs[i].module +
-                        " (auto: " + vPrefs[i].auto +
-                        ", click: " + vPrefs[i].click +
+                logger.debug("Constructing validator " + vid +
+                        " (" + vPrefs[vid].name + ")" +
+                        " of type " + vPrefs[vid].type +
+                        " (auto: " + vPrefs[vid].auto +
+                        ", click: " + vPrefs[vid].click +
                         ")");
 
                 validator =
                     objutils.construct(
-                        require(vPrefs[i].module),
-                        [vPrefs[i].name, vPrefs[i].args]
+                        require(vPrefs[vid].type),
+                        [vPrefs[vid].name, vPrefs[vid].args]
                     );
 
-                allValidators.push(validator);
-                allValidatorsByName[validator.name] = validator;
-                if (vPrefs[i].auto) {
+                allValidators[vid] = validator;
+                if (vPrefs[vid].auto) {
                     autoValidators.push(validator);
                 }
-                if (vPrefs[i].click) {
+                if (vPrefs[vid].click) {
                     clickValidators.push(validator);
                 }
-            }
+            } }
         }
 
         function ensureValidators() {
@@ -123,11 +105,6 @@ define(
         function getAll() {
             ensureValidators();
             return allValidators;
-        }
-
-        function getAllByName() {
-            ensureValidators();
-            return allValidatorsByName;
         }
 
         function getAutoFor(url) {
@@ -184,7 +161,6 @@ define(
 
         return {
             getAll: getAll,
-            getAllByName: getAllByName,
             getAutoFor: getAutoFor,
             getClickFor: getClickFor,
             getNames: getNames
