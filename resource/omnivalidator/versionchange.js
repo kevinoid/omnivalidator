@@ -15,9 +15,10 @@ define(
         "gecko/components/interfaces",
         "log4moz",
         "omnivalidator/globaldefs",
-        "omnivalidator/preferences"
+        "omnivalidator/preferences",
+        "omnivalidator/validatorregistry"
     ],
-    function (Cc, Ci, log4moz, globaldefs, prefs) {
+    function (Cc, Ci, log4moz, globaldefs, prefs, vregistry) {
         "use strict";
 
         var buttonId = "omnivalidator-toolbarbutton",
@@ -45,7 +46,7 @@ define(
             setToolbarVisibility(toolbar, true);
         }
 
-        function handleNewInstall() {
+        function setupToolbarButton() {
             var win,
                 winEnum;
 
@@ -72,6 +73,43 @@ define(
 
                 win.addEventListener("load", onWindowLoad);
             }
+        }
+
+        function addInitialValidators() {
+            var i,
+                ivPrefs,
+                prefBranch,
+                vid;
+
+            ivPrefs = [
+                {
+                    args: {
+                        validatorURL: "http://validator.nu"
+                    },
+                    name: "Validator.nu",
+                    type: "omnivalidator/validatornu"
+                },
+                {
+                    args: {
+                        validatorURL: "http://validator.w3.org/check"
+                    },
+                    name: "W3C Markup Validator",
+                    type: "omnivalidator/w3cmarkup"
+                }
+            ];
+
+            logger.debug("Adding an initial (default) set of validators");
+
+            prefBranch = prefs.getExtPrefBranch().getBranch("validators");
+            for (i = 0; i < ivPrefs.length; ++i) {
+                vid = vregistry.getNewValidatorID();
+                prefBranch.set(vid, ivPrefs[i]);
+            }
+        }
+
+        function handleNewInstall() {
+            addInitialValidators();
+            setupToolbarButton();
         }
 
         function handleUpgradeDowngrade(oldVersion, newVersion) {
