@@ -92,6 +92,7 @@ define(
         PrefBranch.prototype.getArray = function (branchName) {
             var childName,
                 childNames,
+                childNum,
                 i,
                 result = [];
 
@@ -99,8 +100,11 @@ define(
 
             for (i = 0; i < childNames.length; ++i) {
                 childName = childNames[i];
-                if (/^\d+$/.test(childName)) {
-                    result[parseInt(childName, 10)] =
+                childNum = parseInt(childName, 10);
+                if (/^\d+$/.test(childName) &&
+                        // Prevent space waste for non-contiguous values
+                        (childNum < childNames.length * 2 || childNum < 100)) {
+                    result[childNum] =
                         this.get(combineBranchNames(branchName, childName));
                 }
             }
@@ -155,7 +159,8 @@ define(
 
             for (i = 0; i < childNames.length; ++i) {
                 // Skip properties already added by getArray
-                if (!/^\d+$/.test(childNames[i])) {
+                // Note:  Also protects against setting length on array
+                if (!result.hasOwnProperty(childNames[i])) {
                     result[childNames[i]] =
                         this.get(combineBranchNames(branchName, childNames[i]));
                 }
