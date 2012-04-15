@@ -31,8 +31,12 @@ define(
             autoValidators,
             clickValidators;
 
+        function getValidatorPrefsBranch() {
+            return prefs.getExtPrefBranch().getBranch("validators");
+        }
+
         function getValidatorPrefs() {
-            return prefs.getExtPrefBranch().get("validators");
+            return getValidatorPrefsBranch().get();
         }
 
         function loadAutoURLMatcher() {
@@ -141,6 +145,29 @@ define(
             return clickValidators;
         }
 
+        // Get the validator names without constructing all the validator
+        // objects
+        function getNames() {
+            var i,
+                match,
+                prefBranch,
+                prefNames,
+                valName,
+                valNames;
+
+            prefBranch = getValidatorPrefsBranch();
+            prefNames = prefBranch.getDescendantNames();
+            valNames = {};
+            for (i = 0; i < prefNames.length; ++i) {
+                match = /^(\w+)\.name$/.exec(prefNames[i]);
+                if (match) {
+                    valNames[match[1]] = prefBranch.getValue(prefNames[i]);
+                }
+            }
+
+            return valNames;
+        }
+
         // Load the autoURLMatcher and reload it when prefs change
         prefs.getExtPrefBranch()
             .getBranch("autovalidate")
@@ -159,7 +186,8 @@ define(
             getAll: getAll,
             getAllByName: getAllByName,
             getAutoFor: getAutoFor,
-            getClickFor: getClickFor
+            getClickFor: getClickFor,
+            getNames: getNames
         };
     }
 );
