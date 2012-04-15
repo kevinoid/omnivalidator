@@ -11,9 +11,7 @@
 
 define(
     [
-        "require",
         "log4moz",
-        "omnivalidator/objutils",
         "omnivalidator/preferences",
         "omnivalidator/urlmatcher",
 
@@ -21,14 +19,25 @@ define(
         "omnivalidator/validatornu",
         "omnivalidator/w3cmarkup"
     ],
-    function (require, log4moz, objutils, prefs, URLMatcher) {
+    function (log4moz, prefs, URLMatcher,
+
+            /* Supported validator types */
+            validatornu, w3cmarkup) {
         "use strict";
 
         var logger = log4moz.repository.getLogger("omnivalidator.validatorregistry"),
             allValidators,
             autoURLMatcher,
             autoValidators,
-            clickValidators;
+            clickValidators,
+            validatorTypes;
+
+        // FIXME:  Is there a way to read the dependency IDs from inside
+        // the module?  If so, can avoid repeating these here.
+        validatorTypes = {
+            "omnivalidator/validatornu":    validatornu,
+            "omnivalidator/w3cmarkup":      w3cmarkup
+        };
 
         function getValidatorPrefsBranch() {
             return prefs.getExtPrefBranch().getBranch("validators");
@@ -80,11 +89,10 @@ define(
                         ", click: " + vPrefs[vid].click +
                         ")");
 
-                validator =
-                    objutils.construct(
-                        require(vPrefs[vid].type),
-                        [vPrefs[vid].name, vPrefs[vid].args]
-                    );
+                validator = new validatorTypes[vPrefs[vid].type](
+                    vPrefs[vid].name,
+                    vPrefs[vid].args
+                );
 
                 allValidators[vid] = validator;
                 if (vPrefs[vid].auto) {
