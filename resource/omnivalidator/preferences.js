@@ -75,6 +75,12 @@ define(
             };
         };
 
+        PrefBranch.prototype.deleteBranch = function (branchName) {
+            prefService.getBranch(
+                combineBranchNames(this.branchName, branchName) + "."
+            ).deleteBranch("");
+        };
+
         /** Gets the object or value at the specified location.
          * If both an object and value are present, the object is returned
          */
