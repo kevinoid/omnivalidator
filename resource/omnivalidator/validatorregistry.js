@@ -76,7 +76,7 @@ define(
             clickValidators = [];
 
             for (vid in vPrefs) { if (vPrefs.hasOwnProperty(vid)) {
-                if (typeof vPrefs[vid].type !== "string") {
+                if (!validatorTypes.hasOwnProperty(vPrefs[vid].type)) {
                     logger.error("Preferences error:  \"" +
                             String(vPrefs[vid].type) +
                             "\" is not a valid type name");
