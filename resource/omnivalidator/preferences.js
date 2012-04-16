@@ -183,10 +183,15 @@ define(
                 branchName = null;
             }
 
+            // If prefName is unspecified, get the value of the branch,
+            // Otherwise get the value of the pref appended to the branch
             prefBranch = prefService.getBranch(
-                combineBranchNames(this.branchName, branchName) + "."
+                combineBranchNames(this.branchName, branchName) +
+                    ((prefName === null || prefName === undefined) ? "" : ".")
             );
 
+            prefName = prefName === null || prefName === undefined ?
+                    "" : String(prefName);
             switch (prefBranch.getPrefType(prefName)) {
             case prefBranch.PREF_BOOL:
                 return prefBranch.getBoolPref(prefName);
