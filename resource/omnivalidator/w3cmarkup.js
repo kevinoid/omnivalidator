@@ -36,6 +36,7 @@ define(
             var thisValidator = this,
                 validatorURL;
 
+            validatorName = String(validatorName || "");
             Validator.call(this, validatorName);
 
             if (!validatorArgs || !validatorArgs.validatorURL) {

@@ -16,7 +16,7 @@ define(
         "use strict";
 
         function Validator(name) {
-            this.name = name;
+            this.name = String(name || "");
         }
 
         return Validator;
