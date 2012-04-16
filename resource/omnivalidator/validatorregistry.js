@@ -31,6 +31,7 @@ define(
             autoURLMatcher,
             autoValidators,
             clickValidators,
+            defaultName = locale.get("validatorName.unnamed"),
             validatorTypes;
 
         // FIXME:  Is there a way to read the dependency IDs from inside
@@ -66,6 +67,7 @@ define(
 
         function loadValidators() {
             var validator,
+                validatorName,
                 vid,
                 vPrefs = getValidatorPrefs();
 
@@ -83,8 +85,10 @@ define(
                     continue;
                 }
 
+                validatorName = vPrefs[vid].name || defaultName;
+
                 logger.debug("Constructing validator " + vid +
-                        " (" + vPrefs[vid].name + ")" +
+                        " (" + validatorName + ")" +
                         " of type " + vPrefs[vid].type +
                         " (auto: " + vPrefs[vid].auto +
                         ", click: " + vPrefs[vid].click +
@@ -92,12 +96,12 @@ define(
 
                 try {
                     validator = new validatorTypes[vPrefs[vid].type](
-                        vPrefs[vid].name,
+                        validatorName,
                         vPrefs[vid].args
                     );
                 } catch (ex) {
                     logger.error("Unable to construct validator " + vid +
-                        " (" + vPrefs[vid].name + ")" +
+                        " (" + validatorName + ")" +
                         " of type " + vPrefs[vid].type + ": " +
                         ex.message, ex);
                     continue;
@@ -171,7 +175,7 @@ define(
                 match,
                 prefBranch,
                 prefNames,
-                valName,
+                vid,
                 valNames;
 
             prefBranch = getValidatorPrefsBranch();
@@ -181,6 +185,12 @@ define(
                 match = /^(\w+)\.name$/.exec(prefNames[i]);
                 if (match) {
                     valNames[match[1]] = prefBranch.getValue(prefNames[i]);
+                } else {
+                    // Make sure all validators get a name
+                    vid = prefNames[i].split(".")[0];
+                    if (!valNames.hasOwnProperty(vid)) {
+                        valNames[vid] = defaultName;
+                    }
                 }
             }
 
