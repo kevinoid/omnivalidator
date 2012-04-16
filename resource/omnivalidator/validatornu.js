@@ -248,6 +248,7 @@ define(
             this.validate = function (resourceid, callbackValidate) {
                 var channel,
                     contentType,
+                    errorMsg,
                     gzipConverter,
                     gzipListener,
                     url,
@@ -288,14 +289,34 @@ define(
                 logger.debug("Sending validation request to " + validatorName +
                         " for " + resourceid.uri + " with type " + contentType);
 
-                xhr.open("POST", url, true);
-                xhr.setRequestHeader("Accept", "application/json");
-                if (contentType) {
-                    xhr.setRequestHeader("Content-Type", contentType);
-                }
-                xhr.setRequestHeader("Content-Encoding", "gzip");
+                try {
+                    xhr.open("POST", url, true);
+                    xhr.setRequestHeader("Accept", "application/json");
+                    if (contentType) {
+                        xhr.setRequestHeader("Content-Type", contentType);
+                    }
+                    xhr.setRequestHeader("Content-Encoding", "gzip");
 
-                xhr.send(gzipListener.inputStream);
+                    xhr.send(gzipListener.inputStream);
+                } catch (ex) {
+                    logger.error("Error sending validation request to " +
+                            url + " for " + validatorName +
+                            " validating " + resourceid.uri,
+                        ex);
+                    errorMsg = locale.format(
+                        "validator.errorSending",
+                        validatorName,
+                        resourceid.uri,
+                        url,
+                        ex.message
+                    );
+                    callbackValidate(
+                        thisValidator,
+                        resourceid,
+                        {message: new ValidatorMessage(errorMsg)}
+                    );
+                    return;
+                }
             };
         }
         ValidatorNuValidator.prototype = new Validator();

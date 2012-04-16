@@ -425,6 +425,7 @@ define(
                 var channel,
                     contentHeaders,
                     contentType,
+                    errorMsg,
                     filename,
                     formData,
                     formDataStream,
@@ -477,16 +478,36 @@ define(
 
                 logger.debug("Sending validation request to " + validatorName);
 
-                xhr.open("POST", validatorURL, true);
-                xhr.setRequestHeader("Accept", "application/soap+xml");
-                xhr.setRequestHeader(
-                    "Content-Type",
-                    "multipart/form-data; boundary=" + formData.getBoundary()
-                );
-                // Note:  Content-Length set from formDataStream.available()
-                // in XMLHttpRequest.send()
-                // FIXME:  Do we need to close formDataStream?  When?
-                xhr.send(formDataStream);
+                try {
+                    xhr.open("POST", validatorURL, true);
+                    xhr.setRequestHeader("Accept", "application/soap+xml");
+                    xhr.setRequestHeader(
+                        "Content-Type",
+                        "multipart/form-data; boundary=" + formData.getBoundary()
+                    );
+                    // Note:  Content-Length set from formDataStream.available()
+                    // in XMLHttpRequest.send()
+                    // FIXME:  Do we need to close formDataStream?  When?
+                    xhr.send(formDataStream);
+                } catch (ex2) {
+                    logger.error("Error sending validation request to " +
+                            validatorURL + " for " + validatorName +
+                            " validating " + resourceid.uri,
+                        ex2);
+                    errorMsg = locale.format(
+                        "validator.errorSending",
+                        validatorName,
+                        resourceid.uri,
+                        url,
+                        ex2.message
+                    );
+                    callbackValidate(
+                        thisValidator,
+                        resourceid,
+                        {message: new ValidatorMessage(errorMsg)}
+                    );
+                    return;
+                }
             };
         }
         W3CValidator.prototype = new Validator();
