@@ -15,10 +15,11 @@ define(
         "gecko/components/interfaces",
         "log4moz",
         "omnivalidator/globaldefs",
+        "omnivalidator/locale",
         "omnivalidator/preferences",
         "omnivalidator/validatorregistry"
     ],
-    function (Cc, Ci, log4moz, globaldefs, prefs, vregistry) {
+    function (Cc, Ci, log4moz, globaldefs, locale, prefs, vregistry) {
         "use strict";
 
         var buttonId = "omnivalidator-toolbarbutton",
@@ -86,14 +87,14 @@ define(
                     args: {
                         validatorURL: "http://validator.nu"
                     },
-                    name: "Validator.nu",
+                    name: locale.get("validatorName.default.validatornu"),
                     type: "omnivalidator/validatornu"
                 },
                 {
                     args: {
                         validatorURL: "http://validator.w3.org/check"
                     },
-                    name: "W3C Markup Validator",
+                    name: locale.get("validatorName.default.w3cmarkup"),
                     type: "omnivalidator/w3cmarkup"
                 }
             ];
