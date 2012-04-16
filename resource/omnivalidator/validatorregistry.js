@@ -45,7 +45,7 @@ define(
         }
 
         function getValidatorPrefs() {
-            return getValidatorPrefsBranch().get();
+            return getValidatorPrefsBranch().get() || {};
         }
 
         function loadAutoURLMatcher() {
