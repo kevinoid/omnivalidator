@@ -12,6 +12,7 @@
 define(
     [
         "log4moz",
+        "omnivalidator/locale",
         "omnivalidator/preferences",
         "omnivalidator/urlmatcher",
 
@@ -19,7 +20,7 @@ define(
         "omnivalidator/validatornu",
         "omnivalidator/w3cmarkup"
     ],
-    function (log4moz, prefs, URLMatcher,
+    function (log4moz, locale, prefs, URLMatcher,
 
             /* Supported validator types */
             validatornu, w3cmarkup) {
@@ -186,6 +187,22 @@ define(
             return valNames;
         }
 
+        function getTypeNames() {
+            var prop,
+                typeNames;
+
+            typeNames = {};
+            for (prop in validatorTypes) {
+                if (validatorTypes.hasOwnProperty(prop)) {
+                    typeNames[prop] = locale.get(
+                        "validatorName." + prop.replace("/", ".")
+                    );
+                }
+            }
+
+            return typeNames;
+        }
+
         // Load the autoURLMatcher and reload it when prefs change
         prefs.getExtPrefBranch()
             .getBranch("autovalidate")
@@ -205,7 +222,8 @@ define(
             getAutoFor: getAutoFor,
             getClickFor: getClickFor,
             getNames: getNames,
-            getNewValidatorID: getNewValidatorID
+            getNewValidatorID: getNewValidatorID,
+            getTypeNames: getTypeNames
         };
     }
 );
