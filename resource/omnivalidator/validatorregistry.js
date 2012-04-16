@@ -203,6 +203,16 @@ define(
             return typeNames;
         }
 
+        function remove(vid) {
+            logger.debug("Removing validator " + vid);
+            getValidatorPrefsBranch().deleteBranch(vid);
+        }
+
+        function removeAll() {
+            logger.debug("Removing all validators");
+            getValidatorPrefsBranch().deleteBranch();
+        }
+
         // Load the autoURLMatcher and reload it when prefs change
         prefs.getExtPrefBranch()
             .getBranch("autovalidate")
@@ -223,7 +233,9 @@ define(
             getClickFor: getClickFor,
             getNames: getNames,
             getNewValidatorID: getNewValidatorID,
-            getTypeNames: getTypeNames
+            getTypeNames: getTypeNames,
+            remove: remove,
+            removeAll: removeAll
         };
     }
 );
