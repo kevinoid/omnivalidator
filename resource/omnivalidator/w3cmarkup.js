@@ -34,9 +34,14 @@ define(
 
         function W3CValidator(validatorName, validatorArgs) {
             var thisValidator = this,
-                validatorURL = validatorArgs.validatorURL;
+                validatorURL;
 
             Validator.call(this, validatorName);
+
+            if (!validatorArgs || !validatorArgs.validatorURL) {
+                throw new Error("W3CValidator requires a validatorURL argument");
+            }
+            validatorURL = validatorArgs.validatorURL;
 
             // Convert the content of the source node to something useful
             // The source node contains HTML for displaying the context of

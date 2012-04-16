@@ -29,9 +29,14 @@ define(
 
         function ValidatorNuValidator(validatorName, validatorArgs) {
             var thisValidator = this,
-                validatorURL = validatorArgs.validatorURL;
+                validatorURL;
 
             Validator.call(this, validatorName);
+
+            if (!validatorArgs || !validatorArgs.validatorURL) {
+                throw new Error("ValidatorNu requires a validatorURL argument");
+            }
+            validatorURL = validatorArgs.validatorURL;
 
             // Private members
             function convertMessage(vmessage, resourceid) {

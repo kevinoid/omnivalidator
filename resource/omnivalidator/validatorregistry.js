@@ -89,10 +89,18 @@ define(
                         ", click: " + vPrefs[vid].click +
                         ")");
 
-                validator = new validatorTypes[vPrefs[vid].type](
-                    vPrefs[vid].name,
-                    vPrefs[vid].args
-                );
+                try {
+                    validator = new validatorTypes[vPrefs[vid].type](
+                        vPrefs[vid].name,
+                        vPrefs[vid].args
+                    );
+                } catch (ex) {
+                    logger.error("Unable to construct validator " + vid +
+                        " (" + vPrefs[vid].name + ")" +
+                        " of type " + vPrefs[vid].type + ": " +
+                        ex.message, ex);
+                    continue;
+                }
 
                 allValidators[vid] = validator;
                 if (vPrefs[vid].auto) {
