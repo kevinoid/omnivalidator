@@ -195,7 +195,7 @@ define(
             for (prop in validatorTypes) {
                 if (validatorTypes.hasOwnProperty(prop)) {
                     typeNames[prop] = locale.get(
-                        "validatorName." + prop.replace("/", ".")
+                        "validatorTypeName." + prop.replace("/", ".")
                     );
                 }
             }
