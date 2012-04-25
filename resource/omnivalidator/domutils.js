@@ -11,13 +11,10 @@
 
 define(
     [
-        "gecko/components/classes",
-        "gecko/components/interfaces"
+        "dom/node"
     ],
-    function (Cc, Ci) {
+    function (Node) {
         "use strict";
-
-        var Node = Ci.nsIDOMNode;
 
         // Same function as .textContent but only includes children instead of
         // all descendants

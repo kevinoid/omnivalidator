@@ -57,7 +57,12 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
         XUL_NS: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
     });
 
-    // Provide access to global objects through RequireJS
+    // Provide access to DOM globals through RequireJS
+    // FIXME:  How are these set in the window context?  Is this the best way?
+    define("dom/node", Components.interfaces.nsIDOMNode);
+    define("dom/xpathresult", Components.interfaces.nsIDOMXPathResult);
+
+    // Provide access to Gecko globals through RequireJS
     define("gecko/components/classes", Components.classes);
     define("gecko/components/interfaces", Components.interfaces);
     define("gecko/components/results", Components.results);

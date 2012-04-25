@@ -11,6 +11,8 @@
 
 define(
     [
+        "dom/node",
+        "dom/xpathresult",
         "gecko/components/classes",
         "gecko/components/interfaces",
         "log4moz",
@@ -22,13 +24,11 @@ define(
         "omnivalidator/validator",
         "omnivalidator/validatormessage"
     ],
-    function (Cc, Ci, log4moz, cacheutils, domutils, locale, mediatypeutils,
-            MultipartFormData, Validator, ValidatorMessage) {
+    function (Node, XPathResult, Cc, Ci, log4moz, cacheutils, domutils, locale,
+            mediatypeutils, MultipartFormData, Validator, ValidatorMessage) {
         "use strict";
 
-        var Node = Ci.nsIDOMNode,
-            XPathResult = Ci.nsIDOMXPathResult,
-            SOAP_ENV_NS = "http://www.w3.org/2003/05/soap-envelope",
+        var SOAP_ENV_NS = "http://www.w3.org/2003/05/soap-envelope",
             VAL_NS = "http://www.w3.org/2005/10/markup-validator",
             logger = log4moz.repository.getLogger("omnivalidator.validatornu");
 
