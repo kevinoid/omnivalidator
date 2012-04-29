@@ -1,0 +1,9 @@
+<!ENTITY extensionName "Omnivalidator">
+
+<!ENTITY aboutDialog.title "About &extensionName;">
+<!ENTITY aboutHomepage.label "&extensionName; Homepage">
+<!ENTITY aboutTabAuthors.label "Authors">
+<!ENTITY aboutTabChangeLog.label "Change Log">
+<!ENTITY aboutTabEventLog.label "Event Log">
+<!ENTITY aboutTabLicense.label "License">
+<!ENTITY aboutWebsite.label "&extensionName; Website">

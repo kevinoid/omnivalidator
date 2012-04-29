@@ -12,7 +12,7 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://omnivalidator/skin/aboutdialog.css" type="text/css"?>
 
-<!DOCTYPE overlay SYSTEM "chrome://omnivalidator/locale/omnivalidator.dtd">
+<!DOCTYPE window SYSTEM "chrome://omnivalidator/locale/aboutdialog.dtd">
 
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         id="omnivalidator-dialog-about"
