@@ -136,15 +136,17 @@ define(
                 logger.debug("Detected new installation");
 
                 handleNewInstall();
+
+                setInstalledVersion(globaldefs.VERSION);
             } else if (installedVersion !== globaldefs.VERSION) {
                 // Upgrade/Downgrade
                 logger.debug("Detected version change from " +
                         installedVersion + " to " + globaldefs.VERSION);
 
                 handleUpgradeDowngrade(installedVersion, globaldefs.VERSION);
-            }
 
-            setInstalledVersion(globaldefs.VERSION);
+                setInstalledVersion(globaldefs.VERSION);
+            }
         }
 
         return {
