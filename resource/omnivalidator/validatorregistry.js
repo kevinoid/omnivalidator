@@ -82,14 +82,16 @@ define(
             clickValidators = [];
 
             for (vid in vPrefs) { if (vPrefs.hasOwnProperty(vid)) {
+                validatorName = vPrefs[vid].name || defaultName;
+
                 if (!validatorTypes.hasOwnProperty(vPrefs[vid].type)) {
-                    logger.error("Preferences error:  \"" +
+                    logger.error("Preferences error:  Validator " + vid +
+                            " (" + validatorName + ")" +
+                            " has unrecognized type \"" +
                             String(vPrefs[vid].type) +
-                            "\" is not a valid type name");
+                            "\"");
                     continue;
                 }
-
-                validatorName = vPrefs[vid].name || defaultName;
 
                 logger.debug("Constructing validator " + vid +
                         " (" + validatorName + ")" +
