@@ -1,0 +1,32 @@
+<!ENTITY extensionName "Omnivalidator">
+
+<!ENTITY autoValidate.label "Automatic Validation">
+<!ENTITY autoValidateAdd.accesskey "A">
+<!ENTITY autoValidateAdd.label "Add Auto-validate">
+<!ENTITY autoValidateClear.accesskey "E">
+<!ENTITY autoValidateClear.label "Remove All Auto-validation">
+<!ENTITY autoValidateRemove.accesskey "R">
+<!ENTITY autoValidateRemove.label "Remove Auto-validate">
+<!ENTITY autoValidateURL.accesskey "U">
+<!ENTITY autoValidateURL.label "URL Pattern:">
+<!ENTITY autoValidateURL.tooltip "Regular Expression to match URLs to be validated automatically">
+<!ENTITY autoValidateValidator.accesskey "V">
+<!ENTITY autoValidateValidator.label "Validator:">
+<!ENTITY prefWindow.title "&extensionName; Preferences">
+<!ENTITY validatorAdd.accesskey "A">
+<!ENTITY validatorAdd.label "Add Validator...">
+<!ENTITY validatorClear.accesskey "E">
+<!ENTITY validatorClear.label "Remove All Validators">
+<!ENTITY validatorEdit.accesskey "D">
+<!ENTITY validatorEdit.label "Edit Validator...">
+<!ENTITY validatorName.accesskey "N">
+<!ENTITY validatorName.label "Validator Name:">
+<!ENTITY validatorOptions.label "Validator Options">
+<!ENTITY validatorRemove.accesskey "R">
+<!ENTITY validatorRemove.label "Remove Validator">
+<!ENTITY validatorType.accesskey "T">
+<!ENTITY validatorType.label "Validator Type:">
+<!ENTITY validatorURL.accesskey "U">
+<!ENTITY validatorURL.label "Validator URL:">
+<!ENTITY validatorWindow.title "Configure Validator">
+<!ENTITY validatorsGroup.label "Validators">

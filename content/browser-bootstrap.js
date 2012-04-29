@@ -156,6 +156,16 @@
                 }
             }
 
+            function setupPrefsCommand(command) {
+                command.addEventListener("command", function () {
+                    window.open(
+                        "chrome://omnivalidator/content/prefwindow.xul",
+                        "omnivalidator-prefs",
+                        "chrome,titlebar,toolbar,centerscreen"
+                    );
+                });
+            }
+
             function setupToggleCommand(command) {
                 command.addEventListener("command", function () {
                     var collapsed,
@@ -220,6 +230,10 @@
 
                 setupHideCommand(
                     document.getElementById("omnivalidator-command-hide")
+                );
+
+                setupPrefsCommand(
+                    document.getElementById("omnivalidator-command-prefs")
                 );
 
                 setupToggleCommand(

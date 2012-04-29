@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<!--
+    Preferences window
+
+    This file is part of the Omnivalidator extension for Firefox.
+    It is licensed under the terms of the MIT License.
+    The complete text of the license is available in the project documentation.
+
+    Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+-->
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://omnivalidator/skin/prefwindow.css" type="text/css"?>
+<!DOCTYPE prefwindow SYSTEM "chrome://omnivalidator/locale/prefwindow.dtd">
+<prefwindow
+    id="omnivalidator-prefwindow"
+    title="&prefWindow.title;"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <prefpane id="validators-prefpane" label="&validatorsGroup.label;">
+
+        <box id="validators-list-boxandbuttons">
+            <listbox id="validators-list-listbox">
+                <!-- Items added dynamically -->
+            </listbox>
+
+            <box id="validators-list-buttons">
+                <button id="validators-list-add"
+                    accesskey="&validatorAdd.accesskey;"
+                    icon="add"
+                    label="&validatorAdd.label;" />
+                <button id="validators-list-edit"
+                    accesskey="&validatorEdit.accesskey;"
+                    disabled="true"
+                    icon="properties"
+                    label="&validatorEdit.label;" />
+                <button id="validators-list-remove"
+                    accesskey="&validatorRemove.accesskey;"
+                    disabled="true"
+                    icon="remove"
+                    label="&validatorRemove.label;" />
+                <button id="validators-list-clear"
+                    accesskey="&validatorClear.accesskey;"
+                    disabled="true"
+                    icon="clear"
+                    label="&validatorClear.label;" />
+            </box>
+        </box>
+    </prefpane>
+
+    <prefpane id="auto-validate-prefpane" label="&autoValidate.label;">
+
+        <preferences>
+            <preference id="preference-autoValidate" name="extensions.omnivalidator.autoValidate" type="string" />
+        </preferences>
+
+        <grid id="auto-validate-grid">
+            <columns>
+                <column id="auto-validate-column-list" />
+                <column id="auto-validate-column-buttons" />
+            </columns>
+            <rows>
+                <row>
+                    <grid id="auto-validate-add-grid">
+                        <columns>
+                            <column />
+                            <column flex="1" />
+                        </columns>
+                        <rows>
+                            <row>
+                                <label accesskey="&autoValidateURL.accesskey;"
+                                        control="auto-validate-url"
+                                        tooltiptext="&autoValidateURL.tooltip;"
+                                        value="&autoValidateURL.label;" />
+                                <textbox id="auto-validate-url" />
+                            </row>
+                            <row>
+                                <label accesskey="&autoValidateValidator.accesskey;"
+                                        control="auto-validate-validator"
+                                        value="&autoValidateValidator.label;" />
+                                <menulist id="auto-validate-validator">
+                                    <menupopup>
+                                        <!-- Populated dynamically -->
+                                    </menupopup>
+                                </menulist>
+                            </row>
+                        </rows>
+                    </grid>
+                    <box id="auto-validate-add-box">
+                        <button id="auto-validate-add"
+                            accesskey="&autoValidateAdd.accesskey;"
+                            flex="0"
+                            icon="add"
+                            label="&autoValidateAdd.label;" />
+                    </box>
+                </row>
+
+                <row id="auto-validate-row-list">
+                    <listbox id="auto-validate-listbox">
+                        <listhead>
+                            <listheader label="&autoValidateURL.label;" />
+                            <listheader label="&autoValidateValidator.label;" />
+                        </listhead>
+                        <listcols>
+                            <listcol />
+                            <listcol />
+                        </listcols>
+                        <!-- Populated dynamically -->
+                    </listbox>
+
+                    <box id="auto-validate-buttons">
+                        <button id="auto-validate-remove"
+                            accesskey="&autoValidateRemove.accesskey;"
+                            disabled="true"
+                            icon="remove"
+                            label="&autoValidateRemove.label;" />
+                        <button id="auto-validate-clear"
+                            accesskey="&autoValidateClear.accesskey;"
+                            icon="clear"
+                            label="&autoValidateClear.label;" />
+                    </box>
+                </row>
+            </rows>
+        </grid>
+
+    </prefpane>
+
+    <!-- Note:  Must be after all prefpane elements if multiple defined
+         See: https://developer.mozilla.org/en/XUL/prefpane#Using_multiple_prefpanes -->
+    <script type="application/javascript" src="prefwindow.js" />
+
+</prefwindow>
+<!-- vi: set sts=4 sw=4 et : -->

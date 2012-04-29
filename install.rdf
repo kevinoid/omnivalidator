@@ -22,6 +22,7 @@
         <em:aboutURL>chrome://omnivalidator/content/aboutdialog.xul</em:aboutURL>
         <em:description>Validate content using any number of configurable validation services.</em:description>
         <em:homepageURL>https://github.com/kevinoid/omnivalidator</em:homepageURL>
+        <em:optionsURL>chrome://omnivalidator/content/prefwindow.xul</em:optionsURL>
 
         <em:targetApplication>
             <Description>

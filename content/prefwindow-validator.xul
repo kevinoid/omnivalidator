@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<!--
+    Validator preferences window
+
+    This file is part of the Omnivalidator extension for Firefox.
+    It is licensed under the terms of the MIT License.
+    The complete text of the license is available in the project documentation.
+
+    Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+-->
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://omnivalidator/skin/prefwindow.css" type="text/css"?>
+<!DOCTYPE prefwindow SYSTEM "chrome://omnivalidator/locale/prefwindow.dtd">
+<prefwindow
+    id="omnivalidator-prefwindow-validator"
+    title="&validatorWindow.title;"
+    type="child"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <prefpane label="&validatorWindow.title;">
+
+        <preferences>
+            <!-- Note:  The preference name is updated for the specific
+                        validator being edited -->
+            <preference id="preference-validator-name"
+                    name="extensions.omnivalidator.validators..name"
+                    type="string" />
+            <preference id="preference-validator-type"
+                    name="extensions.omnivalidator.validators..type"
+                    type="string" />
+            <preference id="preference-validator-url"
+                    name="extensions.omnivalidator.validators..args.validatorURL"
+                    type="string" />
+        </preferences>
+
+        <grid id="validator-new-grid">
+            <columns>
+                <column flex="1"/>
+                <column flex="2"/>
+            </columns>
+            <rows>
+                <row>
+                    <label accesskey="&validatorName.accesskey;"
+                            control="validator-name"
+                            value="&validatorName.label;" />
+                    <textbox id="validator-name"
+                            preference="preference-validator-name" />
+                </row>
+                <row>
+                    <label accesskey="&validatorType.accesskey;"
+                            control="validator-type"
+                            value="&validatorType.label;" />
+                    <menulist id="validator-type"
+                            preference="preference-validator-type">
+                        <menupopup>
+                            <!-- Populated dynamically -->
+                        </menupopup>
+                    </menulist>
+                </row>
+            </rows>
+        </grid>
+
+        <groupbox>
+            <caption label="&validatorOptions.label;"/>
+
+            <grid id="validator-options-grid">
+                <columns>
+                    <column flex="1"/>
+                    <column flex="2"/>
+                </columns>
+                <rows>
+                    <!-- TODO:  Dynamically add options based on selected type -->
+                    <row>
+                        <label
+                                accesskey="&validatorURL.accesskey;"
+                                control="validator-url"
+                                value="&validatorURL.label;" />
+                        <textbox id="validator-url"
+                                preference="preference-validator-url" />
+                    </row>
+                </rows>
+            </grid>
+        </groupbox>
+
+    </prefpane>
+
+    <!-- Note:  Must be after all prefpane elements if multiple defined
+         See: https://developer.mozilla.org/en/XUL/prefpane#Using_multiple_prefpanes -->
+    <script type="application/javascript" src="prefwindow-validator.js" />
+
+</prefwindow>
+<!-- vi: set sts=4 sw=4 et : -->

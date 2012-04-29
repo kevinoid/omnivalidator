@@ -1,0 +1,61 @@
+/* Styles for the Preferences window
+ *
+ * This file is part of the Omnivalidator extension for Firefox.
+ * It is licensed under the terms of the MIT License.
+ * The complete text of the license is available in the project documentation.
+ *
+ * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
+ */
+
+groupbox,
+prefpane {
+	-moz-box-flex: 1;
+}
+
+#auto-validate-add-box {
+	-moz-box-orient: vertical;
+	-moz-box-pack: center;
+}
+
+#auto-validate-add-grid {
+	-moz-box-flex: 1;
+}
+
+#auto-validate-add-grid row,
+#validator-new-grid row,
+#validator-options-grid row {
+	-moz-box-align: center;
+}
+
+#auto-validate-boxandbuttons {
+	-moz-box-flex: 1;
+}
+
+#auto-validate-column-list {
+	-moz-box-flex: 1;
+}
+
+#auto-validate-grid {
+	-moz-box-flex: 1;
+}
+
+#auto-validate-row-list {
+	-moz-box-flex: 1;
+}
+
+#validators-list-boxandbuttons {
+	-moz-box-flex: 1;
+	-moz-box-orient: horizontal;
+}
+
+#auto-validate-buttons,
+#validators-list-buttons {
+	-moz-box-orient: vertical;
+}
+
+#auto-validate-listbox,
+#validators-list-listbox {
+	-moz-box-flex: 1;
+}
+
+/* vi: set sts=8 sw=8 noet : */
