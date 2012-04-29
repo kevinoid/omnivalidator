@@ -31,8 +31,7 @@ define(
                 // Holds {messages, summary} for each validator by name
                 // Empty indicates validation incomplete
                 results = {},
-                thisBVM = this,
-                validator;
+                thisBVM = this;
 
             function notifyListeners() {
                 var i;

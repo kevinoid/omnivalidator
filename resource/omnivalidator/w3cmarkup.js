@@ -100,7 +100,6 @@ define(
                     columnNumber = null,
                     level,
                     lineNumber = null,
-                    message,
                     messageText,
                     node,
                     source,
@@ -330,7 +329,7 @@ define(
             }
 
             function handleResponse(xhr, resourceid, callbackValidate) {
-                var errorMsg, response, responseType, summary;
+                var errorMsg, responseType, summary;
 
                 logger.debug("Processing validation response from " +
                         validatorName + " for " + resourceid.uri);

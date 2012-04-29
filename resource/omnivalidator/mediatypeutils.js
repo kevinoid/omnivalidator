@@ -22,8 +22,7 @@ define(
 
         function getContentTypeFromChannel(channel) {
             var contentType = null,
-                httpChannel,
-                stream;
+                httpChannel;
 
             try {
                 httpChannel = channel.QueryInterface(Ci.nsIHttpChannel);

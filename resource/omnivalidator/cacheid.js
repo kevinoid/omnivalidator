@@ -12,11 +12,10 @@
 
 define(
     [
-        "gecko/components/classes",
         "gecko/components/interfaces",
         "log4moz"
     ],
-    function (Cc, Ci, log4moz) {
+    function (Ci, log4moz) {
         "use strict";
 
         var logger = log4moz.repository.getLogger("omnivalidator.cacheid");

@@ -24,9 +24,6 @@
     // Per-window initialization
     omnivalidator.require(
         [
-            "gecko/components/classes",
-            "gecko/components/interfaces",
-            "gecko/components/results",
             "log4moz",
             "omnivalidator/globaldefs",
             "omnivalidator/validationstatusbutton",
@@ -34,7 +31,7 @@
             "omnivalidator/windowvalidationmanager",
             "underscore"
         ],
-        function (Cc, Ci, Cr, log4moz, globaldefs,
+        function (log4moz, globaldefs,
                 ValidationStatusButton, vregistry, WindowValidationManager,
                 underscore) {
             var logger = log4moz.repository.getLogger("omnivalidator.browserinit"),

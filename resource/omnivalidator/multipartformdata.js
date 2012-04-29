@@ -244,8 +244,7 @@ define(
                 var body = [],
                     headerName,
                     headerPart,
-                    i,
-                    name;
+                    i;
 
                 if (!boundary) {
                     boundary = generateBoundary();

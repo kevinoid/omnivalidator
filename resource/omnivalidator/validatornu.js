@@ -45,13 +45,11 @@ define(
                     // category is somewhat arbitrary
                     // use one displayed in the Web Console for convenience
                     category = "malformed-xml",
-                    cmessage,
                     columnNumber = null,
                     lineNumber = null,
                     level,
                     messageText,
-                    sourceLine = null,
-                    sourceName = null;
+                    sourceLine = null;
 
                 messageText = vmessage.message;
 
@@ -155,7 +153,7 @@ define(
             }
 
             function handleResponse(xhr, resourceid, callbackValidate) {
-                var errorMsg, response, responseType, result, summary;
+                var errorMsg, response, responseType, summary;
 
                 logger.debug("Processing validation response from " +
                         validatorName + " for " + resourceid.uri);

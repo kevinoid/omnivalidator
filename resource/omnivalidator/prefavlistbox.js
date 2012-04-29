@@ -267,8 +267,6 @@ define(
             };
 
             this.add = function (url, vid, vname) {
-                var listitem;
-
                 logger.debug("Adding automatic validation of " + url +
                         " to " + vid + " (" + vname + ")");
 
@@ -311,7 +309,6 @@ define(
                 var autoURLs,
                     autoVal = [],
                     i,
-                    listitem,
                     validatorNames,
                     vid;
 
