@@ -11,7 +11,7 @@ Things to Test:
 
 When dropping support for Firefox 3.6:
 * Remove JSON imports
-* Remove objutils.getOwnPropertyNames, objutils.hasOwnProperties
+* Remove underscore.keys, underscore.isEmpty in favor of ES5 native methods
 * Freeze objects returned from validatorregistry (and possibly others)
 * Remove addonutils and use AddonManager directly
 * Remove hard-coding of aboutURL and homepageURL outside of install.rdf

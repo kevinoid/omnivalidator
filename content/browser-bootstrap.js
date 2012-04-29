@@ -29,13 +29,14 @@
             "gecko/components/results",
             "log4moz",
             "omnivalidator/globaldefs",
-            "omnivalidator/objutils",
             "omnivalidator/validationstatusbutton",
             "omnivalidator/validatorregistry",
-            "omnivalidator/windowvalidationmanager"
+            "omnivalidator/windowvalidationmanager",
+            "underscore"
         ],
-        function (Cc, Ci, Cr, log4moz, globaldefs, objutils,
-                ValidationStatusButton, vregistry, WindowValidationManager) {
+        function (Cc, Ci, Cr, log4moz, globaldefs,
+                ValidationStatusButton, vregistry, WindowValidationManager,
+                underscore) {
             var logger = log4moz.repository.getLogger("omnivalidator.browserinit"),
                 vManager;
 
@@ -145,7 +146,7 @@
                         "omnivalidator-menupopup-main-validators"
                     );
                 validatorNames = vregistry.getNames();
-                validatorIDs = objutils.getOwnPropertyNames(validatorNames);
+                validatorIDs = underscore.keys(validatorNames);
                 validatorIDs.sort(function (a, b) {
                     return validatorNames[a].localeCompare(validatorNames[b]);
                 });
@@ -168,7 +169,7 @@
                     if (!collapsed) {
                         // If the page has not been validated yet, validate it
                         results = vManager.getValidationResults();
-                        if (!objutils.hasOwnProperties(results)) {
+                        if (underscore.isEmpty(results)) {
                             vManager.validate();
                         }
                     }
@@ -201,7 +202,7 @@
 
                     // If the page has not been validated yet, validate it
                     results = vManager.getValidationResults();
-                    if (!objutils.hasOwnProperties(results)) {
+                    if (underscore.isEmpty(results)) {
                         vManager.validate();
                     }
                 });

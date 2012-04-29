@@ -18,10 +18,9 @@ define(
     [
         "gecko/components/classes",
         "gecko/components/interfaces",
-        "omnivalidator/moremath",
-        "omnivalidator/objutils"
+        "omnivalidator/moremath"
     ],
-    function (Cc, Ci, moremath, objutils) {
+    function (Cc, Ci, moremath) {
         "use strict";
 
         function MultipartFormData() {

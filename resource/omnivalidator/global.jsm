@@ -76,7 +76,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     define("json", JSON);
 
     // Extend the target object with properties from the source object
-    // FIXME:  Overlap with objutils.extend, but can't require that here
+    // FIXME:  Overlap with underscore.extend, but can't require that here
     function extendProperties(target, source, props) {
         var i, prop;
 
