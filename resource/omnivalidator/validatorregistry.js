@@ -12,6 +12,7 @@
 define(
     [
         "log4moz",
+        "omnivalidator/globaldefs",
         "omnivalidator/locale",
         "omnivalidator/preferences",
         "omnivalidator/urlmatcher",
@@ -20,7 +21,7 @@ define(
         "omnivalidator/validatornu",
         "omnivalidator/w3cmarkup"
     ],
-    function (log4moz, locale, prefs, URLMatcher,
+    function (log4moz, globaldefs, locale, Preferences, URLMatcher,
 
             /* Supported validator types */
             validatornu, w3cmarkup) {
@@ -42,20 +43,23 @@ define(
         };
 
         function getValidatorPrefsBranch() {
-            return prefs.getExtPrefBranch().getBranch("validators");
+            return Preferences.getBranch(globaldefs.EXT_PREF_PREFIX +
+                    "validators.");
         }
 
         function getValidatorPrefs() {
-            return getValidatorPrefsBranch().get() || {};
+            return Preferences.getObject(
+                globaldefs.EXT_PREF_PREFIX + "validators"
+            ) || {};
         }
 
         function loadAutoURLMatcher() {
             autoURLMatcher = new URLMatcher();
             autoURLMatcher.addPrefix(
-                prefs.getExtPrefBranch().getArray("autovalidate")
+                Preferences.getExtPrefBranch().getArray("autovalidate")
             );
             autoURLMatcher.addRegex(
-                prefs.getExtPrefBranch().getArray("autovalidatere")
+                Preferences.getExtPrefBranch().getArray("autovalidatere")
             );
         }
 
@@ -223,19 +227,19 @@ define(
             getValidatorPrefsBranch().deleteBranch();
         }
 
-        // Load the autoURLMatcher and reload it when prefs change
-        prefs.getExtPrefBranch()
+        // Load the autoURLMatcher and reload it when Preferences change
+        Preferences.getExtPrefBranch()
             .getBranch("autovalidate")
-            .addObserver(loadAutoURLMatcher);
-        prefs.getExtPrefBranch()
+            .addObserver({observe: loadAutoURLMatcher});
+        Preferences.getExtPrefBranch()
             .getBranch("autovalidatere")
-            .addObserver(loadAutoURLMatcher);
+            .addObserver({observe: loadAutoURLMatcher});
         loadAutoURLMatcher();
 
-        // Clear the validators list (causing lazy reload) when prefs change
-        prefs.getExtPrefBranch()
+        // Clear the validators list (causing lazy reload) when Preferences change
+        Preferences.getExtPrefBranch()
             .getBranch("validators")
-            .addObserver(clearValidators);
+            .addObserver({observe: clearValidators});
 
         return {
             getAll: getAll,

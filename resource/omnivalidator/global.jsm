@@ -45,7 +45,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     define("omnivalidator/globaldefs", {
         CSS_PREFIX: "omnivalidator-",
         EXT_ID: "omnivalidator@kevinlocke.name",
-        EXT_PREF_PREFIX: "extensions.omnivalidator",
+        EXT_PREF_PREFIX: "extensions.omnivalidator.",
         EXT_PROF_DIR: "omnivalidator",
         // Note:  Avoid .log extension as type not always displayed in browser
         LOG_FILE_NAME: "omnivalidator-log.txt",
@@ -201,7 +201,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
 
             prefs = Cc["@mozilla.org/preferences-service;1"]
                 .getService(Ci.nsIPrefService)
-                .getBranch(globaldefs.EXT_PREF_PREFIX + ".");
+                .getBranch(globaldefs.EXT_PREF_PREFIX);
 
             rootLogger = log4moz.repository.rootLogger;
             consoleLevel = prefs.getIntPref("log.consoleLevel");

@@ -19,7 +19,7 @@ define(
         "omnivalidator/preferences",
         "omnivalidator/validatorregistry"
     ],
-    function (Cc, Ci, log4moz, globaldefs, locale, prefs, vregistry) {
+    function (Cc, Ci, log4moz, globaldefs, locale, Preferences, vregistry) {
         "use strict";
 
         var buttonId = "omnivalidator-toolbarbutton",
@@ -79,7 +79,7 @@ define(
         function addInitialValidators() {
             var i,
                 ivPrefs,
-                prefBranch,
+                valPrefs,
                 vid;
 
             ivPrefs = [
@@ -101,10 +101,11 @@ define(
 
             logger.debug("Adding an initial (default) set of validators");
 
-            prefBranch = prefs.getExtPrefBranch().getBranch("validators");
+            valPrefs = Preferences.getBranch(globaldefs.EXT_PREF_PREFIX +
+                    "validators.");
             for (i = 0; i < ivPrefs.length; ++i) {
                 vid = vregistry.getNewValidatorID();
-                prefBranch.set(vid, ivPrefs[i]);
+                valPrefs.set(vid, ivPrefs[i]);
             }
         }
 
@@ -117,15 +118,13 @@ define(
         }
 
         function getInstalledVersion() {
-            var extPrefBranch = prefs.getExtPrefBranch();
-
-            return extPrefBranch.get("installedVersion");
+            return Preferences.get(globaldefs.EXT_PREF_PREFIX +
+                    "installedVersion");
         }
 
         function setInstalledVersion(version) {
-            var extPrefBranch = prefs.getExtPrefBranch();
-
-            return extPrefBranch.set("installedVersion", version);
+            return Preferences.set(globaldefs.EXT_PREF_PREFIX +
+                    "installedVersion", version);
         }
 
         function checkForVersionChange() {
