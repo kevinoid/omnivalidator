@@ -14,12 +14,14 @@
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
     <statusbar>
-        <statusbarpanel
-                id="omnivalidator-statusbarbutton"
+        <toolbarbutton id="omnivalidator-toolbarbutton"
                 class="omnivalidator-statusbutton"
                 command="omnivalidator-command-toggle"
                 label="&extensionName;"
-                tooltiptext="&extensionName;" />
+                tooltiptext="&extensionName;"
+                type="menu-button">
+            <menupopup id="omnivalidator-menupopup-main" />
+        </toolbarbutton>
     </statusbar>
 </overlay>
 <!-- vi: set sts=4 sw=4 et : -->
