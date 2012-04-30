@@ -14,12 +14,13 @@ define(
     [
         "omnivalidator/arrayutils",
         "omnivalidator/cssutils",
+        "omnivalidator/globaldefs",
         "omnivalidator/locale"
     ],
-    function (arrayutils, cssutils, locale) {
+    function (arrayutils, cssutils, globaldefs, locale) {
         "use strict";
 
-        var CSS_STATUS_PREFIX = "omnivalidator-status-";
+        var CSS_STATUS_PREFIX = globaldefs.CSS_PREFIX + "status-";
 
         function ValidationStatusButton(toolbarButton) {
             var totals,
@@ -43,11 +44,20 @@ define(
             }
 
             function getTooltip() {
+                var title;
+
+                title = locale.format(
+                    "status.title",
+                    globaldefs.EXT_NAME,
+                    globaldefs.EXT_VERSION
+                );
+
                 if (textSummaries.length === 0) {
-                    return locale.get("status.notValidated");
+                    return title + "\n" + locale.get("status.notValidated");
                 }
 
-                return locale.get("status.validationResults") + "\n" +
+                return title + "\n" +
+                    locale.get("status.validationResults") + "\n" +
                     textSummaries.join("\n");
             }
 
