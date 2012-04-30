@@ -12,11 +12,11 @@
 
 define(
     [
+        "omnivalidator/arrayutils",
         "omnivalidator/cssutils",
-        "omnivalidator/locale",
-        "underscore"
+        "omnivalidator/locale"
     ],
-    function (cssutils, locale, underscore) {
+    function (arrayutils, cssutils, locale) {
         "use strict";
 
         var CSS_STATUS_PREFIX = "omnivalidator-status-";
@@ -89,7 +89,11 @@ define(
                     );
 
                 textSummaries.splice(
-                    underscore.sortedIndex(textSummary),
+                    arrayutils.sortedIndex(
+                        textSummaries,
+                        textSummary,
+                        function (a, b) { return a.localeCompare(b); }
+                    ),
                     0,
                     textSummary
                 );
