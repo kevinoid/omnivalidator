@@ -68,7 +68,7 @@
                         "omnivalidator-about",
                         "chrome"
                     );
-                });
+                }, false);
             }
 
             function setupConsoleBox(consoleBox) {
@@ -90,7 +90,7 @@
             function setupHideCommand(command) {
                 command.addEventListener("command", function () {
                     setWinCollapsed(true);
-                });
+                }, false);
             }
 
             function setupMainMenuValidators(menu, validatorIDs,
@@ -119,7 +119,7 @@
                     } else {
                         vManager.validate(evt.originalTarget.value);
                     }
-                });
+                }, false);
             }
 
             function setupMainMenu(mainMenu) {
@@ -163,7 +163,7 @@
                         "omnivalidator-prefs",
                         "chrome,titlebar,toolbar,centerscreen"
                     );
-                });
+                }, false);
             }
 
             function setupToggleCommand(command) {
@@ -180,7 +180,7 @@
                             vManager.validate();
                         }
                     }
-                });
+                }, false);
             }
 
             function setupToolbarButton(toolbarButton) {
@@ -212,7 +212,7 @@
                     if (underscore.isEmpty(results)) {
                         vManager.validate();
                     }
-                });
+                }, false);
             }
 
             window.addEventListener("load", function onLoad() {
@@ -257,7 +257,7 @@
                 setupMainMenu(
                     document.getElementById("omnivalidator-menupopup-main")
                 );
-            });
+            }, false);
         }
     );
 }());

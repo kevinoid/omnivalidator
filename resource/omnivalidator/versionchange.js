@@ -62,7 +62,7 @@ define(
                     logger.debug("Window does not have addon-bar, not adding Omnivalidator button");
                 }
 
-                evt.target.removeEventListener("load", onWindowLoad);
+                evt.target.removeEventListener("load", onWindowLoad, false);
             }
 
             // Add the toolbar button to the addon-bar by default
@@ -72,7 +72,7 @@ define(
             while (winEnum.hasMoreElements()) {
                 win = winEnum.getNext();
 
-                win.addEventListener("load", onWindowLoad);
+                win.addEventListener("load", onWindowLoad, false);
             }
         }
 
