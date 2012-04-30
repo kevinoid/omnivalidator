@@ -15,6 +15,21 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     "use strict";
 
     var baseURL = "resource://omnivalidator",
+        globaldefs = {
+            CSS_PREFIX: "omnivalidator-",
+            EXT_ID: "omnivalidator@kevinlocke.name",
+            EXT_PREF_PREFIX: "extensions.omnivalidator.",
+            EXT_PROF_DIR: "omnivalidator",
+            // Note:  Avoid .log extension as type not always displayed inline
+            // in the browser
+            LOG_FILE_NAME: "omnivalidator-log.txt",
+            // Should match em:version in install.rdf
+            // Note:  Could read it from install.rdf, rather than defining it
+            // here, but only async, which introduces issues.
+            VERSION: "0.1",
+            XHTML_NS: "http://www.w3.org/1999/xhtml",
+            XUL_NS: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        },
         scriptLoader =
             Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
                 .getService(Components.interfaces.mozIJSSubScriptLoader);
@@ -40,20 +55,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     });
 
     // Shared global definitions
-    define("omnivalidator/globaldefs", {
-        CSS_PREFIX: "omnivalidator-",
-        EXT_ID: "omnivalidator@kevinlocke.name",
-        EXT_PREF_PREFIX: "extensions.omnivalidator.",
-        EXT_PROF_DIR: "omnivalidator",
-        // Note:  Avoid .log extension as type not always displayed in browser
-        LOG_FILE_NAME: "omnivalidator-log.txt",
-        // Should match em:version in install.rdf
-        // Note:  Could read it from install.rdf, rather than defining it here,
-        // but only async, which introduces issues.
-        VERSION: "0.1",
-        XHTML_NS: "http://www.w3.org/1999/xhtml",
-        XUL_NS: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-    });
+    define("omnivalidator/globaldefs", globaldefs);
 
     // Provide access to DOM globals through RequireJS
     // FIXME:  How are these set in the window context?  Is this the best way?
