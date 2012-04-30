@@ -28,10 +28,8 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
         try {
             scriptLoader.loadSubScript(url);
         } catch (ex) {
-            // Add additional logging to print the failed URL
             // Note:  Logging framework not always initialized at this point
-            Components.utils.reportError("Failed to load requested module " + url + "\n" + ex);
-            throw ex;
+            Components.utils.reportError("Omnivalidator: Failed to load requested module " + url + "\n" + ex);
         }
 
         context.completeLoad(moduleName);
@@ -116,31 +114,32 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
         }
     }
 
-    // Provide RequireJS wrappers for JavaScript Modules (JSMs)
-    function defineJSM(moduleName, moduleURL, props) {
-        define(moduleName, function () {
-            var module = {};
-
-            moduleURL = moduleURL || baseURL + "/" + moduleName + ".jsm";
-
-            Components.utils["import"](moduleURL, module);
-
-            if (props) {
-                module = extendProperties({}, module, props);
-            }
-
-            return unwrapSingleProp(module);
-        });
-    }
-
-    // Provide RequireJS wrappers for non-AMD files
-    function definePlain(moduleName, moduleURL, props, namespace) {
+    // Provide a RequireJS definition for non-AMD files
+    function defineFile(loadFile, moduleName, moduleURL, props, namespace,
+            optional) {
         define(moduleName, function () {
             moduleURL = moduleURL || baseURL + "/" + moduleName + ".js";
             namespace = namespace || {};
 
-            // Run the script in its own module namespace
-            scriptLoader.loadSubScript(moduleURL, namespace);
+            // Run the script in its own namespace namespace
+            try {
+                loadFile(moduleURL, namespace);
+            } catch (ex) {
+                // Note:  Logging framework not always initialized at this point
+                if (optional) {
+                    Components.classes["@mozilla.org/consoleservice;1"]
+                        .getService(Components.interfaces.nsIConsoleService)
+                        .logStringMessage("Omnivalidator: " +
+                            "Failed to load optional module " + moduleURL +
+                            " for " + moduleName + "\n" +
+                            ex);
+                } else {
+                    Components.utils.reportError("Omnivalidator: " +
+                        "Failed to load module " + moduleURL +
+                        " for " + moduleName + "\n" +
+                        ex);
+                }
+            }
 
             if (props) {
                 namespace = extendProperties({}, namespace, props);
@@ -150,12 +149,28 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
         });
     }
 
+    function defineJSM(/*args*/) {
+        // TODO:  Replace with Function.bind when only supporting FF 4+
+        var args = Array.prototype.slice.call(arguments, 0);
+        args.unshift(Components.utils["import"]);
+        return defineFile.apply(null, args);
+    }
+
+    function definePlain(/*args*/) {
+        // TODO:  Replace with Function.bind when only supporting FF 4+
+        var args = Array.prototype.slice.call(arguments, 0);
+        args.unshift(scriptLoader.loadSubScript);
+        return defineFile.apply(null, args);
+    }
+
     defineJSM(
         "addonmanager",
         "resource://gre/modules/AddonManager.jsm",
-        [ "AddonManager" ]
+        [ "AddonManager" ],
+        null,
+        true
     );
-    defineJSM("log4moz");
+    defineJSM("log4moz", baseURL + "/log4moz.jsm");
     defineJSM("pluralform", "resource://gre/modules/PluralForm.jsm");
     definePlain("underscore");
     definePlain(
