@@ -375,9 +375,13 @@ define(
             }
         };
 
-        Preferences.reset = function (prefName) {
-            // TODO:  Should child preferences be affected (i.e. reset object)?
-            this.prefBranch.clearUserPref(concat(prefName));
+        // TODO:  Provide resetObject and/or decide on plain reset behavior
+        Preferences.resetValue = function (prefName) {
+            prefName = concat(prefName);
+            // Note:  In Gecko < 6, throws NS_ERROR_UNEXPECTED if no user value
+            if (this.hasUserValue(prefName)) {
+                this.prefBranch.clearUserPref(prefName);
+            }
         };
 
         /** Set the value of a preference to a given value.
@@ -402,7 +406,7 @@ define(
                     typeof value === "object" &&
                     !underscore.isEmpty(value)) {
                 // Clear this preference, if set
-                this.prefBranch.clearUserPref(prefName);
+                this.resetValue(prefName);
                 // Delete any child preferences not present in the value
                 prunePrefTree(
                     this.prefBranch,
