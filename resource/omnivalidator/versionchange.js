@@ -1,4 +1,4 @@
-/* Code to detect and handle changes in version of the Omnivalidator plugin
+/* Code to detect and handle extension version changes
  *
  * This file is part of the Omnivalidator extension for Firefox.
  * It is licensed under the terms of the MIT License.
@@ -59,7 +59,7 @@ define(
                     logger.debug("Adding button to the addon bar");
                     addToolbarButton(toolbar, buttonId);
                 } else {
-                    logger.debug("Window does not have addon-bar, not adding Omnivalidator button");
+                    logger.debug("Window does not have addon-bar, not adding status button");
                 }
 
                 evt.target.removeEventListener("load", onWindowLoad, false);

@@ -1,4 +1,4 @@
-/* Global variables and initialization for Omnivalidator
+/* Global variables and initialization for the extension
  *
  * This file is part of the Omnivalidator extension for Firefox.
  * It is licensed under the terms of the MIT License.
@@ -18,6 +18,8 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
         globaldefs = {
             CSS_PREFIX: "omnivalidator-",
             EXT_ID: "omnivalidator@kevinlocke.name",
+            // Should match em:name in install.rdf
+            EXT_NAME: "Omnivalidator",
             EXT_PREF_PREFIX: "extensions.omnivalidator.",
             EXT_PROF_DIR: "omnivalidator",
             // Note:  Avoid .log extension as type not always displayed inline
@@ -44,7 +46,8 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
             scriptLoader.loadSubScript(url);
         } catch (ex) {
             // Note:  Logging framework not always initialized at this point
-            Components.utils.reportError("Omnivalidator: Failed to load requested module " + url + "\n" + ex);
+            Components.utils.reportError(globaldefs.EXT_NAME +
+                    ": Failed to load requested module " + url + "\n" + ex);
         }
 
         context.completeLoad(moduleName);
@@ -131,12 +134,12 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
                 if (optional) {
                     Components.classes["@mozilla.org/consoleservice;1"]
                         .getService(Components.interfaces.nsIConsoleService)
-                        .logStringMessage("Omnivalidator: " +
+                        .logStringMessage(globaldefs.EXT_NAME + ": " +
                             "Failed to load optional module " + moduleURL +
                             " for " + moduleName + "\n" +
                             ex);
                 } else {
-                    Components.utils.reportError("Omnivalidator: " +
+                    Components.utils.reportError(globaldefs.EXT_NAME + ": " +
                         "Failed to load module " + moduleURL +
                         " for " + moduleName + "\n" +
                         ex);
@@ -227,7 +230,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
 
             consoleFormatter = {
                 format: function (msg) {
-                    return "Omnivalidator (" + msg.levelDesc + "): " +
+                    return globaldefs.EXT_NAME + " (" + msg.levelDesc + "): " +
                         msg.message +
                         (msg.error ? ":\n" + msg.error : "");
                 }
@@ -259,7 +262,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
                 fileFormatter = new log4moz.BasicFormatter();
                 fileAppender = new log4moz.FileAppender(logFile, fileFormatter);
                 // Send a test message to confirm file stream works
-                fileAppender.doAppend("Omnivalidator Log\n");
+                fileAppender.doAppend(globaldefs.EXT_NAME + " Log\n");
 
                 rootLogger.debug("Logging messages to " + logFile.path);
                 rootLogger.addAppender(fileAppender);
