@@ -14,14 +14,15 @@ define(
     [
         "dom/xpathresult",
         "log4moz",
+        "omnivalidator/arrayutils",
         "omnivalidator/globaldefs",
         "omnivalidator/preferences",
         "omnivalidator/validatorregistry",
         "omnivalidator/xpathutils",
         "underscore"
     ],
-    function (XPathResult, log4moz, globaldefs, Preferences, vregistry,
-            xpathutils, underscore) {
+    function (XPathResult, log4moz, arrayutils, globaldefs, Preferences,
+            vregistry, xpathutils, underscore) {
         "use strict";
 
         var logger = log4moz.repository.getLogger("omnivalidator.prefavlistbox");
@@ -65,29 +66,6 @@ define(
             while (array.length > 0 && array[array.length - 1] === undefined) {
                 array.pop();
             }
-        }
-
-        /** Find the lowest index at which an object may be inserted which
-         * maintains sorted order using binary search. 
-         *
-         * Same as underscore.sortedIndex, except it takes a comparator rather
-         * than an iterator.
-         */
-        function sortedIndex(array, obj, comparator) {
-            var low = 0, high = array.length, mid;
-            comparator = comparator || function (a, b) {
-                // Note:  Only care about less-than
-                return a < b ? -1 : 0;
-            };
-            while (low < high) {
-                mid = Math.floor((low + high) / 2);
-                if (comparator(array[mid], obj) < 0) {
-                    low = mid + 1;
-                } else {
-                    high = mid;
-                }
-            }
-            return low;
         }
 
         function PrefAVListbox(listbox) {
@@ -176,7 +154,7 @@ define(
             function insertAVListitem(listitem) {
                 var index;
 
-                index = sortedIndex(
+                index = arrayutils.sortedIndex(
                     listbox.childNodes,
                     listitem,
                     compareListitem
