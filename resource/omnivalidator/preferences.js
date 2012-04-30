@@ -333,6 +333,10 @@ define(
             return undefined;
         };
 
+        Preferences.hasUserValue = function (prefName) {
+            return this.prefBranch.prefHasUserValue(concat(prefName));
+        };
+
         /** Overwrites the value of a preference with a given value.
          *
          * Functions similarly to {@link set}, with the exception that
