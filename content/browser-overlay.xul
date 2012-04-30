@@ -37,6 +37,19 @@
                 type="checkbox" />
     </menupopup>
 
+    <!-- Firefox Tools menu -->
+    <!-- Note:  Removed when omnivalidator-menu-toolswebdev is present in
+         final overlay (FF > 6) -->
+    <menupopup id="menu_ToolsPopup">
+        <menu id="omnivalidator-menu-tools"
+                class="omnivalidator-copy-menupopup-main"
+                insertbefore="javascriptConsole"
+                label="&extensionName;">
+            <!-- Content copied from omnivalidator-menupopup-main in
+                 browser-overlay.js -->
+        </menu>
+    </menupopup>
+
     <!-- Firefox Web Developer menu (from Tools menu) -->
     <menupopup id="menuWebDeveloperPopup">
         <menu id="omnivalidator-menu-toolswebdev"

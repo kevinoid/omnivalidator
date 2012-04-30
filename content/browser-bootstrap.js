@@ -130,6 +130,12 @@
                     validatorIDs,
                     validatorNames;
 
+                // Remove from Tools menu when in "Web Developer" submenu
+                if (document.getElementById("omnivalidator-menu-toolswebdev")) {
+                    menu = document.getElementById("omnivalidator-menu-tools");
+                    menu.parentNode.removeChild(menu);
+                }
+
                 menus =
                     document.getElementsByClassName("omnivalidator-copy-menupopup-main");
                 for (i = 0; i < menus.length; ++i) {
