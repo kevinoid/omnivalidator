@@ -22,13 +22,13 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
             EXT_NAME: "Omnivalidator",
             EXT_PREF_PREFIX: "extensions.omnivalidator.",
             EXT_PROF_DIR: "omnivalidator",
-            // Note:  Avoid .log extension as type not always displayed inline
-            // in the browser
-            LOG_FILE_NAME: "omnivalidator-log.txt",
             // Should match em:version in install.rdf
             // Note:  Could read it from install.rdf, rather than defining it
             // here, but only async, which introduces issues.
-            VERSION: "0.1",
+            EXT_VERSION: "0.1",
+            // Note:  Avoid .log extension as type not always displayed inline
+            // in the browser
+            LOG_FILE_NAME: "omnivalidator-log.txt",
             XHTML_NS: "http://www.w3.org/1999/xhtml",
             XUL_NS: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         },

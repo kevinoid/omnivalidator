@@ -82,7 +82,7 @@
             }
 
             function setValueVersion(label) {
-                label.value = globaldefs.VERSION;
+                label.value = globaldefs.EXT_VERSION;
             }
 
             window.addEventListener("load", function onLoad() {

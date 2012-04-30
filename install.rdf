@@ -14,7 +14,7 @@
         <em:id>omnivalidator@kevinlocke.name</em:id>
 
         <em:name>Omnivalidator</em:name>
-        <!-- Should match VERSION in resource/omnivalidator/global.jsm -->
+        <!-- Should match EXT_VERSION in resource/omnivalidator/global.jsm -->
         <em:version>0.1</em:version>
         <em:type>2</em:type>
         <em:creator>Kevin Locke</em:creator>
