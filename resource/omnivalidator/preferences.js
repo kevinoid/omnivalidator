@@ -16,17 +16,15 @@ define(
         "gecko/components/classes",
         "gecko/components/interfaces",
         "gecko/components/results",
-        "omnivalidator/globaldefs",
         "underscore"
     ],
-    function (Cc, Ci, Cr, globaldefs, underscore) {
+    function (Cc, Ci, Cr, underscore) {
         "use strict";
 
             // Hold extension pref branch as a convenience for users
             // To allow extension-wide observers without holding the reference
             // by each user
-        var extPrefBranch,
-            prefService = Cc["@mozilla.org/preferences-service;1"]
+        var prefService = Cc["@mozilla.org/preferences-service;1"]
                 .getService(Ci.nsIPrefService);
 
         /* Like String.concat, except null and undefined are "" */
@@ -435,12 +433,6 @@ define(
         Preferences.prototype = underscore.extend({}, Preferences);
         Preferences.branchName = "";
         Preferences.prefBranch = prefService.QueryInterface(Ci.nsIPrefBranch);
-
-        // Non-instance functions
-        extPrefBranch = new Preferences(globaldefs.EXT_PREF_PREFIX);
-        Preferences.getExtPrefBranch = function () {
-            return extPrefBranch;
-        };
 
         return Preferences;
     }
