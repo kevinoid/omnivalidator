@@ -17,7 +17,7 @@ define(
     function (Cc, Ci) {
         "use strict";
 
-        function getnsIURL(url) {
+        function getURL(url) {
             var uri;
 
             if (typeof url === "string") {
@@ -32,11 +32,12 @@ define(
         }
 
         function getFilenameForURL(url) {
-            return getnsIURL(url).fileName;
+            return getURL(url).fileName;
         }
 
         return {
-            getFilenameForURL: getFilenameForURL
+            getFilenameForURL: getFilenameForURL,
+            getURL: getURL
         };
     }
 );
