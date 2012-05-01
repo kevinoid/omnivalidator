@@ -33,6 +33,10 @@ define(
             autoValidators,
             clickValidators,
             defaultName = locale.get("validatorName.unnamed"),
+            // Note:  Must hold reference to prevent observer GC
+            validatorsPref = Preferences.getBranch(
+                globaldefs.EXT_PREF_PREFIX + "validators."
+            ),
             validatorTypes;
 
         // FIXME:  Is there a way to read the dependency IDs from inside
@@ -41,11 +45,6 @@ define(
             "omnivalidator/validatornu":    validatornu,
             "omnivalidator/w3cmarkup":      w3cmarkup
         };
-
-        function getValidatorPrefsBranch() {
-            return Preferences.getBranch(globaldefs.EXT_PREF_PREFIX +
-                    "validators.");
-        }
 
         function getValidatorPrefs() {
             return Preferences.getObject(
@@ -166,7 +165,7 @@ define(
             logger.trace("Generated new validator ID " + vid);
 
             // If the vid is already in use (unlikely), try again
-            if (getValidatorPrefsBranch().getValue(vid + ".name")) {
+            if (validatorsPref.getValue(vid + ".name")) {
                 logger.debug("Collision generating new validator ID");
                 return getNewValidatorID();
             }
@@ -179,18 +178,16 @@ define(
         function getNames() {
             var i,
                 match,
-                prefBranch,
                 prefNames,
                 vid,
                 valNames;
 
-            prefBranch = getValidatorPrefsBranch();
-            prefNames = prefBranch.getDescendantNames();
+            prefNames = validatorsPref.getDescendantNames();
             valNames = {};
             for (i = 0; i < prefNames.length; ++i) {
                 match = /^(\w+)\.name$/.exec(prefNames[i]);
                 if (match) {
-                    valNames[match[1]] = prefBranch.getValue(prefNames[i]);
+                    valNames[match[1]] = validatorsPref.getValue(prefNames[i]);
                 } else {
                     // Make sure all validators get a name
                     vid = prefNames[i].split(".")[0];
@@ -221,27 +218,21 @@ define(
 
         function remove(vid) {
             logger.debug("Removing validator " + vid);
-            getValidatorPrefsBranch().deleteBranch(vid);
+            validatorsPref.deleteBranch(vid);
         }
 
         function removeAll() {
             logger.debug("Removing all validators");
-            getValidatorPrefsBranch().deleteBranch();
+            validatorsPref.deleteBranch();
         }
 
-        // Load the autoURLMatcher and reload it when Preferences change
-        Preferences.getExtPrefBranch()
-            .getBranch("autovalidate")
-            .addObserver({observe: loadAutoURLMatcher});
-        Preferences.getExtPrefBranch()
-            .getBranch("autovalidatere")
-            .addObserver({observe: loadAutoURLMatcher});
-        loadAutoURLMatcher();
-
         // Clear the validators list (causing lazy reload) when Preferences change
-        Preferences.getExtPrefBranch()
-            .getBranch("validators")
-            .addObserver({observe: clearValidators});
+        validatorsPref.addObserver("", {
+            observe: function () {
+                logger.debug("Validator preferences changed, clearing validators");
+                clearValidators();
+            }
+        }, false);
 
         return {
             getAll: getAll,
