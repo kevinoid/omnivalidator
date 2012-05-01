@@ -17,13 +17,14 @@ define(
         "omnivalidator/predicatemultimap",
         "omnivalidator/preferences",
         "omnivalidator/urlutils",
+        "underscore",
 
         /* Supported validator types */
         "omnivalidator/validatornu",
         "omnivalidator/w3cmarkup"
     ],
     function (log4moz, globaldefs, locale, PredicateMultimap, Preferences,
-            urlutils,
+            urlutils, underscore,
 
             /* Supported validator types */
             validatornu, w3cmarkup) {
@@ -34,7 +35,6 @@ define(
             autoValByURL = new PredicateMultimap(function (url, regex) {
                 return regex.test(url);
             }),
-            clickValidators,
             defaultName = locale.get("validatorName.unnamed"),
             // Note:  Must hold reference to prevent observer GC
             validatorsPref = Preferences.getBranch(
@@ -56,8 +56,7 @@ define(
         }
 
         function clearValidators() {
-            allValidators =
-                clickValidators = undefined;
+            allValidators = undefined;
             autoValByURL.clear();
         }
 
@@ -73,7 +72,6 @@ define(
 
             allValidators = {};
             autoValByURL.clear();
-            clickValidators = [];
 
             for (vid in vPrefs) { if (vPrefs.hasOwnProperty(vid)) {
                 validatorName = vPrefs[vid].name || defaultName;
@@ -89,9 +87,7 @@ define(
 
                 logger.debug("Constructing validator " + vid +
                         " (" + validatorName + ")" +
-                        " of type " + vPrefs[vid].type +
-                        " (click: " + vPrefs[vid].click +
-                        ")");
+                        " of type " + vPrefs[vid].type);
 
                 try {
                     validator = new validatorTypes[vPrefs[vid].type](
@@ -125,10 +121,6 @@ define(
                             );
                         }
                     }
-                }
-
-                if (vPrefs[vid].click) {
-                    clickValidators.push(validator);
                 }
             } }
         }
@@ -189,7 +181,7 @@ define(
         function getClickFor(url) {
             ensureValidators();
 
-            return clickValidators;
+            return underscore.values(allValidators);
         }
 
         function getNewValidatorID() {
