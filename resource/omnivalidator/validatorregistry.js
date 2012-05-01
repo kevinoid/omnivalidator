@@ -14,14 +14,16 @@ define(
         "log4moz",
         "omnivalidator/globaldefs",
         "omnivalidator/locale",
+        "omnivalidator/predicatemultimap",
         "omnivalidator/preferences",
-        "omnivalidator/urlmatcher",
+        "omnivalidator/urlutils",
 
         /* Supported validator types */
         "omnivalidator/validatornu",
         "omnivalidator/w3cmarkup"
     ],
-    function (log4moz, globaldefs, locale, Preferences, URLMatcher,
+    function (log4moz, globaldefs, locale, PredicateMultimap, Preferences,
+            urlutils,
 
             /* Supported validator types */
             validatornu, w3cmarkup) {
@@ -29,8 +31,9 @@ define(
 
         var logger = log4moz.repository.getLogger("omnivalidator.validatorregistry"),
             allValidators,
-            autoURLMatcher,
-            autoValidators,
+            autoValByURL = new PredicateMultimap(function (url, regex) {
+                return regex.test(url);
+            }),
             clickValidators,
             defaultName = locale.get("validatorName.unnamed"),
             // Note:  Must hold reference to prevent observer GC
@@ -52,24 +55,16 @@ define(
             ) || {};
         }
 
-        function loadAutoURLMatcher() {
-            autoURLMatcher = new URLMatcher();
-            autoURLMatcher.addPrefix(
-                Preferences.getExtPrefBranch().getArray("autovalidate")
-            );
-            autoURLMatcher.addRegex(
-                Preferences.getExtPrefBranch().getArray("autovalidatere")
-            );
-        }
-
         function clearValidators() {
             allValidators =
-                autoValidators =
                 clickValidators = undefined;
+            autoValByURL.clear();
         }
 
         function loadValidators() {
-            var validator,
+            var autoValidate,
+                i,
+                validator,
                 validatorName,
                 vid,
                 vPrefs = getValidatorPrefs();
@@ -77,7 +72,7 @@ define(
             logger.debug("Loading validators");
 
             allValidators = {};
-            autoValidators = [];
+            autoValByURL.clear();
             clickValidators = [];
 
             for (vid in vPrefs) { if (vPrefs.hasOwnProperty(vid)) {
@@ -95,8 +90,7 @@ define(
                 logger.debug("Constructing validator " + vid +
                         " (" + validatorName + ")" +
                         " of type " + vPrefs[vid].type +
-                        " (auto: " + vPrefs[vid].auto +
-                        ", click: " + vPrefs[vid].click +
+                        " (click: " + vPrefs[vid].click +
                         ")");
 
                 try {
@@ -113,9 +107,26 @@ define(
                 }
 
                 allValidators[vid] = validator;
-                if (vPrefs[vid].auto) {
-                    autoValidators.push(validator);
+
+                autoValidate = vPrefs[vid].autoValidate;
+                if (autoValidate) {
+                    for (i = 0; i < autoValidate.length; ++i) {
+                        try {
+                            autoValByURL.put(
+                                new RegExp("^" + autoValidate[i]),
+                                validator
+                            );
+                        } catch (ex2) {
+                            logger.error(
+                                "Unable to add automatic validation to " +
+                                    vid + " (" + validatorName + ") for " +
+                                    autoValidate[i] + ": " + ex2.message,
+                                ex2
+                            );
+                        }
+                    }
                 }
+
                 if (vPrefs[vid].click) {
                     clickValidators.push(validator);
                 }
@@ -134,12 +145,45 @@ define(
         }
 
         function getAutoFor(url) {
-            if (autoURLMatcher.matches(url)) {
-                ensureValidators();
+            var nsurl, validators;
 
-                return autoValidators;
+            ensureValidators();
+
+            url = String(url);
+            try {
+                nsurl = urlutils.getURL(url);
+            } catch (ex) {
+                // Will throw for about: pages and other non-URL locations
+                logger.trace("Unable to parse " + url + ": " + ex.message, ex);
             }
-            return [];
+
+            // Remove reference portion of the URL, if any
+            if (nsurl && nsurl.ref) {
+                url = url.slice(0, -(nsurl.ref.length + 1));
+            }
+
+            // Get validators which match the whole URL
+            logger.debug("Getting automatic validators which match " + url);
+            validators = autoValByURL.getAll(url);
+
+            // If url is a parseable URL, also add validators which match
+            // the host and subsequent portions
+            if (nsurl) {
+                // Remove scheme and username/password, if any
+                url = url.slice(nsurl.scheme.length + 3);
+                if (nsurl.userPass) {
+                    url = url.slice(nsurl.userPass.length + 1);
+                }
+
+                // Get validators which match host, port, path, query
+                logger.debug("Getting automatic validators which match " + url);
+                Array.prototype.push.apply(
+                    validators,
+                    autoValByURL.getAll(url)
+                );
+            }
+
+            return validators;
         }
 
         function getClickFor(url) {
