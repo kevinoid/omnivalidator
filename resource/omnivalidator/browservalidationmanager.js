@@ -28,7 +28,7 @@ define(
             var currentResourceID = null,
                 listeners = [],
                 progressListener,   // Must be referenced in closure to avoid gc
-                // Holds {messages, summary} for each validator by name
+                // Holds {messages, summary} for each validator by id
                 // Empty indicates validation incomplete
                 results = {},
                 thisBVM = this;
@@ -50,10 +50,10 @@ define(
                     return;
                 }
 
-                valResult = results[validator.name];
+                valResult = results[validator.id];
                 if (!valResult) {
                     valResult = { messages: [], summary: {} };
-                    results[validator.name] = valResult;
+                    results[validator.id] = valResult;
                 }
 
                 if (result.message) {
@@ -77,7 +77,7 @@ define(
 
                 currentResourceID = CacheID.fromDocument(doc);
                 for (i = 0; i < validators.length; ++i) {
-                    results[validators[i].name] = { messages: [], summary: {} };
+                    results[validators[i].id] = { messages: [], summary: {} };
                     validators[i].validate(currentResourceID, onValidate);
                 }
             }
@@ -89,7 +89,7 @@ define(
                     i;
 
                 for (i = 0; i < validators.length; ++i) {
-                    if (!results.hasOwnProperty(validators[i].name)) {
+                    if (!results.hasOwnProperty(validators[i].id)) {
                         filtered.push(validators[i]);
                     } else {
                         logger.trace("Excluding " + validators[i].name +
