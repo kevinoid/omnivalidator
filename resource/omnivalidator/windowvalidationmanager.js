@@ -86,7 +86,7 @@ define(
 
             function onTabSelect(event) {
                 logger.trace("Received TabSelect event, swapping validation state");
-                notifyListeners(thisWVM, {clear: true});
+                notifyListeners(thisWVM, {reload: true});
             }
 
             this.addListener = function (listener) {

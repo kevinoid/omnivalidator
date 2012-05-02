@@ -73,16 +73,36 @@
 
             function setupConsoleBox(consoleBox) {
                 vManager.addListener(function (wvm, vStatus) {
-                    var msg;
+                    var i, messages, msg, results, validatorNames, vid;
 
-                    if (vStatus.clear) {
+                    if (vStatus.clear || vStatus.reload) {
+                        logger.debug("Console clearing validation messages");
                         consoleBox.clearConsole();
                     }
+
                     if (vStatus.message) {
                         msg = vStatus.message.clone();
                         msg.message =
                             vStatus.validator.name + ": " + msg.message;
                         consoleBox.appendItem(msg);
+                    }
+
+                    if (vStatus.reload) {
+                        logger.debug("Console reloading validation messages");
+                        results = vManager.getValidationResults();
+                        validatorNames = vregistry.getNames();
+                        for (vid in results) {
+                            if (results.hasOwnProperty(vid)) {
+                                messages = results[vid].messages;
+                                for (i = 0; i < messages.length; ++i) {
+                                    msg = messages[i].clone();
+                                    msg.message =
+                                        validatorNames[vid] + ": " +
+                                        msg.message;
+                                    consoleBox.appendItem(messages[i]);
+                                }
+                            }
+                        }
                     }
                 });
             }

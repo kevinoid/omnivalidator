@@ -125,6 +125,7 @@ define(
             };
 
             this.clear = function () {
+                logger.debug("BVM clearing validation results");
                 currentResourceID = null;
                 results = {};
                 notifyListeners(thisBVM, {
