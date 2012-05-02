@@ -44,7 +44,7 @@ define(
                 var valResult;
 
                 if (resourceid !== currentResourceID) {
-                    logger.info("Response from " + validator.name +
+                    logger.info("Response from " + validator.logName +
                             " for " + resourceid.uri +
                             " is no longer of interest.");
                     return;
@@ -92,7 +92,7 @@ define(
                     if (!results.hasOwnProperty(validators[i].id)) {
                         filtered.push(validators[i]);
                     } else {
-                        logger.trace("Excluding " + validators[i].name +
+                        logger.trace("Excluding " + validators[i].logName +
                             " from validation request, already run on this page");
                     }
                 }

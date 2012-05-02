@@ -15,6 +15,10 @@ define(
     function () {
         "use strict";
 
+        function getLogName() {
+            return this.id + " (" + this.name + ")";
+        }
+
         function Validator(id, name) {
             this.name = String(name || "");
 
@@ -30,7 +34,20 @@ define(
                 );
             } else {
                 this.id = String(id || "");
+                // Note:  logName is property where supported to reduce space
+                this.logName = getLogName.call(this);
             }
+        }
+
+        if (Object.defineProperty) {
+            Object.defineProperty(
+                Validator.prototype,
+                "logName",
+                {
+                    get: getLogName,
+                    enumerable: true
+                }
+            );
         }
 
         return Validator;

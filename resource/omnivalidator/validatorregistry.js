@@ -116,7 +116,7 @@ define(
                         } catch (ex2) {
                             logger.error(
                                 "Unable to add automatic validation to " +
-                                    vid + " (" + validatorName + ") for " +
+                                    validator.logName + " for " +
                                     autoValidate[i] + ": " + ex2.message,
                                 ex2
                             );
