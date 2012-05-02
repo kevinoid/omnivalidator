@@ -15,8 +15,22 @@ define(
     function () {
         "use strict";
 
-        function Validator(name) {
+        function Validator(id, name) {
             this.name = String(name || "");
+
+            // Clients can depend on the id property not changing.
+            if (Object.defineProperty) {
+                Object.defineProperty(
+                    this,
+                    "id",
+                    {
+                        value: String(id || ""),
+                        enumerable: true
+                    }
+                );
+            } else {
+                this.id = String(id || "");
+            }
         }
 
         return Validator;

@@ -27,12 +27,12 @@ define(
 
         var logger = log4moz.repository.getLogger("omnivalidator.validatornu");
 
-        function ValidatorNuValidator(validatorName, validatorArgs) {
+        function ValidatorNuValidator(vid, validatorName, validatorArgs) {
             var thisValidator = this,
                 validatorURL;
 
             validatorName = String(validatorName || "");
-            Validator.call(this, validatorName);
+            Validator.call(this, vid, validatorName);
 
             if (!validatorArgs || !validatorArgs.validatorURL) {
                 throw new Error("ValidatorNu requires a validatorURL argument");

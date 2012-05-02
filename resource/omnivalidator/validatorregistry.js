@@ -91,6 +91,7 @@ define(
 
                 try {
                     validator = new validatorTypes[vPrefs[vid].type](
+                        vid,
                         validatorName,
                         vPrefs[vid].args
                     );

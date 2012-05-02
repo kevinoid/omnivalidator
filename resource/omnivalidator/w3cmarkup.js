@@ -32,12 +32,12 @@ define(
             VAL_NS = "http://www.w3.org/2005/10/markup-validator",
             logger = log4moz.repository.getLogger("omnivalidator.validatornu");
 
-        function W3CValidator(validatorName, validatorArgs) {
+        function W3CValidator(vid, validatorName, validatorArgs) {
             var thisValidator = this,
                 validatorURL;
 
             validatorName = String(validatorName || "");
-            Validator.call(this, validatorName);
+            Validator.call(this, vid, validatorName);
 
             if (!validatorArgs || !validatorArgs.validatorURL) {
                 throw new Error("W3CValidator requires a validatorURL argument");
