@@ -191,7 +191,8 @@
                         results = vManager.getValidationResults();
                         validatorNames = vregistry.getNames();
                         for (vid in results) {
-                            if (results.hasOwnProperty(vid)) {
+                            if (results.hasOwnProperty(vid) &&
+                                    results[vid].summary) {
                                 statusButton.addValidationSummary(
                                     validatorNames[vid],
                                     results[vid].summary

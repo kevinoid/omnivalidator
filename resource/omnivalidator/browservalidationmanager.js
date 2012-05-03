@@ -52,7 +52,7 @@ define(
 
                 valResult = results[validator.id];
                 if (!valResult) {
-                    valResult = { messages: [], summary: {} };
+                    valResult = { messages: [] };
                     results[validator.id] = valResult;
                 }
 
@@ -77,7 +77,7 @@ define(
 
                 currentResourceID = CacheID.fromDocument(doc);
                 for (i = 0; i < validators.length; ++i) {
-                    results[validators[i].id] = { messages: [], summary: {} };
+                    results[validators[i].id] = { messages: [] };
                     validators[i].validate(currentResourceID, onValidate);
                 }
             }
