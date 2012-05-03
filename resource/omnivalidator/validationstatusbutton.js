@@ -24,7 +24,7 @@ define(
 
         function ValidationStatusButton(toolbarButton) {
             var totals,
-                // Sorted list of summaries by validator
+                // Sorted list of summaries by validator name
                 textSummaries;
 
             function getCssClass() {
@@ -75,7 +75,7 @@ define(
                 toolbarButton.tooltipText = getTooltip();
             }
 
-            this.addValidationSummary = function (validator, summary) {
+            this.addValidationSummary = function (validatorName, summary) {
                 var textSummary;
 
                 ++totals.valCount;
@@ -85,7 +85,7 @@ define(
                 textSummary =
                     locale.format(
                         "status.validatorResult",
-                        validator.name,
+                        validatorName,
                         locale.formatPlural(
                             summary.errorCount,
                             "status.validatorErrors",

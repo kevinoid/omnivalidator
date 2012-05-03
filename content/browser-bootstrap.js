@@ -172,14 +172,32 @@
                 statusButton = new ValidationStatusButton(toolbarButton);
 
                 vManager.addListener(function (wvm, vStatus) {
+                    var vid, results, validatorNames;
+
                     if (vStatus.clear) {
                         statusButton.reset();
                     }
+
                     if (vStatus.summary) {
                         statusButton.addValidationSummary(
-                            vStatus.validator,
+                            vStatus.validator.name,
                             vStatus.summary
                         );
+                    }
+
+                    if (vStatus.reload) {
+                        statusButton.reset();
+
+                        results = vManager.getValidationResults();
+                        validatorNames = vregistry.getNames();
+                        for (vid in results) {
+                            if (results.hasOwnProperty(vid)) {
+                                statusButton.addValidationSummary(
+                                    validatorNames[vid],
+                                    results[vid].summary
+                                );
+                            }
+                        }
                     }
                 });
             }
