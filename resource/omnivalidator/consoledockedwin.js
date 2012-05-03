@@ -180,10 +180,7 @@ define(
                 onStatusChange: function (aWebProgress, aRequest, aStatus, aMessage) { },
                 onSecurityChange: function (aWebProgress, aRequest, aState) { }
             };
-            tabbrowser.addProgressListener(
-                progressListener,
-                Ci.nsIWebProgressListener.NOTIFY_LOCATION
-            );
+            tabbrowser.addProgressListener(progressListener);
 
             vManager.addListener(onValidationEvent);
         }
