@@ -25,41 +25,19 @@
     omnivalidator.require(
         [
             "log4moz",
+            "omnivalidator/consoledockedwin",
             "omnivalidator/globaldefs",
             "omnivalidator/validationstatusbutton",
             "omnivalidator/validatorregistry",
             "omnivalidator/windowvalidationmanager",
             "underscore"
         ],
-        function (log4moz, globaldefs,
+        function (log4moz, ConsoleDockedWin, globaldefs,
                 ValidationStatusButton, vregistry, WindowValidationManager,
                 underscore) {
-            var logger = log4moz.repository.getLogger("omnivalidator.browserinit"),
+            var consoleWin,
+                logger = log4moz.repository.getLogger("omnivalidator.browserinit"),
                 vManager;
-
-            function setWinCollapsed(collapsed) {
-                var dockedWin,
-                    menuitem,
-                    splitter;
-
-                dockedWin = document.getElementById("omnivalidator-dockedwin");
-                splitter = document.getElementById("omnivalidator-appcontent-splitter");
-
-                dockedWin.collapsed = collapsed;
-                splitter.collapsed = collapsed;
-
-                menuitem = document.getElementById("omnivalidator-menuitem-viewtoggle");
-                menuitem.setAttribute("checked", !collapsed);
-            }
-
-            function toggleWinCollapsed() {
-                var collapsed;
-
-                collapsed =
-                    !document.getElementById("omnivalidator-dockedwin").collapsed;
-                setWinCollapsed(collapsed);
-                return collapsed;
-            }
 
             function setupAboutCommand(command) {
                 command.addEventListener("command", function () {
@@ -71,45 +49,24 @@
                 }, false);
             }
 
-            function setupConsoleBox(consoleBox) {
-                vManager.addListener(function (wvm, vStatus) {
-                    var i, messages, msg, results, validatorNames, vid;
+            function setupConsoleBox(consoleBox, dockedElems) {
+                consoleWin = new ConsoleDockedWin(
+                    vManager,
+                    gBrowser,
+                    consoleBox,
+                    dockedElems
+                );
 
-                    if (vStatus.clear || vStatus.reload) {
-                        logger.debug("Console clearing validation messages");
-                        consoleBox.clearConsole();
-                    }
-
-                    if (vStatus.message) {
-                        msg = vStatus.message.clone();
-                        msg.message =
-                            vStatus.validator.name + ": " + msg.message;
-                        consoleBox.appendItem(msg);
-                    }
-
-                    if (vStatus.reload) {
-                        logger.debug("Console reloading validation messages");
-                        results = vManager.getValidationResults();
-                        validatorNames = vregistry.getNames();
-                        for (vid in results) {
-                            if (results.hasOwnProperty(vid)) {
-                                messages = results[vid].messages;
-                                for (i = 0; i < messages.length; ++i) {
-                                    msg = messages[i].clone();
-                                    msg.message =
-                                        validatorNames[vid] + ": " +
-                                        msg.message;
-                                    consoleBox.appendItem(messages[i]);
-                                }
-                            }
-                        }
-                    }
+                consoleWin.addListener(function (cdw, collapsed) {
+                    document
+                        .getElementById("omnivalidator-menuitem-viewtoggle")
+                        .setAttribute("checked", !collapsed);
                 });
             }
 
             function setupHideCommand(command) {
                 command.addEventListener("command", function () {
-                    setWinCollapsed(true);
+                    consoleWin.setCollapsed(true);
                 }, false);
             }
 
@@ -197,7 +154,7 @@
                     var collapsed,
                         results;
 
-                    collapsed = toggleWinCollapsed();
+                    collapsed = consoleWin.toggleCollapsed();
 
                     if (!collapsed) {
                         // If the page has not been validated yet, validate it
@@ -231,7 +188,7 @@
                 command.addEventListener("command", function () {
                     var results;
 
-                    setWinCollapsed(false);
+                    consoleWin.setCollapsed(false);
 
                     // If the page has not been validated yet, validate it
                     results = vManager.getValidationResults();
@@ -271,7 +228,11 @@
                 );
 
                 setupConsoleBox(
-                    document.getElementById("omnivalidator-console-box")
+                    document.getElementById("omnivalidator-console-box"),
+                    [
+                        document.getElementById("omnivalidator-appcontent-splitter"),
+                        document.getElementById("omnivalidator-dockedwin")
+                    ]
                 );
 
                 toolbarButtons =

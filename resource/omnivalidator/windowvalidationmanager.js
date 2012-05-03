@@ -23,6 +23,11 @@ define(
 
         /** Gets a string which uniquely identifies the given browser.
          *
+         * Duplicate of getIDForBrowser function in consoledockedwin,
+         * but no need for both to use the same algorithm (both are fully
+         * private implementation details).  Can merge code if a solid
+         * algorithm is found.
+         *
          * Note:  There does not appear to be a really good way to do this...
          * http://forums.mozillazine.org/viewtopic.php?f=19&t=618378
          * http://stackoverflow.com/questions/6445381/how-to-differentiate-between-firefox-tabs

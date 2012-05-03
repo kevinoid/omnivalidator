@@ -33,7 +33,7 @@ define(
                 results = {},
                 thisBVM = this;
 
-            function notifyListeners() {
+            function notifyListeners(/*args*/) {
                 var i;
                 for (i = 0; i < listeners.length; ++i) {
                     listeners[i].apply(null, arguments);
