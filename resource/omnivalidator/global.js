@@ -34,6 +34,8 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
             XHTML_NS: "http://www.w3.org/1999/xhtml",
             XUL_NS: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         },
+        logError,
+        logInfo,
         moduleImport,
         moduleLoad,
         scriptLoader =
@@ -73,6 +75,32 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
 
         return target;
     }
+
+    /** Error logging function usable before logging framework is loaded.
+     *
+     * Note: This function is replaced when the logging framework is loaded.
+     */
+    logError = function (message, error) {
+        // Note:  Should match the console formatter defined below
+        Components.utils.reportError(
+            globaldefs.EXT_NAME + " (ERROR): " + message +
+                (error ? ":\n" + error : "")
+        );
+    };
+
+    /** Information logging function usable before logging framework is loaded.
+     *
+     * Note: This function is replaced when the logging framework is loaded.
+     */
+    logInfo = function (message, error) {
+        // Note:  Should match the console formatter defined below
+        Components.classes["@mozilla.org/consoleservice;1"]
+            .getService(Components.interfaces.nsIConsoleService)
+            .logStringMessage(
+                globaldefs.EXT_NAME + " (INFO): " + message +
+                    (error ? ":\n" + error : "")
+            );
+    };
 
     function makeSandbox(name, addToSandbox) {
         var prop, sandbox;
@@ -184,9 +212,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
         try {
             moduleLoad(moduleName, url, {define: define});
         } catch (ex) {
-            // Note:  Logging framework not always initialized at this point
-            Components.utils.reportError(globaldefs.EXT_NAME +
-                    ": Failed to load requested module " + url + "\n" + ex);
+            logError("Failed to load requested module " + url, ex);
         }
 
         context.completeLoad(moduleName);
@@ -248,17 +274,17 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
             } catch (ex) {
                 // Note:  Logging framework not always initialized at this point
                 if (optional) {
-                    Components.classes["@mozilla.org/consoleservice;1"]
-                        .getService(Components.interfaces.nsIConsoleService)
-                        .logStringMessage(globaldefs.EXT_NAME + ": " +
-                            "Failed to load optional module " + moduleURL +
-                            " for " + moduleName + "\n" +
-                            ex);
+                    logInfo(
+                        "Failed to load optional module " + moduleURL +
+                            " for " + moduleName,
+                        ex
+                    );
                 } else {
-                    Components.utils.reportError(globaldefs.EXT_NAME + ": " +
+                    logError(
                         "Failed to load module " + moduleURL +
-                        " for " + moduleName + "\n" +
-                        ex);
+                            " for " + moduleName,
+                        ex
+                    );
                 }
             }
 
@@ -410,6 +436,13 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
             }
 
             rootLogger.trace("Logging setup complete");
+
+            // Replace the global stub logging functions
+            // TODO:  Replace with Function.bind when only supporting ES5
+            logError =
+                function () { rootLogger.error.apply(rootLogger, arguments); };
+            logInfo =
+                function () { rootLogger.info.apply(rootLogger, arguments); };
         }
     );
 
