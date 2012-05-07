@@ -15,6 +15,8 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     "use strict";
 
     var baseURL = "resource://omnivalidator",
+        // Reference to the global scope
+        global = new Function("return this;")(),
         globaldefs = {
             CSS_PREFIX: "omnivalidator-",
             EXT_ID: "omnivalidator@kevinlocke.name",
@@ -32,18 +34,155 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
             XHTML_NS: "http://www.w3.org/1999/xhtml",
             XUL_NS: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         },
+        moduleImport,
+        moduleLoad,
         scriptLoader =
             Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
-                .getService(Components.interfaces.mozIJSSubScriptLoader);
+                .getService(Components.interfaces.mozIJSSubScriptLoader),
+        systemPrincipal = Components.classes["@mozilla.org/systemprincipal;1"]
+            .createInstance(Components.interfaces.nsIPrincipal);
 
-    // Defines require, requirejs, and define in current global namespace
-    scriptLoader.loadSubScript("resource://omnivalidator/require.js");
+    // Extend the target object with properties from the source objects
+    // FIXME:  Overlap with underscore.extend, but can't require that here
+    function extend(target) {
+        var i, prop, source;
+
+        for (i = 1; i < arguments.length; ++i) {
+            source = arguments[i];
+            for (prop in source) {
+                if (source.hasOwnProperty(prop)) {
+                    target[prop] = source[prop];
+                }
+            }
+        }
+
+        return target;
+    }
+
+    // Extend the target object with given properties from the source object
+    // FIXME:  Overlap with underscore.extend, but can't require that here
+    function extendProperties(target, source, props) {
+        var i, prop;
+
+        for (i = 0; i < props.length; ++i) {
+            prop = props[i];
+            if (source.hasOwnProperty(prop)) {
+                target[prop] = source[prop];
+            }
+        }
+
+        return target;
+    }
+
+    function makeSandbox(name, addToSandbox) {
+        var prop, sandbox;
+
+        sandbox = Components.utils.Sandbox(
+            systemPrincipal,
+            {
+                sandboxName: globaldefs.EXT_NAME + " " + name,
+                wantXrays: false
+            }
+        );
+
+        if (addToSandbox) {
+            for (prop in addToSandbox) {
+                if (addToSandbox.hasOwnProperty(prop)) {
+                    sandbox[prop] = addToSandbox[prop];
+                }
+            }
+        }
+
+        return sandbox;
+    }
+
+    /** Behaves like Components.utils.import, with two important differences:
+     * It does not cache the import (so it is run each time it is imported).
+     * It runs the import in the provided scope, rather than importing from
+     * its own scope.
+     *
+     * This is useful for importing into sandboxes, which can not be
+     * accomplished with Components.utils.import.
+     *
+     * @param {String} url URL of the JSM file to import
+     * @param {Object} scope The object to use as the global scope object for
+     * the script being executed.  Defaults to the global object of the caller.
+     * @param {Object} targetObj The object into which the exported symbols of
+     * the JSM should be imported.  Default import nothing.
+     */
+    function sandboxImport(url, scope, targetObj) {
+        var exported, i;
+
+        // Default scope is the global object
+        scope = scope || global;
+
+        scriptLoader.loadSubScript(url, scope);
+
+        if (targetObj) {
+            exported = scope.EXPORTED_SYMBOLS;
+            for (i = 0; i < exported.length; ++i) {
+                targetObj[exported[i]] = scope[exported[i]];
+            }
+        }
+    }
+
+    function moduleImportMemDebug(name, url) {
+        var sandbox, target = {};
+
+        sandbox = makeSandbox(name);
+        sandboxImport(url, sandbox, target);
+
+        return target;
+    }
+
+    function moduleImportNoDebug(name, url) {
+        var target = {};
+
+        Components.utils["import"](url, target);
+
+        return target;
+    }
+
+    function moduleLoadMemDebug(name, url, scopeImports) {
+        var sandbox;
+
+        sandbox = makeSandbox(name, scopeImports);
+        scriptLoader.loadSubScript(url, sandbox);
+
+        return sandbox;
+    }
+
+    function moduleLoadNoDebug(name, url, scopeImports) {
+        var target = {};
+
+        extend(target, scopeImports);
+        scriptLoader.loadSubScript(url, target);
+
+        return target;
+    }
+
+    // Set the method to import/load modules based on requested memory debugging
+    if (Components.classes["@mozilla.org/preferences-service;1"]
+                .getService(Components.interfaces.nsIPrefBranch)
+                .getIntPref(globaldefs.EXT_PREF_PREFIX + "debugMemory") >= 2) {
+        moduleImport = moduleImportMemDebug;
+        moduleLoad = moduleLoadMemDebug;
+    } else {
+        moduleImport = moduleImportNoDebug;
+        moduleLoad = moduleLoadNoDebug;
+    }
+
+    // Import require, requirejs, and define into the current global namespace
+    extend(
+        global,
+        moduleLoad("requirejs", "resource://omnivalidator/require.js")
+    );
 
     // Override the attach function to use mozIJSSubScriptLoader
     require.attach = function (url, context, moduleName, callback, type, fetchOnlyFunction) {
 
         try {
-            scriptLoader.loadSubScript(url);
+            moduleLoad(moduleName, url, {define: define});
         } catch (ex) {
             // Note:  Logging framework not always initialized at this point
             Components.utils.reportError(globaldefs.EXT_NAME +
@@ -70,28 +209,6 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     define("gecko/components/interfaces", Components.interfaces);
     define("gecko/components/results", Components.results);
     define("gecko/components/utils", Components.utils);
-
-    // Provide access to JSON through RequireJS
-    if (typeof JSON === "undefined") {
-        // Should only happen in Gecko 1.9
-        Components.utils["import"]("resource://gre/modules/JSON.jsm");
-    }
-    define("json", JSON);
-
-    // Extend the target object with properties from the source object
-    // FIXME:  Overlap with underscore.extend, but can't require that here
-    function extendProperties(target, source, props) {
-        var i, prop;
-
-        for (i = 0; i < props.length; ++i) {
-            prop = props[i];
-            if (source.hasOwnProperty(prop)) {
-                target[prop] = source[prop];
-            }
-        }
-
-        return target;
-    }
 
     // If object contains only one property, return the value of that property
     // Otherwise return the object
@@ -120,15 +237,14 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     }
 
     // Provide a RequireJS definition for non-AMD files
-    function defineFile(loadFile, moduleName, moduleURL, props, namespace,
-            optional) {
+    function defineFile(moduleLoader, moduleName, moduleURL, moduleImports,
+            scopeImports, optional) {
         define(moduleName, function () {
+            var module;
             moduleURL = moduleURL || baseURL + "/" + moduleName + ".js";
-            namespace = namespace || {};
 
-            // Run the script in its own namespace namespace
             try {
-                loadFile(moduleURL, namespace);
+                module = moduleLoader(moduleName, moduleURL, scopeImports);
             } catch (ex) {
                 // Note:  Logging framework not always initialized at this point
                 if (optional) {
@@ -146,29 +262,51 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
                 }
             }
 
-            if (props) {
-                namespace = extendProperties({}, namespace, props);
+            if (moduleImports) {
+                module = extendProperties({}, module, moduleImports);
             }
 
-            return unwrapSingleProp(namespace);
+            return unwrapSingleProp(module);
         });
     }
 
     function defineJSM(/*args*/) {
-        // TODO:  Replace with Function.bind when only supporting FF 4+
+        // TODO:  Replace with Function.bind when only supporting ES5
         var args = Array.prototype.slice.call(arguments, 0);
-        args.unshift(Components.utils["import"]);
+        args.unshift(moduleImport);
+        return defineFile.apply(null, args);
+    }
+
+    /** Define a JSM which is likely to be used outside of this extension.
+     *
+     * If the module is likely to be used outside of this extension, there
+     * is no need to prevent caching and global code sharing of the JSM in
+     * order to load it into a compartment and count its memory with this
+     * extension.  Always load it using Cu.import.
+     */
+    function defineJSMShared(/*args*/) {
+        // TODO:  Replace with Function.bind when only supporting ES5
+        var args = Array.prototype.slice.call(arguments, 0);
+        args.unshift(moduleImportNoDebug);
         return defineFile.apply(null, args);
     }
 
     function definePlain(/*args*/) {
-        // TODO:  Replace with Function.bind when only supporting FF 4+
+        // TODO:  Replace with Function.bind when only supporting ES5
         var args = Array.prototype.slice.call(arguments, 0);
-        args.unshift(scriptLoader.loadSubScript);
+        args.unshift(moduleLoad);
         return defineFile.apply(null, args);
     }
 
-    defineJSM(
+    // Provide access to JSON through RequireJS
+    if (typeof JSON === "undefined") {
+        // Should only happen in Gecko 1.9
+        defineJSMShared("json", "resource://gre/modules/JSON.jsm");
+    } else {
+        define("json", JSON);
+    }
+
+    defineJSMShared(
         "addonmanager",
         "resource://gre/modules/AddonManager.jsm",
         [ "AddonManager" ],
@@ -176,7 +314,8 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
         true
     );
     defineJSM("log4moz", baseURL + "/log4moz.jsm");
-    defineJSM("pluralform", "resource://gre/modules/PluralForm.jsm");
+    defineJSMShared("pluralform", "resource://gre/modules/PluralForm.jsm");
+
     definePlain("underscore");
     definePlain(
         "chrome/global/contentareautils",
