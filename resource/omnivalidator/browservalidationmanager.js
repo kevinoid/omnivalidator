@@ -16,9 +16,10 @@ define(
         "gecko/components/results",
         "log4moz",
         "omnivalidator/cacheid",
-        "omnivalidator/validatorregistry"
+        "omnivalidator/validatorregistry",
+        "underscore"
     ],
-    function (Ci, Cr, log4moz, CacheID, vregistry) {
+    function (Ci, Cr, log4moz, CacheID, vregistry, underscore) {
         "use strict";
 
         var logger =
@@ -62,14 +63,17 @@ define(
                 if (result.summary) {
                     valResult.summary = result.summary;
                 }
-                if (result.message || result.summary) {
-                    notifyListeners(thisBVM, {
-                        browser: browser,
-                        message: result.message,
-                        summary: result.summary,
-                        validator: validator
-                    });
-                }
+
+                notifyListeners(
+                    thisBVM,
+                    underscore.extend(
+                        {
+                            browser: browser,
+                            validator: validator
+                        },
+                        result
+                    )
+                );
             }
 
             function applyValidators(validators, doc) {
