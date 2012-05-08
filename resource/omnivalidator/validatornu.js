@@ -97,7 +97,7 @@ define(
             }
 
             function parseResponse(response, resourceid, callbackValidate) {
-                var errorcount = 0,
+                var errorCount = 0,
                     i,
                     message,
                     messages,
@@ -119,7 +119,7 @@ define(
                     }
 
                     if (message.type === "error") {
-                        ++errorcount;
+                        ++errorCount;
                     } else if (message.type === "info" &&
                             // Placate SpiderMonkey strict option
                             // (ref to undef prop)
@@ -138,11 +138,11 @@ define(
                 logger.debug("Summary information from " +
                         validatorName + " for " + resourceid.uri +
                         ": " +
-                        errorcount + " errors, " +
+                        errorCount + " errors, " +
                         warnCount + " warnings");
 
                 return {
-                    errorCount: errorcount,
+                    errorCount: errorCount,
                     warnCount: warnCount
                 };
             }
