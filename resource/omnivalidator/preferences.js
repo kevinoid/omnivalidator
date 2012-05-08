@@ -6,7 +6,7 @@
  *
  * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
  */
-/*jslint indent: 4, plusplus: true */
+/*jslint indent: 4, plusplus: true, unparam: true */
 /*global define: true */
 
 // TODO:  Implement caching

@@ -6,7 +6,7 @@
  *
  * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
  */
-/*jslint es5: true, indent: 4, plusplus: true */
+/*jslint es5: true, indent: 4, plusplus: true, unparam: true */
 /*global Components, JSON, define, require */
 
 var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];

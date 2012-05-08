@@ -11,7 +11,7 @@
  * https://gist.github.com/1223431#file_multipart_binary_posts.js
  * https://github.com/igstan/ajax-file-upload/blob/master/simple/uploader.js
  */
-/*jslint indent: 4, plusplus: true */
+/*jslint indent: 4, plusplus: true, unparam: true */
 /*global define */
 
 define(

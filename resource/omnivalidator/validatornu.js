@@ -6,7 +6,7 @@
  *
  * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
  */
-/*jslint continue: true, indent: 4, plusplus: true */
+/*jslint continue: true, indent: 4, plusplus: true, unparam: true */
 /*global define */
 
 define(
