@@ -334,6 +334,12 @@ define(
                 logger.debug("Processing validation response from " +
                         validatorName + " for " + resourceid.uri);
 
+                callbackValidate(
+                    thisValidator,
+                    resourceid,
+                    {state: "received"}
+                );
+
                 if (xhr.status !== 200) {
                     logger.error(validatorName + " returned HTTP status " +
                         xhr.status + " (" + xhr.statusText + ") validating " +
@@ -348,7 +354,10 @@ define(
                     callbackValidate(
                         thisValidator,
                         resourceid,
-                        {message: new ValidatorMessage(errorMsg)}
+                        {
+                            message: new ValidatorMessage(errorMsg),
+                            state: "done"
+                        }
                     );
                     return;
                 }
@@ -374,7 +383,10 @@ define(
                     callbackValidate(
                         thisValidator,
                         resourceid,
-                        {message: new ValidatorMessage(errorMsg)}
+                        {
+                            message: new ValidatorMessage(errorMsg),
+                            state: "done"
+                        }
                     );
                     return;
                 }
@@ -397,7 +409,10 @@ define(
                     callbackValidate(
                         thisValidator,
                         resourceid,
-                        {message: new ValidatorMessage(errorMsg)}
+                        {
+                            message: new ValidatorMessage(errorMsg),
+                            state: "done"
+                        }
                     );
                     return;
                 }
@@ -410,7 +425,10 @@ define(
                 callbackValidate(
                     thisValidator,
                     resourceid,
-                    {summary: summary}
+                    {
+                        state: "done",
+                        summary: summary
+                    }
                 );
 
                 logger.debug("Done processing validation response from " +
@@ -488,6 +506,12 @@ define(
                     // in XMLHttpRequest.send()
                     // FIXME:  Do we need to close formDataStream?  When?
                     xhr.send(formDataStream);
+
+                    callbackValidate(
+                        thisValidator,
+                        resourceid,
+                        {state: "sent"}
+                    );
                 } catch (ex2) {
                     logger.error("Error sending validation request to " +
                             validatorURL + " for " + validatorName +
@@ -503,7 +527,10 @@ define(
                     callbackValidate(
                         thisValidator,
                         resourceid,
-                        {message: new ValidatorMessage(errorMsg)}
+                        {
+                            message: new ValidatorMessage(errorMsg),
+                            state: "done"
+                        }
                     );
                     return;
                 }
