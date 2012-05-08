@@ -1,4 +1,4 @@
-/* Styles for the Console Box
+/* Styles for the customized Console Box
  *
  * This file is part of the Omnivalidator extension for Firefox.
  * It is licensed under the terms of the MIT License.
@@ -7,42 +7,9 @@
  * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
  */
 
-/*** Console Box ***/
-/* FIXME:  Want skin style for .console-box from
- * chrome://global/skin/console/console.css but can't use console-box class
- * while including chrome://global/content/console.css without getting the
- * XBL binding...
- */
-.omnivalidator-console-box {
-	background-color: -moz-Field;
-	color: -moz-FieldText;
-	overflow: auto;
-}
-
-.omnivalidator-console-box .omnivalidator-error {
-	height: 16px;
-	list-style-image: url("chrome://global/skin/icons/error-16.png");
-	width: 16px;
-}
-
-.omnivalidator-console-box .omnivalidator-warning {
-	height: 16px;
-	list-style-image: url("chrome://global/skin/icons/warning-16.png");
-	width: 16px;
-}
-
-.omnivalidator-console-icon-box {
-	border: thin solid green;
-	min-width: 20px;
-}
-
-.omnivalidator-console-row {
-	border: thin solid red;
-}
-
-.omnivalidator-console-row-content {
-	border: thin solid blue;
-	min-width: 20px;
+/*** Customized Console Box ***/
+.console-row[type="status"] {
+	list-style-image: url("chrome://global/skin/icons/loading_16.png");
 }
 
 /* vi: set sts=8 sw=8 noet : */

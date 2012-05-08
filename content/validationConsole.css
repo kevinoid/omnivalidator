@@ -7,7 +7,8 @@
  * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
  */
 .omnivalidator-console-box {
-	-moz-binding: url("chrome://omnivalidator/content/validationConsoleBindings.xml#validation-console-box");
+	/* Note: !important to ensure it is used in preference to console-box */
+	-moz-binding: url("chrome://omnivalidator/content/validationConsoleBindings.xml#validation-console-box") !important;
 }
 
 .console-row[type="status"] {

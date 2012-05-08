@@ -139,7 +139,7 @@
                 </hbox>
             </hbox>
             <box id="omnivalidator-console-box"
-                class="omnivalidator-console-box"
+                class="omnivalidator-console-box console-box"
                 flex="1">
             </box>
         </vbox>
