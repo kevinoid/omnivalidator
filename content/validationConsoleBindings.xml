@@ -15,7 +15,75 @@
     <binding id="validation-console-box"
             extends="chrome://global/content/consoleBindings.xml#console-box">
         <implementation>
-            <constructor>
+            <!-- Override appendConsoleRow to insert before any status rows -->
+            <method name="appendConsoleRow">
+                <parameter name="row"/>
+                <body><![CDATA[
+                    var statusRow;
+
+                    statusRow = this.mConsoleRowBox.lastChild;
+                    while (statusRow &&
+                            statusRow.getAttribute("type") === "status") {
+                        statusRow = statusRow.previousSibling;
+                    }
+
+                    if (statusRow === null) {
+                        // No non-status rows, insert at the front
+                        this.mConsoleRowBox.insertBefore(
+                            row,
+                            this.mConsoleRowBox.firstChild
+                        );
+                    } else {
+                        // Insert after last non-status row
+                        this.mConsoleRowBox.insertBefore(
+                            row,
+                            statusRow.nextSibling
+                        );
+                    }
+
+                    if (++this.mCount > this.limit) {
+                        this.deleteFirst();
+                    }
+                ]]></body>
+            </method>
+
+            <method name="removeStatus">
+                <parameter name="key"/>
+                <body><![CDATA[
+                    var id, row;
+
+                    id = this.getAttribute("id") + "-status-" + key;
+                    row = document.getElementById(id);
+
+                    if (row) {
+                        row.parentNode.removeChild(row);
+                    }
+                ]]></body>
+            </method>
+
+            <method name="setStatus">
+                <parameter name="key"/>
+                <parameter name="message"/>
+                <body><![CDATA[
+                    var id, newRow, oldRow;
+
+                    id = this.getAttribute("id") + "-status-" + key;
+
+                    newRow = this.createConsoleRow();
+                    newRow.setAttribute("id", id);
+                    newRow.setAttribute("type", "status");
+                    newRow.setAttribute("msg", message);
+
+                    oldRow = document.getElementById(id);
+                    if (oldRow) {
+                        oldRow.parentNode.replaceChild(newRow, oldRow);
+                    } else {
+                        this.appendConsoleRow(newRow);
+                    }
+                ]]></body>
+            </method>
+
+            <constructor><![CDATA[
                 /* The consoleBindings.xml#console-box constructor connects
                  * to the message service to receive console messages in its
                  * constructor.  This constructor is run after, so we
@@ -25,7 +93,17 @@
                 // FIXME:  Is there a way to prevent initial registration?
                 this.mCService.unregisterListener(this.mConsoleListener);
                 this.clearConsole();
-            </constructor>
+
+                /* The console must have an id (which we use as a namespace
+                 * for status row ids.  If it does not have one, generate one.
+                 */
+                if (!this.getAttribute("id")) {
+                    this.setAttribute(
+                        "id",
+                        "consolebox" + Math.random().toFixed(10).slice(2)
+                    );
+                }
+            ]]></constructor>
         </implementation>
     </binding>
 </bindings>
