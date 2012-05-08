@@ -14,9 +14,10 @@ define(
         "gecko/components/interfaces",
         "gecko/components/results",
         "log4moz",
+        "omnivalidator/locale",
         "omnivalidator/validatorregistry"
     ],
-    function (Ci, Cr, log4moz, vregistry) {
+    function (Ci, Cr, log4moz, locale, vregistry) {
         "use strict";
 
         var logger =
@@ -80,6 +81,18 @@ define(
                             vStatus.validator.name + ": " + msg.errorMessage;
                     }
                     consoleBox.appendItem(msg);
+                }
+
+                if (vStatus.state) {
+                    if (vStatus.state === "done") {
+                        consoleBox.removeStatus(vStatus.validator.id);
+                    } else {
+                        consoleBox.setStatus(
+                            vStatus.validator.id,
+                            vStatus.validator.name + ": " +
+                                locale.get("validatorState." + vStatus.state)
+                        );
+                    }
                 }
 
                 if (vStatus.reload) {
