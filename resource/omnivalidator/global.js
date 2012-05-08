@@ -286,6 +286,8 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
                         ex
                     );
                 }
+
+                return undefined;
             }
 
             if (moduleImports) {
