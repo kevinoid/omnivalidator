@@ -140,16 +140,11 @@ define(
                         ": " +
                         errorcount + " errors, " +
                         warnCount + " warnings");
-                callbackValidate(
-                    thisValidator,
-                    resourceid,
-                    {
-                        summary: {
-                            errorCount: errorcount,
-                            warnCount: warnCount
-                        }
-                    }
-                );
+
+                return {
+                    errorCount: errorcount,
+                    warnCount: warnCount
+                };
             }
 
             function handleResponse(xhr, resourceid, callbackValidate) {
