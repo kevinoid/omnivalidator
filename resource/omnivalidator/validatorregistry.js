@@ -36,11 +36,15 @@ define(
                 return regex.test(url);
             }),
             defaultName = locale.get("validatorName.unnamed"),
+            nameListeners = [],
             // Note:  Must hold reference to prevent observer GC
             validatorsPref = Preferences.getBranch(
                 globaldefs.EXT_PREF_PREFIX + "validators."
             ),
-            validatorTypes;
+            validatorTypes,
+            // Sorted array of validator IDs, used to monitor addition/removal
+            // of validators from preferences events
+            vids;
 
         // FIXME:  Is there a way to read the dependency IDs from inside
         // the module?  If so, can avoid repeating these here.
@@ -48,6 +52,13 @@ define(
             "omnivalidator/validatornu":    validatornu,
             "omnivalidator/w3cmarkup":      w3cmarkup
         };
+
+        function notifyNameListeners(/*args*/) {
+            var i;
+            for (i = 0; i < nameListeners.length; ++i) {
+                nameListeners[i].apply(null, arguments);
+            }
+        }
 
         function getValidatorPrefs() {
             return Preferences.getObject(
@@ -130,6 +141,15 @@ define(
             if (!allValidators) {
                 loadValidators();
             }
+        }
+
+        /** Listen for validator addition/removal */
+        function addNameListener(nameListener) {
+            nameListeners.push(nameListener);
+        }
+
+        function removeNameListener(nameListener) {
+            nameListeners.remove(nameListener);
         }
 
         function getAll() {
@@ -263,15 +283,47 @@ define(
             validatorsPref.deleteBranch();
         }
 
-        // Clear the validators list (causing lazy reload) when Preferences change
+        vids = validatorsPref.getChildNames();
+        vids.sort();
         validatorsPref.addObserver("", {
-            observe: function () {
+            observe: function (subject, topic, data) {
+                var dataParts, ind, vid;
+
+                // Clear the validators list (causing lazy reload) when
+                // Preferences change
                 logger.debug("Validator preferences changed, clearing validators");
                 clearValidators();
+
+                // Check for name changes
+                dataParts = data.split(".");
+                vid = dataParts[0];
+                if (dataParts.length === 2 &&
+                        dataParts[1] === "name") {
+                    logger.debug("Detected name change for " + vid);
+                    notifyNameListeners(this, vid);
+                } else {
+                    // To handle unnamed validators, check if VID added/removed
+                    ind = underscore.sortedIndex(vids, vid);
+                    if (!vids.hasOwnProperty(ind) || vids[ind] !== vid) {
+                        // Change to previously non-existant pref => new VID
+                        logger.debug("Detected addition of " + vid);
+                        vids.splice(ind, 0, vid);
+                        notifyNameListeners(this, vid);
+                    } else {
+                        // Change to pref, check for VID removal
+                        if (subject.getChildList(vid + ".", {}).length === 0) {
+                            // No children.  VID removed.
+                            logger.debug("Detected removal of " + vid);
+                            vids.splice(ind, 1);
+                            notifyNameListeners(this, vid);
+                        }
+                    }
+                }
             }
         }, false);
 
         return {
+            addNameListener: addNameListener,
             getAll: getAll,
             getAutoFor: getAutoFor,
             getClickFor: getClickFor,
@@ -279,7 +331,8 @@ define(
             getNewValidatorID: getNewValidatorID,
             getTypeNames: getTypeNames,
             remove: remove,
-            removeAll: removeAll
+            removeAll: removeAll,
+            removeNameListener: removeNameListener
         };
     }
 );
