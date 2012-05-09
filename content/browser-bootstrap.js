@@ -116,6 +116,9 @@
                 menus =
                     document.getElementsByClassName("omnivalidator-copy-menupopup-main");
                 for (i = 0; i < menus.length; ++i) {
+                    logger.trace("Copying main menu to " +
+                        menus[i].getAttribute("id"));
+
                     menu = mainMenu.cloneNode(true);
                     menu.removeAttribute("id");
                     menus[i].appendChild(menu);
