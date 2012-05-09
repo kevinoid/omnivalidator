@@ -15,11 +15,11 @@
 
     <statusbar id="status-bar">
         <toolbarbutton id="omnivalidator-statusbarbutton"
-                class="omnivalidator-statusbutton"
+                class="omnivalidator-statusbutton omnivalidator-copy-menupopup-main"
                 command="omnivalidator-command-toggle"
                 tooltiptext="&extensionName;"
                 type="menu-button">
-            <menupopup id="omnivalidator-menupopup-main" />
+            <!-- Content copied from omnivalidator-menupopup-main -->
         </toolbarbutton>
     </statusbar>
 </overlay>

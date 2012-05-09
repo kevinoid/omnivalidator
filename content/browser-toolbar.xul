@@ -15,12 +15,12 @@
 
     <toolbarpalette id="BrowserToolbarPalette">
         <toolbarbutton id="omnivalidator-toolbarbutton"
-                class="omnivalidator-statusbutton"
+                class="omnivalidator-statusbutton omnivalidator-copy-menupopup-main"
                 command="omnivalidator-command-toggle"
                 label="&extensionName;"
                 tooltiptext="&extensionName;"
                 type="menu-button">
-            <menupopup id="omnivalidator-menupopup-main" />
+            <!-- Content copied from omnivalidator-menupopup-main -->
         </toolbarbutton>
     </toolbarpalette>
 </overlay>
