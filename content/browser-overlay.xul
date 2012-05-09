@@ -78,27 +78,30 @@
                 label="&validatePage.label;" />
     </popup>
 
-    <!-- Important:  Copied to menus above.  Avoid id attributes. -->
-    <menupopup id="omnivalidator-menupopup-main"
-            class="omnivalidator-menupopup-main">
-        <menu label="&validateWithAll.label;">
-            <menupopup class="omnivalidator-menupopup-main-validators">
-                <menuitem
-                    label="&validatorListAll.label;"
-                    value="(All)" />
-                <menuseparator />
-                <!-- Filled with menuitems for all configured validators -->
-            </menupopup>
-        </menu>
-        <menuseparator />
-        <menuitem
-            command="omnivalidator-command-prefs"
-            label="&preferences.label;" />
-        <menuseparator />
-        <menuitem
-            command="omnivalidator-command-about"
-            label="&about.label;" />
-    </menupopup>
+    <!-- Note:  popupset requied for FF 3.5 to load the menupopup -->
+    <popupset>
+        <!-- Important:  Copied to menus above without id attribute. -->
+        <menupopup id="omnivalidator-menupopup-main"
+                class="omnivalidator-menupopup-main">
+            <menu label="&validateWithAll.label;">
+                <menupopup class="omnivalidator-menupopup-main-validators">
+                    <menuitem
+                        label="&validatorListAll.label;"
+                        value="(All)" />
+                    <menuseparator />
+                    <!-- Filled with menuitems for all configured validators -->
+                </menupopup>
+            </menu>
+            <menuseparator />
+            <menuitem
+                command="omnivalidator-command-prefs"
+                label="&preferences.label;" />
+            <menuseparator />
+            <menuitem
+                command="omnivalidator-command-about"
+                label="&about.label;" />
+        </menupopup>
+    </popupset>
 
     <commandset>
         <command id="omnivalidator-command-about" />
