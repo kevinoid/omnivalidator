@@ -1,6 +1,8 @@
 * Sandbox HTTP connections to validators to avoid leaking information or
   polluting user state/cookies <https://developer.mozilla.org/en/Creating_Sandboxed_HTTP_Connections>
 * Filtering and searching of messages in the console
+* Support re-running a validator without reloading a page
+    * Depends on being able to selectively clear messages&status by vid
 
 Things to Test:
 * Test validation of non-cacheable pages works correctly
