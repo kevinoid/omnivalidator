@@ -13,11 +13,10 @@
 <overlay id="omnivalidator-overlay"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-    <statusbar>
-        <toolbarbutton id="omnivalidator-toolbarbutton"
+    <statusbar id="status-bar">
+        <toolbarbutton id="omnivalidator-statusbarbutton"
                 class="omnivalidator-statusbutton"
                 command="omnivalidator-command-toggle"
-                label="&extensionName;"
                 tooltiptext="&extensionName;"
                 type="menu-button">
             <menupopup id="omnivalidator-menupopup-main" />

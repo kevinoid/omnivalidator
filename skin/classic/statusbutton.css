@@ -28,22 +28,27 @@
 	list-style-image: url("icon-warn-24.png");
 }
 
+statusbar .omnivalidator-statusbutton,
 toolbar[iconsize="small"] .omnivalidator-statusbutton {
 	list-style-image: url("icon-inactive-16.png");
 }
 
+statusbar .omnivalidator-statusbutton.omnivalidator-status-invalid,
 toolbar[iconsize="small"] .omnivalidator-statusbutton.omnivalidator-status-invalid {
 	list-style-image: url("icon-invalid-16.png");
 }
 
+statusbar .omnivalidator-statusbutton.omnivalidator-status-unknown,
 toolbar[iconsize="small"] .omnivalidator-statusbutton.omnivalidator-status-unknown {
 	list-style-image: url("icon-unknown-16.png");
 }
 
+statusbar .omnivalidator-statusbutton.omnivalidator-status-valid,
 toolbar[iconsize="small"] .omnivalidator-statusbutton.omnivalidator-status-valid {
 	list-style-image: url("icon-valid-16.png");
 }
 
+statusbar .omnivalidator-statusbutton.omnivalidator-status-warn,
 toolbar[iconsize="small"] .omnivalidator-statusbutton.omnivalidator-status-warn {
 	list-style-image: url("icon-warn-16.png");
 }
