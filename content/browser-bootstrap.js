@@ -150,6 +150,8 @@
 
                 // Load the list of validators for the main menu
                 reloadMainMenuValidators();
+                // and reload on any changes
+                vregistry.addNameListener(reloadMainMenuValidators);
             }
 
             function setupPrefsCommand(command) {

@@ -1,9 +1,6 @@
 * Sandbox HTTP connections to validators to avoid leaking information or
   polluting user state/cookies <https://developer.mozilla.org/en/Creating_Sandboxed_HTTP_Connections>
 * Filtering and searching of messages in the console
-* More work on propagating configuration changes around without restarting
-    * Reload the validator list in the main menus
-    * Make sure the validator objects are not held outside of the vregistry
 
 Things to Test:
 * Test validation of non-cacheable pages works correctly
