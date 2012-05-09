@@ -148,7 +148,7 @@ define(
             }
 
             function handleResponse(xhr, resourceid, callbackValidate) {
-                var errorMsg, response, responseType, summary;
+                var errorMsg, response, responseType, statusText, summary;
 
                 logger.debug("Processing validation response from " +
                         validatorName + " for " + resourceid.uri);
@@ -160,14 +160,22 @@ define(
                 );
 
                 if (xhr.status !== 200) {
+                    // Note:  This can throw in older versions of Firefox
+                    // (e.g. when status === 0 from local TCP RST in FF 3.5)
+                    try {
+                        statusText = xhr.statusText;
+                    } catch (ex) {
+                        statusText = "";
+                    }
+
                     logger.error(validatorName + " returned HTTP status " +
-                        xhr.status + " (" + xhr.statusText + ") validating " +
+                        xhr.status + " (" + statusText + ") validating " +
                         resourceid.uri);
                     errorMsg = locale.format(
                         "validator.errorHttpStatus",
                         validatorName,
                         xhr.status,
-                        xhr.statusText,
+                        statusText,
                         resourceid.uri
                     );
                     callbackValidate(
