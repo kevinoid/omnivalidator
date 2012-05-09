@@ -30,11 +30,12 @@
             "omnivalidator/validationstatusbutton",
             "omnivalidator/validatorregistry",
             "omnivalidator/windowvalidationmanager",
+            "omnivalidator/xulutils",
             "underscore"
         ],
         function (log4moz, ConsoleDockedWin, globaldefs,
                 ValidationStatusButton, vregistry, WindowValidationManager,
-                underscore) {
+                xulutils, underscore) {
             var consoleWin,
                 logger = log4moz.repository.getLogger("omnivalidator.browserinit"),
                 vManager;
@@ -70,42 +71,47 @@
                 }, false);
             }
 
-            function setupMainMenuValidators(menu, validatorIDs,
-                    validatorNames) {
+            function reloadMainMenuValidators() {
                 var i,
-                    menuitem;
+                    menuitems,
+                    menuVal,
+                    menuVals,
+                    validatorNames;
 
-                for (i = 0; i < validatorIDs.length; ++i) {
-                    menuitem = document.createElementNS(
-                        globaldefs.XUL_NS,
-                        "menuitem"
-                    );
-                    menuitem.setAttribute(
-                        "label",
-                        validatorNames[validatorIDs[i]]
-                    );
-                    menuitem.setAttribute("value", validatorIDs[i]);
-                    menu.appendChild(menuitem);
-                }
-
-                menu.addEventListener("command", function (evt) {
-                    logger.debug("Menu command to validate using " +
-                        evt.originalTarget.value);
-                    if (evt.originalTarget.value === "(All)") {
-                        vManager.validate();
-                    } else {
-                        vManager.validate(evt.originalTarget.value);
+                validatorNames = vregistry.getNames();
+                menuitems = xulutils.listToXul(
+                    validatorNames,
+                    "menuitem",
+                    document.createDocumentFragment(),
+                    function (a, b) {
+                        return validatorNames[a].localeCompare(validatorNames[b]);
                     }
-                }, false);
+                );
+
+                menuVals =
+                    document.getElementsByClassName(
+                        "omnivalidator-menupopup-main-validators"
+                    );
+                for (i = 0; i < menuVals.length; ++i) {
+                    menuVal = menuVals[i];
+
+                    // Remove any existing validator menuitems
+                    while (menuVal.lastChild &&
+                            !(menuVal.lastChild.localName === "menuseparator" &&
+                                menuVal.namespaceURI === globaldefs.XUL_NS)) {
+                        menuVal.removeChild(menuVal.lastChild);
+                    }
+
+                    // Add the current validator list
+                    menuVals[i].appendChild(menuitems.cloneNode(true));
+                }
             }
 
             function setupMainMenu(mainMenu) {
                 var i,
                     menu,
                     menus,
-                    menuVals,
-                    validatorIDs,
-                    validatorNames;
+                    menuVals;
 
                 // Remove from Tools menu when in "Web Developer" submenu
                 if (document.getElementById("omnivalidator-menu-toolswebdev")) {
@@ -113,6 +119,7 @@
                     menu.parentNode.removeChild(menu);
                 }
 
+                // Copy main menupopup to everywhere it is needed
                 menus =
                     document.getElementsByClassName("omnivalidator-copy-menupopup-main");
                 for (i = 0; i < menus.length; ++i) {
@@ -124,22 +131,25 @@
                     menus[i].appendChild(menu);
                 }
 
-                menuVals =
-                    document.getElementsByClassName(
-                        "omnivalidator-menupopup-main-validators"
-                    );
-                validatorNames = vregistry.getNames();
-                validatorIDs = underscore.keys(validatorNames);
-                validatorIDs.sort(function (a, b) {
-                    return validatorNames[a].localeCompare(validatorNames[b]);
-                });
-                for (i = 0; i < menuVals.length; ++i) {
-                    setupMainMenuValidators(
-                        menuVals[i],
-                        validatorIDs,
-                        validatorNames
-                    );
+                // Setup command listeners for the menu validator list
+                menuVals = document.getElementsByClassName(
+                    "omnivalidator-menupopup-main-validators"
+                );
+                function onValidateCommand(evt) {
+                    var vid = evt.originalTarget.value;
+                    logger.debug("Menu command to validate using " + vid);
+                    if (vid === "(All)") {
+                        vManager.validate();
+                    } else {
+                        vManager.validate(vid);
+                    }
                 }
+                for (i = 0; i < menuVals.length; ++i) {
+                    menu.addEventListener("command", onValidateCommand, false);
+                }
+
+                // Load the list of validators for the main menu
+                reloadMainMenuValidators();
             }
 
             function setupPrefsCommand(command) {
