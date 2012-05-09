@@ -158,12 +158,17 @@ define(
          * @constructor
          * @class Represents the set of all preferences rooted at
          * (prefixed with) a given string
-         * @param {String} [branchName=""] Root (prefix) of preferences
-         * included in this branch.
+         * @param {String|nsIPrefBranch} [branch=""] Either the root (prefix)
+         * of preferences included in this branch or a branch to wrap.
          */
-        function Preferences(branchName) {
-            this.branchName = concat(branchName);
-            this.prefBranch = prefService.getBranch(this.branchName);
+        function Preferences(branch) {
+            if (branch && typeof branch.QueryInterface === "function") {
+                this.prefBranch = branch.QueryInterface(Ci.nsIPrefBranch);
+                this.branchName = this.prefBranch.root;
+            } else {
+                this.branchName = concat(branch);
+                this.prefBranch = prefService.getBranch(this.branchName);
+            }
         }
 
         /** Add an observer to preferences below a given branch.
