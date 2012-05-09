@@ -16,7 +16,7 @@ define(
         "use strict";
 
         function toArray(classNames) {
-            if (!classNames || classNames.length === 0) {
+            if (!classNames) {
                 return [];
             }
 
@@ -24,7 +24,7 @@ define(
         }
 
         function addClassTo(classNames, className) {
-            if (!classNames || classNames.length === 0) {
+            if (!classNames) {
                 return className;
             }
 
@@ -47,7 +47,7 @@ define(
                 }
             }
 
-            return newClasses;
+            return newClasses.join(" ");
         }
 
         return {
