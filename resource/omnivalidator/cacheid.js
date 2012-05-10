@@ -69,6 +69,31 @@ define(
             return true;
         };
 
+        CacheID.prototype.toString = function () {
+            var cacheKey;
+
+            if (this.cacheKey) {
+                try {
+                    cacheKey = this.cacheKey
+                        .QueryInterface(Ci.nsISupportsCString)
+                        .toString();
+                } catch (ex) {
+                    cacheKey = String(this.cacheKey);
+                }
+            } else if (this.cacheToken) {
+                try {
+                    cacheKey = this.cacheToken
+                        .QueryInterface(Ci.nsICacheEntryInfo)
+                        .key;
+                } catch (ex2) {
+                    cacheKey = String(this.cacheToken);
+                }
+            }
+
+            return String(this.uri) +
+                (cacheKey ? " (cacheKey: " + cacheKey + ")" : "");
+        };
+
         CacheID.fromDocument = function (doc) {
             return new CacheID(doc.documentURI, getDocumentCacheKey(doc));
         };
