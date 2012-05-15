@@ -1,5 +1,9 @@
 <!ENTITY extensionName "Omnivalidator">
 
+<!ENTITY advanced.label "Advanced">
+<!ENTITY allowUncached.accesskey "U">
+<!ENTITY allowUncached.label "Allow validation of uncached content">
+<!ENTITY allowUncached.tooltip "When validation of uncached content is allowed, the validated content will be re-downloaded from the server and may differ from the displayed content.  However, this is necessary to validate content which can not be cached due to user preferences (browser.cache.memory.enable or network.http.use-cache set false).">
 <!ENTITY autoValidate.label "Automatic Validation">
 <!ENTITY autoValidateAdd.accesskey "A">
 <!ENTITY autoValidateAdd.label "Add Auto-validate">

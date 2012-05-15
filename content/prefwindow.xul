@@ -124,6 +124,20 @@
 
     </prefpane>
 
+    <prefpane id="advanced-prefpane" label="&advanced.label;">
+        <preferences>
+            <preference id="preference-allow-uncached"
+                    name="extensions.omnivalidator.allowUncached"
+                    type="bool" />
+        </preferences>
+
+        <checkbox id="allow-uncached"
+                accesskey="&allowUncached.accesskey;"
+                label="&allowUncached.label;"
+                preference="preference-allow-uncached"
+                tooltiptext="&allowUncached.tooltip;" />
+    </prefpane>
+
     <!-- Note:  Must be after all prefpane elements if multiple defined
          See: https://developer.mozilla.org/en/XUL/prefpane#Using_multiple_prefpanes -->
     <script type="application/javascript" src="prefwindow.js" />
