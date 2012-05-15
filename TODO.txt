@@ -3,6 +3,8 @@
 * Filtering and searching of messages in the console
 * Support re-running a validator without reloading a page
     * Depends on being able to selectively clear messages&status by vid
+* Improve code for fetching page from cache (using cache tokens or whatnot)
+  to match View Source and Save As once bug 136633 is fixed (if ever).
 
 Things to Test:
 * Test validation of non-cacheable pages works correctly
