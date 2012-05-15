@@ -170,6 +170,8 @@ define(
         function getChannel(cacheid) {
             var cacheChannel, channel, ios;
 
+            logger.trace("Getting channel for " + cacheid);
+
             ios = Cc["@mozilla.org/network/io-service;1"]
                 .getService(Ci.nsIIOService);
 
