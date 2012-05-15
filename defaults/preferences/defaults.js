@@ -1,6 +1,9 @@
 /*jslint indent: 4 */
 /*global pref: true */
 
+// Allow fetching content for resources which were not cached
+pref("extensions.omnivalidator.allowUncached", false);
+
 // Memory debugging (compartment) granularity
 pref("extensions.omnivalidator.debugMemory", 0);
 

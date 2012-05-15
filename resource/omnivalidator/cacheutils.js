@@ -14,9 +14,11 @@ define(
         "gecko/components/classes",
         "gecko/components/interfaces",
         "log4moz",
-        "omnivalidator/cacheid"
+        "omnivalidator/cacheid",
+        "omnivalidator/globaldefs",
+        "omnivalidator/preferences"
     ],
-    function (Cc, Ci, log4moz, CacheID) {
+    function (Cc, Ci, log4moz, CacheID, globaldefs, Preferences) {
         "use strict";
 
         var logger = log4moz.repository.getLogger("omnivalidator.cacheutils"),
@@ -179,7 +181,9 @@ define(
             /*jslint bitwise: true */
             channel.loadFlags |= Ci.nsIRequest.VALIDATE_NEVER;
             channel.loadFlags |= Ci.nsIRequest.LOAD_FROM_CACHE;
-            channel.loadFlags |= Ci.nsICachingChannel.LOAD_ONLY_FROM_CACHE;
+            if (!Preferences.getValue(globaldefs.EXT_PREF_PREFIX + "allowUncached")) {
+                channel.loadFlags |= Ci.nsICachingChannel.LOAD_ONLY_FROM_CACHE;
+            }
             /*jslint bitwise: false */
 
             try {
