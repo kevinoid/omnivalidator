@@ -12,6 +12,11 @@ prefpane {
 	-moz-box-flex: 1;
 }
 
+radio[pane=advanced-prefpane] {
+	list-style-image: url("chrome://browser/skin/preferences/Options.png");
+	-moz-image-region: rect(0px, 224px, 32px, 192px);
+}
+
 #auto-validate-add-box {
 	-moz-box-orient: vertical;
 	-moz-box-pack: center;
