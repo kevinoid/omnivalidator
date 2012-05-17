@@ -11,4 +11,7 @@ pref("extensions.omnivalidator.debugMemory", 0);
 pref("extensions.omnivalidator.log.consoleLevel", 50);
 pref("extensions.omnivalidator.log.fileLevel", 20);
 
+// Prompt warning preferences
+pref("extensions.omnivalidator.warnNoCache", true);
+
 // vi: set sts=4 sw=4 et :

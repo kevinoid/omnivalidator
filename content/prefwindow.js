@@ -7,7 +7,7 @@
  * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
  */
 /*jslint indent: 4, plusplus: true, unparam: true */
-/*global Components, document, gBrowser */
+/*global Components, document, gBrowser, window */
 
 (function () {
     "use strict";
@@ -22,17 +22,93 @@
 
     omnivalidator.require(
         [
+            "gecko/components/classes",
+            "gecko/components/interfaces",
             "log4moz",
             "omnivalidator/globaldefs",
+            "omnivalidator/locale",
             "omnivalidator/prefavlistbox",
+            "omnivalidator/preferences",
             "omnivalidator/validatorregistry",
             "omnivalidator/xulutils",
             "underscore"
         ],
-        function (log4moz, globaldefs, PrefAVListbox, vregistry,
-                xulutils, underscore) {
+        function (Cc, Ci, log4moz, globaldefs, locale, PrefAVListbox,
+                Preferences, vregistry, xulutils, underscore) {
             var logger = log4moz.repository.getLogger("omnivalidator.prefwindow"),
                 autoValListbox;
+
+            function getPrompter() {
+                try {
+                    // New (post-bug 563274) way to get prompter
+                    return Cc["@mozilla.org/prompter;1"]
+                        .getService(Ci.nsIPromptFactory)
+                        .getPrompt(window, Ci.nsIPrompt);
+                } catch (ex) {
+                    // Old (pre-bug 563274) way to get prompter
+                    return Cc["@mozilla.org/embedcomp/window-watcher;1"]
+                        .getService(Ci.nsIWindowWatcher)
+                        .getNewPrompter(window);
+                }
+            }
+
+            // Check for any potential mis-configurations and confirm that
+            // the user wants to leave the preferences in this state
+            function confirmClose() {
+                var allowUncached,
+                    browserCache,
+                    btnPress,
+                    dontWarn = {},
+                    prefElem,
+                    prompter;
+
+                if (!Preferences.getValue(
+                            globaldefs.EXT_PREF_PREFIX + "warnNoCache"
+                        )) {
+                    // User has asked not to be warned about cache problems
+                    return true;
+                }
+
+                prefElem =
+                    document.getElementById("preference-allow-uncached");
+                allowUncached = prefElem.value;
+                if (allowUncached === undefined) {
+                    allowUncached = prefElem.defaultValue;
+                }
+
+                browserCache =
+                    Preferences.getValue("browser.cache.memory.enable") &&
+                    Preferences.getValue("network.http.use-cache");
+
+                if (!browserCache && !allowUncached) {
+                    prompter = getPrompter();
+
+                    btnPress = prompter.confirmEx(
+                        null,                                   // title
+                        locale.get("prompt.confirmNoCache"),    // message
+                        Ci.nsIPrompt.STD_OK_CANCEL_BUTTONS,     // flags
+                        null,                                   // btn 0 lbl
+                        null,                                   // btn 1 lbl
+                        null,                                   // btn 2 lbl
+                        locale.get("prompt.dontWarnAgain"),     // check msg
+                        dontWarn                                // check state
+                    );
+
+                    if (dontWarn.value) {
+                        Preferences.set(
+                            globaldefs.EXT_PREF_PREFIX + "warnNoCache",
+                            false
+                        );
+                    }
+
+                    if (btnPress !== 0) {
+                        // User has canceled
+                        return false;
+                    }
+                }
+
+                return true;
+            }
 
             function setupAutoAddButton(button) {
                 button.addEventListener("click", function () {
@@ -84,16 +160,68 @@
             }
 
             function setupAutoValList(listbox) {
-                var prefwindow = document.documentElement;
-
                 autoValListbox = new PrefAVListbox(listbox);
 
-                if (!prefwindow.instantApply) {
-                    prefwindow.addListener(
-                        "dialogaccept",
-                        function () {
-                            autoValListbox.save();
+                // Note: Saving for non-instantApply is setup in
+                // setupCloseListeners
+            }
+
+            function setupCloseListeners() {
+                var canClose = true,
+                    firstCall = true,
+                    onAcceptOrBefore;
+
+                if (document.documentElement.instantApply) {
+                    // On systems where accept is not needed, cancel will fire
+                    // for both the close button and when the window is closed
+                    // by the WM.  Accept (and beforeaccept) will never fire.
+                    document.documentElement.addEventListener(
+                        "dialogcancel",
+                        function (evt) {
+                            canClose = confirmClose();
+
+                            if (!canClose) {
+                                evt.preventDefault();
+                            }
+                            return canClose;
                         },
+                        false
+                    );
+                } else {
+                    // Note: beforeaccept is triggered from dialogaccept
+                    // So we can't guarantee whether our beforeaccept
+                    // listener will be called before or after our dialogaccept
+                    // listener.
+                    // Also due to bug 474527 we can't prevent the window from
+                    // closing in beforeaccept, so we must listen for
+                    // dialogaccept as well
+
+                    // FIXME:  This code assumes beforeaccept and dialogaccept
+                    // are each called exactly once for each dialogaccept event.
+                    // Is there a better way to detect event order and
+                    // uniqueness?
+                    onAcceptOrBefore = function (evt) {
+                        if (firstCall) {
+                            canClose = confirmClose();
+                        }
+
+                        firstCall = !firstCall;
+
+                        if (canClose) {
+                            autoValListbox.save();
+                        } else {
+                            evt.preventDefault();
+                        }
+                        return canClose;
+                    };
+                    document.documentElement.addEventListener(
+                        "beforeaccept",
+                        onAcceptOrBefore,
+                        false
+                    );
+                    document.documentElement.addEventListener(
+                        "dialogaccept",
+                        onAcceptOrBefore,
                         false
                     );
                 }
@@ -261,6 +389,9 @@
                 );
 
                 fillValidatorLists();
+
+                setupCloseListeners();
+
             }, false);
         }
     );
