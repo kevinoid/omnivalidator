@@ -261,6 +261,22 @@ define(
             return btnPress === 0;
         }
 
+        function setReferrer(channel, cacheid) {
+            var httpChannel;
+
+            if (cacheid.referrerURI) {
+                try {
+                    httpChannel = channel.QueryInterface(Ci.nsIHttpChannel);
+                    httpChannel.referrer = cacheid.referrerURI;
+                } catch (ex) {
+                    logger.debug("Unable to set referrer on request", ex);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         function openUncachedResourceAsync(cacheid, streamListener, context) {
             var channel,
                 seekableStream,
@@ -279,6 +295,10 @@ define(
 
             // FIXME:  Is there any point in setting cacheKey/cacheToken when
             // bypassing the local cache?
+
+            // Set the referrer, we want the request to be as close as
+            // possible to the original
+            setReferrer(channel, cacheid);
 
             if (cacheid.postData) {
                 if (!confirmRepost()) {
@@ -400,6 +420,10 @@ define(
                     }
                 }
             }
+
+            // Set the referrer for the case we miss the cache, we want the
+            // request to be as close as possible to the original
+            setReferrer(channel, cacheid);
 
             if (allowUncached && cacheid.postData) {
                 // If uncached responses are allowed and we have POST data,
