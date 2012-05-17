@@ -111,7 +111,8 @@ define(
                 doc.documentURI,
                 shEntry.cacheKey,
                 null,
-                shEntry.postData
+                shEntry.postData,
+                shEntry.referrerURI
             );
         };
 
