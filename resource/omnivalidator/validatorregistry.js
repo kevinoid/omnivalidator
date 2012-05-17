@@ -300,7 +300,7 @@ define(
                 if (dataParts.length === 2 &&
                         dataParts[1] === "name") {
                     logger.debug("Detected name change for " + vid);
-                    notifyNameListeners(this, vid);
+                    notifyNameListeners(vid);
                 } else {
                     // To handle unnamed validators, check if VID added/removed
                     ind = underscore.sortedIndex(vids, vid);
@@ -308,14 +308,14 @@ define(
                         // Change to previously non-existant pref => new VID
                         logger.debug("Detected addition of " + vid);
                         vids.splice(ind, 0, vid);
-                        notifyNameListeners(this, vid);
+                        notifyNameListeners(vid);
                     } else {
                         // Change to pref, check for VID removal
                         if (subject.getChildList(vid + ".", {}).length === 0) {
                             // No children.  VID removed.
                             logger.debug("Detected removal of " + vid);
                             vids.splice(ind, 1);
-                            notifyNameListeners(this, vid);
+                            notifyNameListeners(vid);
                         }
                     }
                 }
