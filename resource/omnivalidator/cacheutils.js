@@ -13,12 +13,16 @@ define(
     [
         "gecko/components/classes",
         "gecko/components/interfaces",
+        "gecko/components/results",
         "log4moz",
         "omnivalidator/cacheid",
         "omnivalidator/globaldefs",
-        "omnivalidator/preferences"
+        "omnivalidator/nserrorutils",
+        "omnivalidator/preferences",
+        "underscore"
     ],
-    function (Cc, Ci, log4moz, CacheID, globaldefs, Preferences) {
+    function (Cc, Ci, Cr, log4moz, CacheID, globaldefs, nserrorutils,
+            Preferences, underscore) {
         "use strict";
 
         var logger = log4moz.repository.getLogger("omnivalidator.cacheutils"),
@@ -204,11 +208,222 @@ define(
             return getChannel(CacheID.fromDocument(doc));
         }
 
+        /* Since we can only detect failure once nsIStreamListener.onStopRequest
+         * is called, we need to buffer calls to the caller's nsIStreamListener
+         * and only forward calls once we have success.
+         */
+        function streamListenOrFail(streamListener, onFail) {
+            var startArgs;
+
+            return {
+                QueryInterface: function (aIID) {
+                    if (aIID.equals(Ci.nsIStreamListener) ||
+                            aIID.equals(Ci.nsIRequestObserver) ||
+                            aIID.equals(Ci.nsISupports)) {
+                        return this;
+                    }
+                    throw Cr.NS_NOINTERFACE;
+                },
+
+                onDataAvailable: function (request, context, stream, offset, count) {
+                    // Data received
+                    // Forward startRequest, this, and all subsequent callbacks
+                    if (startArgs) {
+                        streamListener.onStartRequest.apply(
+                            streamListener,
+                            startArgs
+                        );
+                    }
+                    streamListener.onDataAvailable.apply(
+                        streamListener,
+                        arguments
+                    );
+                    this.onDataAvailable = underscore.bind(
+                        streamListener.onDataAvailable,
+                        streamListener
+                    );
+                    this.onStartRequest = underscore.bind(
+                        streamListener.onStartRequest,
+                        streamListener
+                    );
+                    this.onStopRequest = underscore.bind(
+                        streamListener.onStopRequest,
+                        streamListener
+                    );
+                },
+
+                onStartRequest: function (request, context) {
+                    // Do not forward until we know stream is viable
+                    startArgs = arguments;
+                },
+
+                onStopRequest: function (request, context, statusCode) {
+                    if (statusCode === 0) {
+                        // Stream with no data was successfully read
+                        if (startArgs) {
+                            streamListener.onStartRequest.apply(
+                                streamListener,
+                                startArgs
+                            );
+                        }
+                        streamListener.onStopRequest.apply(
+                            streamListener,
+                            arguments
+                        );
+                    } else if (onFail) {
+                        // Reading the stream failed, don't forward any calls
+                        // Signal the caller that stream reading has failed
+                        onFail(nserrorutils.nsErrorToException(statusCode));
+                    }
+                }
+            };
+        }
+
+        function openUncachedResourceAsync(cacheid, streamListener, context) {
+            var channel,
+                uploadChannel;
+
+            logger.trace("Getting uncached resource for " + cacheid);
+
+            channel = Cc["@mozilla.org/network/io-service;1"]
+                .getService(Ci.nsIIOService)
+                .newChannel(cacheid.uri, null, null);
+
+            /*jslint bitwise: true */
+            channel.loadFlags |=
+                Ci.nsICachingChannel.LOAD_BYPASS_LOCAL_CACHE;
+            /*jslint bitwise: false */
+
+            // FIXME:  Is there any point in setting cacheKey/cacheToken when
+            // bypassing the local cache?  (e.g. for channel flags or something)
+
+            if (cacheid.postData) {
+                try {
+                    uploadChannel =
+                        channel.QueryInterface(Ci.nsIUploadChannel);
+                    uploadChannel.setUploadStream(
+                        cacheid.postData,
+                        null,
+                        null
+                    );
+                } catch (ex2) {
+                    logger.warn("Unable to set post data on channel, " +
+                        "validated content may differ from displayed content",
+                        ex2);
+                }
+            }
+
+            channel.asyncOpen(streamListener, context);
+        }
+
+        function openResourceAsync(cacheid, streamListener, context) {
+            var allowUncached,
+                cacheCanMiss,
+                cacheChannel,
+                cacheKeyInt,
+                channel;
+
+            allowUncached = Preferences.getValue(
+                globaldefs.EXT_PREF_PREFIX + "allowUncached"
+            );
+
+            // If we are getting a resource which is identified by a
+            // cacheKey or cacheToken, we can't allow the resource to be
+            // fetched if the cache misses, since it would fetch the resource
+            // using only the URI (e.g. ignoring any POST data).
+            // We don't want to set the POST data without warning the
+            // user, and we don't want to warn the user unless we need
+            // to send the POST data, so for resources identified by
+            // more than just the URI, the first try must load from
+            // the cache or fail.
+            try {
+                // Note: For nsHttpChannel cacheKeys wrapping 0 are safe to
+                // miss in the cache (0 == no POST data)
+                cacheKeyInt = cacheid.cacheKey
+                    .QueryInterface(Ci.nsISupportsPRUint32).data;
+            } catch (ex2) {}
+            cacheCanMiss = !(cacheid.cacheToken || cacheKeyInt);
+
+            logger.trace("Getting resource for " + cacheid);
+
+            channel = Cc["@mozilla.org/network/io-service;1"]
+                .getService(Ci.nsIIOService)
+                .newChannel(cacheid.uri, null, null);
+
+            /*jslint bitwise: true */
+            // On the first attempt, try to load from the cache, if possible
+            channel.loadFlags |= Ci.nsIRequest.VALIDATE_NEVER;
+            channel.loadFlags |= Ci.nsIRequest.LOAD_FROM_CACHE;
+
+            if (!allowUncached || !cacheCanMiss) {
+                channel.loadFlags |=
+                    Ci.nsICachingChannel.LOAD_ONLY_FROM_CACHE;
+            }
+
+            if (cacheid.cacheKey || cacheid.cacheToken) {
+                // Set the cache information on the channel
+                try {
+                    cacheChannel =
+                        channel.QueryInterface(Ci.nsICachingChannel);
+                    if (cacheid.cacheKey) {
+                        cacheChannel.cacheKey = cacheid.cacheKey;
+                    }
+                    if (cacheid.cacheToken) {
+                        cacheChannel.cacheToken = cacheid.cacheToken;
+                    }
+                } catch (ex) {
+                    logger.debug(
+                        "Unable to set caching information on channel",
+                        ex
+                    );
+                    if (allowUncached && cacheid.postData) {
+                        // If we must cache or POST, abandon and try POSTing
+                        openUncachedResourceAsync(
+                            cacheid,
+                            streamListener,
+                            context
+                        );
+                        return;
+                    } else if (!cacheCanMiss) {
+                        // We must hit the cache, but we can't set all of the
+                        // caching information... force the load to fail
+                        channel.loadFlags =
+                            Ci.nsICachingChannel.LOAD_NO_NETWORK_IO |
+                            Ci.nsICachingChannel.LOAD_BYPASS_LOCAL_CACHE;
+                    }
+                }
+            }
+
+            if (allowUncached && cacheid.postData) {
+                // If uncached responses are allowed and we have POST data,
+                // catch load failures and retry with the POST data
+                channel.asyncOpen(
+                    streamListenOrFail(
+                        streamListener,
+                        function (error) {
+                            logger.debug("Attempt to retrieve " + cacheid +
+                                " from cache failed.  Retrying without cache.",
+                                error);
+                            openUncachedResourceAsync(
+                                cacheid,
+                                streamListener,
+                                context
+                            );
+                        }
+                    ),
+                    context
+                );
+            } else {
+                channel.asyncOpen(streamListener, context);
+            }
+        }
+
         return {
             deinhibitCaching: deinhibitCaching,
             getChannel: getChannel,
             getDocumentCacheKey: getDocumentCacheKey,
-            getDocumentChannel: getDocumentChannel
+            getDocumentChannel: getDocumentChannel,
+            openResourceAsync: openResourceAsync
         };
     }
 );
