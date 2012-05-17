@@ -283,6 +283,23 @@ define(
                 valPrefs.addObserver("", observer, true);
             };
 
+            /** Gets the (unsaved) URLs to be auto-validated by VID) */
+            this.getAutoURLsByVID = function () {
+                var autoByVID = {},
+                    vid;
+
+                // Deep clone localAVPrefs
+                for (vid in localAVPrefs) {
+                    if (localAVPrefs.hasOwnProperty(vid)) {
+                        if (localAVPrefs[vid].length !== 0) {
+                            autoByVID[vid] = localAVPrefs[vid].slice(0);
+                        }
+                    }
+                }
+
+                return autoByVID;
+            };
+
             this.reload = function () {
                 var autoURLs,
                     autoVal = [],
