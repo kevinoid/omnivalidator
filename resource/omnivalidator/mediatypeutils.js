@@ -29,8 +29,12 @@ define(
 
                 return httpChannel.getResponseHeader("Content-Type");
             } catch (ex) {
-                // Not HTTP or no Content-Type header
-                logger.debug("Unable to get Content-Type from stream", ex);
+                try {
+                    return channel.QueryInterface(Ci.nsIChannel).contentType;
+                } catch (ex2) {
+                    // Not HTTP or no Content-Type header
+                    logger.debug("Unable to get Content-Type from stream", ex2);
+                }
             }
 
             return contentType;
