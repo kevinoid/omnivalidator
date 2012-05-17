@@ -42,10 +42,11 @@ define(
             return pageDescriptor.QueryInterface(Ci.nsISHEntry).cacheKey;
         }
 
-        function CacheID(uri, cacheKey, cacheToken) {
+        function CacheID(uri, cacheKey, cacheToken, postData) {
             this.uri = uri;
             this.cacheKey = cacheKey;
             this.cacheToken = cacheToken;
+            this.postData = postData;
         }
 
         CacheID.prototype.equals = function (other) {
@@ -54,7 +55,9 @@ define(
                     (this.cacheKey && !other.cacheKey) ||
                     (!this.cacheKey && other.cacheKey) ||
                     (this.cacheToken && !other.cacheToken) ||
-                    (!this.cacheToken && other.cacheToken)) {
+                    (!this.cacheToken && other.cacheToken) ||
+                    (this.postData && !other.postData) ||
+                    (!this.postData && other.postData)) {
                 return false;
             }
 
@@ -63,6 +66,10 @@ define(
             }
 
             if (this.cacheToken && !this.cacheToken.equals(other.cacheToken)) {
+                return false;
+            }
+
+            if (this.postData && !this.postData.equals(other.postData)) {
                 return false;
             }
 
