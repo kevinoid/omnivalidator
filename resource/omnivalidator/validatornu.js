@@ -17,6 +17,7 @@ define(
         "json",
         "log4moz",
         "omnivalidator/cacheutils",
+        "omnivalidator/globaldefs",
         "omnivalidator/locale",
         "omnivalidator/mediatypeutils",
         "omnivalidator/nserrorutils",
@@ -24,11 +25,18 @@ define(
         "omnivalidator/validatormessage",
         "underscore"
     ],
-    function (Cc, Ci, Cr, JSON, log4moz, cacheutils, locale, mediatypeutils,
-            nserrorutils, Validator, ValidatorMessage, underscore) {
+    function (Cc, Ci, Cr, JSON, log4moz, cacheutils, globaldefs, locale,
+            mediatypeutils, nserrorutils, Validator, ValidatorMessage,
+            underscore) {
         "use strict";
 
-        var logger = log4moz.repository.getLogger("omnivalidator.validatornu");
+        var logger = log4moz.repository.getLogger("omnivalidator.validatornu"),
+            userAgent;
+
+        userAgent = Cc["@mozilla.org/network/protocol;1?name=http"]
+            .getService(Ci.nsIHttpProtocolHandler)
+            .userAgent;
+        userAgent += " " + globaldefs.EXT_NAME + "/" + globaldefs.EXT_VERSION;
 
         function ValidatorNuValidator(vid, validatorName, validatorArgs) {
             var thisValidator = this,
@@ -301,6 +309,7 @@ define(
                         xhr.setRequestHeader("Content-Type", resourceType);
                     }
                     xhr.setRequestHeader("Content-Encoding", "gzip");
+                    xhr.setRequestHeader("User-Agent", userAgent);
 
                     xhr.send(resourceStream);
 

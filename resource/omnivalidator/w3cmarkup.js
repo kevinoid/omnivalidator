@@ -19,6 +19,7 @@ define(
         "log4moz",
         "omnivalidator/cacheutils",
         "omnivalidator/domutils",
+        "omnivalidator/globaldefs",
         "omnivalidator/locale",
         "omnivalidator/mediatypeutils",
         "omnivalidator/multipartformdata",
@@ -28,13 +29,19 @@ define(
         "underscore"
     ],
     function (Node, XPathResult, Cc, Ci, Cr, log4moz, cacheutils, domutils,
-            locale, mediatypeutils, MultipartFormData, nserrorutils, Validator,
-            ValidatorMessage, underscore) {
+            globaldefs, locale, mediatypeutils, MultipartFormData, nserrorutils,
+            Validator, ValidatorMessage, underscore) {
         "use strict";
 
         var SOAP_ENV_NS = "http://www.w3.org/2003/05/soap-envelope",
             VAL_NS = "http://www.w3.org/2005/10/markup-validator",
-            logger = log4moz.repository.getLogger("omnivalidator.validatornu");
+            logger = log4moz.repository.getLogger("omnivalidator.validatornu"),
+            userAgent;
+
+        userAgent = Cc["@mozilla.org/network/protocol;1?name=http"]
+            .getService(Ci.nsIHttpProtocolHandler)
+            .userAgent;
+        userAgent += " " + globaldefs.EXT_NAME + "/" + globaldefs.EXT_VERSION;
 
         function W3CValidator(vid, validatorName, validatorArgs) {
             var thisValidator = this,
@@ -512,6 +519,7 @@ define(
                         "Content-Type",
                         "multipart/form-data; boundary=" + formData.getBoundary()
                     );
+                    xhr.setRequestHeader("User-Agent", userAgent);
                     // Note:  Content-Length set from formDataStream.available()
                     // in XMLHttpRequest.send()
                     // FIXME:  Do we need to close formDataStream?  When?
