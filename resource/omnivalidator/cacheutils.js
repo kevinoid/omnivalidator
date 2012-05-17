@@ -151,63 +151,6 @@ define(
             }
         }
 
-        function getDocumentCacheKey(doc) {
-            var docWin, pageDescriptor;
-
-            docWin = doc.defaultView;
-            if (!docWin) {
-                logger.error("getDocumentCacheKey:  document has no window");
-                return null;
-            }
-
-            pageDescriptor = docWin
-                .QueryInterface(Ci.nsIInterfaceRequestor)
-                .getInterface(Ci.nsIWebNavigation)
-                .QueryInterface(Ci.nsIWebPageDescriptor)
-                .currentDescriptor;
-            if (!pageDescriptor) {
-                logger.error("getDocumentCacheKey:  window has no currentDescriptor");
-                return null;
-            }
-
-            return pageDescriptor.QueryInterface(Ci.nsISHEntry).cacheKey;
-        }
-
-        function getChannel(cacheid) {
-            var cacheChannel, channel, ios;
-
-            logger.trace("Getting channel for " + cacheid);
-
-            ios = Cc["@mozilla.org/network/io-service;1"]
-                .getService(Ci.nsIIOService);
-
-            channel = ios.newChannel(cacheid.uri, null, null);
-            /*jslint bitwise: true */
-            channel.loadFlags |= Ci.nsIRequest.VALIDATE_NEVER;
-            channel.loadFlags |= Ci.nsIRequest.LOAD_FROM_CACHE;
-            if (!Preferences.getValue(globaldefs.EXT_PREF_PREFIX + "allowUncached")) {
-                channel.loadFlags |= Ci.nsICachingChannel.LOAD_ONLY_FROM_CACHE;
-            }
-            /*jslint bitwise: false */
-
-            try {
-                cacheChannel = channel.QueryInterface(Ci.nsICachingChannel);
-                if (cacheid.cacheToken) {
-                    cacheChannel.cacheToken = cacheid.cacheToken;
-                } else if (cacheid.cacheKey) {
-                    cacheChannel.cacheKey = cacheid.cacheKey;
-                }
-            } catch (ex) {
-                throw new Error("Unable to retrieve resource:  Protocol does not support caching");
-            }
-
-            return channel;
-        }
-
-        function getDocumentChannel(doc) {
-            return getChannel(CacheID.fromDocument(doc));
-        }
-
         /* Since we can only detect failure once nsIStreamListener.onStopRequest
          * is called, we need to buffer calls to the caller's nsIStreamListener
          * and only forward calls once we have success.
@@ -420,9 +363,6 @@ define(
 
         return {
             deinhibitCaching: deinhibitCaching,
-            getChannel: getChannel,
-            getDocumentCacheKey: getDocumentCacheKey,
-            getDocumentChannel: getDocumentChannel,
             openResourceAsync: openResourceAsync
         };
     }
