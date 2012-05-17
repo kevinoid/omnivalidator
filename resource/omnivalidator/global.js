@@ -344,7 +344,52 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     defineJSM("log4moz", baseURL + "/log4moz.jsm");
     defineJSMShared("pluralform", "resource://gre/modules/PluralForm.jsm");
 
-    definePlain("underscore");
+    definePlain(
+        "underscore",
+        null,
+        [ "_" ],
+        // Some underscore functions rely on setTimeout
+        // So we implement it using nsITimer
+        (function () {
+            // Note:  Must hold reference to nsITimer to prevent GC
+            var timers = [];
+
+            function removeTimer(timer) {
+                var ind = timers.indexOf(timer);
+                if (ind !== -1) {
+                    timers.splice(ind, 1);
+                }
+            }
+
+            return {
+                clearTimeout: function (timer) {
+                    timer.cancel();
+                    removeTimer(timer);
+                },
+
+                setTimeout: function (code, delay) {
+                    var timer = Components.classes["@mozilla.org/timer;1"]
+                        .createInstance(Components.interfaces.nsITimer);
+                    timer.init({
+                        QueryInterface: function (aIID) {
+                            if (aIID.equals(Components.interfaces.nsIObserver) ||
+                                    aIID.equals(Components.interfaces.nsISupports)) {
+                                return this;
+                            }
+                            throw Components.results.NS_NOINTERFACE;
+                        },
+
+                        observe: function (subject, topic, data) {
+                            removeTimer(timer);
+                            code();
+                        }
+                    }, delay, Components.interfaces.nsITimer.TYPE_ONE_SHOT);
+                    timers.push(timer);
+                    return timer;
+                }
+            };
+        }())
+    );
     definePlain(
         "chrome/global/contentareautils",
         "chrome://global/content/contentAreaUtils.js",
