@@ -21,16 +21,25 @@ define(
         var logger = log4moz.repository.getLogger("omnivalidator.mediatypeutils");
 
         function getContentTypeFromChannel(channel) {
-            var contentType = null,
+            var contentCharset,
+                contentType = null,
                 httpChannel;
 
             try {
                 httpChannel = channel.QueryInterface(Ci.nsIHttpChannel);
 
-                return httpChannel.getResponseHeader("Content-Type");
+                contentType = httpChannel.getResponseHeader("Content-Type");
             } catch (ex) {
                 try {
-                    return channel.QueryInterface(Ci.nsIChannel).contentType;
+                    channel = channel.QueryInterface(Ci.nsIChannel);
+                    contentType = channel.contentType;
+                    // Does not include any media type parameters
+                    // Reconstruct charset parameter, where applicable
+                    // Note:  contentCharset is null when not applicable
+                    contentCharset = channel.contentCharset;
+                    if (contentCharset) {
+                        contentType += "; charset=" + contentCharset;
+                    }
                 } catch (ex2) {
                     // Not HTTP or no Content-Type header
                     logger.debug("Unable to get Content-Type from stream", ex2);
