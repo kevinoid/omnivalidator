@@ -276,11 +276,15 @@ define(
         function remove(vid) {
             logger.debug("Removing validator " + vid);
             validatorsPref.deleteBranch(vid);
+            // Note:  deleteBranch does not cause pref change notifications
+            notifyNameListeners(vid);
         }
 
         function removeAll() {
             logger.debug("Removing all validators");
             validatorsPref.deleteBranch();
+            // Note:  deleteBranch does not cause pref change notifications
+            notifyNameListeners();
         }
 
         vids = validatorsPref.getChildNames();
