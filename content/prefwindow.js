@@ -52,9 +52,142 @@
                 }
             }
 
-            // Check for any potential mis-configurations and confirm that
-            // the user wants to leave the preferences in this state
-            function confirmClose() {
+            function isHostPublic(host) {
+                if (!host) {
+                    return false;
+                }
+
+                // Note:  We could use nsIDNSService to check if the
+                // validator host is an RFC 1918 or 4193 address, but
+                // the DNS checking can be very expensive (and we must run
+                // it before returning) and the risk of unnecessary warnings
+                // is high.  So, for now, we only warn about known public
+                // hosts.  Re-evaluate if there are complaints of abuse.
+                return host.slice(-6) === "w3.org" ||
+                    host.slice(-12) === "validator.nu";
+            }
+
+            function hasAutoPublic() {
+                var autoVIDs,
+                    changedURLsByVID = {},
+                    host,
+                    i,
+                    ioService,
+                    prefElem,
+                    prefElems,
+                    prefName,
+                    prefPrefixLen,
+                    url,
+                    vid;
+
+                function getValidatorURL(vid) {
+                    if (changedURLsByVID.hasOwnProperty(vid)) {
+                        return changedURLsByVID[vid];
+                    }
+
+                    return Preferences.getValue(
+                        globaldefs.EXT_PREF_PREFIX + "validators." + vid +
+                            ".args.validatorURL"
+                    );
+                }
+
+                // Gather any pending changes to validator URLs
+                if (!document.documentElement.instantApply) {
+                    prefElems = document.getElementsByTagNameNS(
+                        globaldefs.XUL_NS,
+                        "preference"
+                    );
+                    prefPrefixLen =
+                        (globaldefs.EXT_PREF_PREFIX + "validators.").length;
+                    for (i = 0; i < prefElems.length; ++i) {
+                        prefElem = prefElems[i];
+                        prefName = prefElem.name;
+                        if (prefName.slice(-18) === ".args.validatorURL") {
+                            // extensions.omnivalidator.validators.vid.args...
+                            vid = prefName.slice(
+                                prefPrefixLen,
+                                prefName.length - 18
+                            );
+                            changedURLsByVID[vid] = prefElem.value;
+                        }
+                    }
+                }
+
+                // Get validators which are performing automatic validation
+                autoVIDs = underscore.keys(
+                    autoValListbox.getAutoURLsByVID()
+                );
+
+                ioService = Cc["@mozilla.org/network/io-service;1"]
+                    .getService(Ci.nsIIOService);
+                for (i = 0; i < autoVIDs.length; ++i) {
+                    url = getValidatorURL(autoVIDs[i]);
+
+                    try {
+                        host = ioService.newURI(url, null, null).host;
+                        if (isHostPublic(host)) {
+                            return true;
+                        }
+                    } catch (ex) {
+                        logger.debug(
+                            "Unable to parse validator URL for local checking",
+                            ex
+                        );
+                    }
+                }
+
+                return false;
+            }
+
+            /** Confirm that automatic validation using a publicly hosted
+             * validator is desired.
+             */
+            function confirmAutoPublic() {
+                var btnPress,
+                    dontWarn = {},
+                    prompter;
+
+                if (!Preferences.getValue(
+                            globaldefs.EXT_PREF_PREFIX + "warnAutoPublic"
+                        )) {
+                    // User has asked not to be warned about this
+                    return true;
+                }
+
+                if (hasAutoPublic()) {
+                    prompter = getPrompter();
+
+                    btnPress = prompter.confirmEx(
+                        null,                                   // title
+                        locale.get("prompt.confirmAutoPublic"),    // message
+                        Ci.nsIPrompt.STD_OK_CANCEL_BUTTONS,     // flags
+                        null,                                   // btn 0 lbl
+                        null,                                   // btn 1 lbl
+                        null,                                   // btn 2 lbl
+                        locale.get("prompt.dontWarnAgain"),     // check msg
+                        dontWarn                                // check state
+                    );
+
+                    if (dontWarn.value) {
+                        Preferences.set(
+                            globaldefs.EXT_PREF_PREFIX + "warnAutoPublic",
+                            false
+                        );
+                    }
+
+                    if (btnPress !== 0) {
+                        // User has canceled
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            /** Confirm that the user is aware that not allowing validation of
+             * uncached resources when caching is disabled is desired.
+             */
+            function confirmUncached() {
                 var allowUncached,
                     browserCache,
                     btnPress,
@@ -108,6 +241,12 @@
                 }
 
                 return true;
+            }
+
+            // Check for any potential mis-configurations and confirm that
+            // the user wants to leave the preferences in this state
+            function confirmClose() {
+                return confirmUncached() && confirmAutoPublic();
             }
 
             function setupAutoAddButton(button) {
