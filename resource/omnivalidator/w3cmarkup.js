@@ -256,7 +256,7 @@ define(
                         logger.warn("Unable to parse errorcount content " +
                             '"' + errorCount + '"' +
                             " as an integer for " +
-                            validatorName + " for " + resourceid.uri);
+                            thisValidator.logName + " for " + resourceid.uri);
                         errorCount = "";
                     }
                 }
@@ -288,7 +288,7 @@ define(
                         logger.warn("Unable to parse warningcount content " +
                             '"' + warnCount + '"' +
                             " as an integer for " +
-                            validatorName + " for " + resourceid.uri);
+                            thisValidator.logName + " for " + resourceid.uri);
                         warnCount = "";
                     }
                 }
@@ -336,7 +336,7 @@ define(
                 var errorMsg, responseType, statusText, summary;
 
                 logger.debug("Processing validation response from " +
-                        validatorName + " for " + resourceid.uri);
+                        thisValidator.logName + " for " + resourceid.uri);
 
                 callbackValidate(
                     thisValidator,
@@ -353,7 +353,8 @@ define(
                         statusText = "";
                     }
 
-                    logger.error(validatorName + " returned HTTP status " +
+                    logger.error(thisValidator.logName +
+                        " returned HTTP status " +
                         xhr.status + " (" + statusText + ") validating " +
                         resourceid.uri);
                     errorMsg = locale.format(
@@ -376,15 +377,16 @@ define(
 
                 responseType = xhr.getResponseHeader("Content-Type");
                 if (!/^application\/soap\+xml\b/.test(responseType)) {
-                    logger.warn(validatorName + " returned content type " +
+                    logger.warn(thisValidator.logName +
+                            " returned content type " +
                             responseType + " for " + resourceid.uri +
                             ", we requested application/soap+xml");
                 }
 
                 if (!xhr.responseXML) {
                     logger.error("Unable to parse response from " +
-                        validatorName + " validating " + resourceid.uri +
-                        " as XML");
+                        thisValidator.logName + " validating " +
+                        resourceid.uri + " as XML");
                     errorMsg = locale.format(
                         "validator.errorParseFormat",
                         validatorName,
@@ -411,7 +413,7 @@ define(
                     );
                 } catch (ex) {
                     logger.error("Error processing response from " +
-                        validatorName + " for " + resourceid.uri,
+                        thisValidator.logName + " for " + resourceid.uri,
                         ex);
                     errorMsg = locale.format(
                         "validator.errorProcessing",
@@ -430,7 +432,7 @@ define(
                 }
 
                 logger.debug("Summary information from " +
-                        validatorName + " for " + resourceid.uri +
+                        thisValidator.logName + " for " + resourceid.uri +
                         ": " +
                         summary.errorCount + " errors, " +
                         summary.warnCount + " warnings");
@@ -444,7 +446,7 @@ define(
                 );
 
                 logger.debug("Done processing validation response from " +
-                    validatorName + " for " + resourceid.uri);
+                    thisValidator.logName + " for " + resourceid.uri);
             }
 
             this.navigate = function (content, mediaType) {
@@ -500,7 +502,8 @@ define(
                     }
                 };
 
-                logger.debug("Sending validation request to " + validatorName);
+                logger.debug("Sending validation request to " +
+                        thisValidator.logName);
 
                 try {
                     xhr.open("POST", validatorURL, true);
@@ -521,7 +524,7 @@ define(
                     );
                 } catch (ex2) {
                     logger.error("Error sending validation request to " +
-                            validatorURL + " for " + validatorName +
+                            validatorURL + " for " + thisValidator.logName +
                             " validating " + resourceid.uri,
                         ex2);
                     errorMsg = locale.format(
@@ -626,7 +629,8 @@ define(
                             if (statusCode === 0) {
                                 // Stream with no data was successfully read
                                 logger.error("Received an empty response for " +
-                                    resourceid.uri + " by " + validatorName);
+                                    resourceid.uri + " by " +
+                                    thisValidator.logName);
                                 errorMsg = locale.format(
                                     "validator.errorEmptyResource",
                                     validatorName,
@@ -635,7 +639,8 @@ define(
                             } else {
                                 // Stream reading failed
                                 logger.error("Unable to read " +
-                                    resourceid.uri + " by " + validatorName,
+                                    resourceid.uri + " by " +
+                                    thisValidator.logName,
                                     nserrorutils.nsErrorToException(statusCode));
                                 errorMsg = locale.format(
                                     "validator.errorGetResource",

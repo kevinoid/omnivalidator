@@ -82,7 +82,8 @@ define(
                     lineNumber = vmessage.lastLine;
                 }
 
-                logger.trace(validatorName + " validating " + resourceid.uri +
+                logger.trace(thisValidator.logName + " validating " +
+                        resourceid.uri +
                         " message: " +
                         messageText +
                         " of type " +
@@ -109,7 +110,8 @@ define(
                 messages = response.messages;
                 if (!messages) {
                     logger.warn("No messages in response from " +
-                            validatorName + " validating " + resourceid.uri);
+                            thisValidator.logName + " validating " +
+                            resourceid.uri);
                     messages = [];
                 }
 
@@ -117,7 +119,8 @@ define(
                     message = messages[i];
                     if (!message || !message.message) {
                         logger.warn("Incomplete message in response from " +
-                            validatorName + " validating " + resourceid.uri);
+                            thisValidator.logName + " validating " +
+                            resourceid.uri);
                         continue;
                     }
 
@@ -139,7 +142,7 @@ define(
                 }
 
                 logger.debug("Summary information from " +
-                        validatorName + " for " + resourceid.uri +
+                        thisValidator.logName + " for " + resourceid.uri +
                         ": " +
                         errorCount + " errors, " +
                         warnCount + " warnings");
@@ -154,7 +157,7 @@ define(
                 var errorMsg, response, responseType, statusText, summary;
 
                 logger.debug("Processing validation response from " +
-                        validatorName + " for " + resourceid.uri);
+                        thisValidator.logName + " for " + resourceid.uri);
 
                 callbackValidate(
                     thisValidator,
@@ -171,7 +174,8 @@ define(
                         statusText = "";
                     }
 
-                    logger.error(validatorName + " returned HTTP status " +
+                    logger.error(thisValidator.logName +
+                        " returned HTTP status " +
                         xhr.status + " (" + statusText + ") validating " +
                         resourceid.uri);
                     errorMsg = locale.format(
@@ -194,7 +198,8 @@ define(
 
                 responseType = xhr.getResponseHeader("Content-Type");
                 if (!/^application\/json\b/.test(responseType)) {
-                    logger.warn(validatorName + " returned content type " +
+                    logger.warn(thisValidator.logName +
+                            " returned content type " +
                             responseType + " validating " + resourceid.uri +
                             ", we requested application/json");
                 }
@@ -203,8 +208,8 @@ define(
                     response = JSON.parse(xhr.responseText);
                 } catch (ex1) {
                     logger.error("Unable to parse response from " +
-                        validatorName + " validating " + resourceid.uri +
-                        " as JSON",
+                        thisValidator.logName + " validating " +
+                        resourceid.uri + " as JSON",
                         ex1);
                     errorMsg = locale.format(
                         "validator.errorParseFormat",
@@ -232,7 +237,7 @@ define(
                     );
                 } catch (ex2) {
                     logger.error("Error processing response from " +
-                        validatorName + " for " + resourceid.uri,
+                        thisValidator.logName + " for " + resourceid.uri,
                         ex2);
                     errorMsg = locale.format(
                         "validator.errorProcessing",
@@ -261,7 +266,7 @@ define(
                 );
 
                 logger.debug("Done processing validation response from " +
-                    validatorName + " for " + resourceid.uri);
+                    thisValidator.logName + " for " + resourceid.uri);
             }
 
             this.navigate = function (content, mediaType) {
@@ -286,7 +291,7 @@ define(
                 };
 
                 logger.debug("Sending compressed validation request to " +
-                        validatorName + " for " + resourceid.uri +
+                        thisValidator.logName + " for " + resourceid.uri +
                         " with type " + resourceType);
 
                 try {
@@ -306,7 +311,7 @@ define(
                     );
                 } catch (ex) {
                     logger.error("Error sending validation request to " +
-                            url + " for " + validatorName +
+                            url + " for " + thisValidator.logName +
                             " validating " + resourceid.uri,
                         ex);
                     errorMsg = locale.format(
@@ -340,7 +345,7 @@ define(
                  */
 
                 logger.debug("Compressing validation request to " +
-                        validatorName);
+                        thisValidator.logName);
 
                 syncListener = Cc["@mozilla.org/network/sync-stream-listener;1"]
                     .createInstance(Ci.nsISyncStreamListener);
@@ -413,7 +418,8 @@ define(
                             if (statusCode === 0) {
                                 // Stream with no data was successfully read
                                 logger.error("Received an empty response for " +
-                                    resourceid.uri + " by " + validatorName);
+                                    resourceid.uri + " by " +
+                                    thisValidator.logName);
                                 errorMsg = locale.format(
                                     "validator.errorEmptyResource",
                                     validatorName,
@@ -422,7 +428,8 @@ define(
                             } else {
                                 // Stream reading failed
                                 logger.error("Unable to read " +
-                                    resourceid.uri + " by " + validatorName,
+                                    resourceid.uri + " by " +
+                                    thisValidator.logName,
                                     nserrorutils.nsErrorToException(statusCode));
                                 errorMsg = locale.format(
                                     "validator.errorGetResource",
