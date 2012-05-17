@@ -20,28 +20,6 @@ define(
 
         var logger = log4moz.repository.getLogger("omnivalidator.cacheid");
 
-        function getDocumentCacheKey(doc) {
-            var docWin, pageDescriptor;
-
-            docWin = doc.defaultView;
-            if (!docWin) {
-                logger.error("getDocumentCacheKey:  document has no window");
-                return null;
-            }
-
-            pageDescriptor = docWin
-                .QueryInterface(Ci.nsIInterfaceRequestor)
-                .getInterface(Ci.nsIWebNavigation)
-                .QueryInterface(Ci.nsIWebPageDescriptor)
-                .currentDescriptor;
-            if (!pageDescriptor) {
-                logger.error("getDocumentCacheKey:  window has no currentDescriptor");
-                return null;
-            }
-
-            return pageDescriptor.QueryInterface(Ci.nsISHEntry).cacheKey;
-        }
-
         function CacheID(uri, cacheKey, cacheToken, postData) {
             this.uri = uri;
             this.cacheKey = cacheKey;
@@ -102,7 +80,32 @@ define(
         };
 
         CacheID.fromDocument = function (doc) {
-            return new CacheID(doc.documentURI, getDocumentCacheKey(doc));
+            var docWin, pageDescriptor, shEntry;
+
+            docWin = doc.defaultView;
+            if (!docWin) {
+                logger.error("getDocumentCacheKey:  document has no window");
+                return null;
+            }
+
+            pageDescriptor = docWin
+                .QueryInterface(Ci.nsIInterfaceRequestor)
+                .getInterface(Ci.nsIWebNavigation)
+                .QueryInterface(Ci.nsIWebPageDescriptor)
+                .currentDescriptor;
+            if (!pageDescriptor) {
+                logger.error("getDocumentCacheKey:  window has no currentDescriptor");
+                return null;
+            }
+
+            shEntry = pageDescriptor.QueryInterface(Ci.nsISHEntry);
+
+            return new CacheID(
+                doc.documentURI,
+                shEntry.cacheKey,
+                null,
+                shEntry.postData
+            );
         };
 
         return CacheID;
