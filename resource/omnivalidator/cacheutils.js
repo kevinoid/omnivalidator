@@ -305,13 +305,18 @@ define(
                         channel.QueryInterface(Ci.nsIUploadChannel);
                     uploadChannel.setUploadStream(
                         cacheid.postData,
-                        null,
-                        null
+                        "",
+                        -1
                     );
                 } catch (ex2) {
                     logger.warn("Unable to set post data on channel, " +
-                        "validated content may differ from displayed content",
+                        "forcing load to fail",
                         ex2);
+                    // Force the load to fail by preventing network I/O
+                    /*jslint bitwise: true */
+                    channel.loadFlags |=
+                        Ci.nsICachingChannel.LOAD_NO_NETWORK_IO;
+                    /*jslint bitwise: false */
                 }
             }
 
