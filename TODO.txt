@@ -5,13 +5,23 @@
     * Depends on being able to selectively clear messages&status by vid
 * Improve code for fetching page from cache (using cache tokens or whatnot)
   to match View Source and Save As once bug 136633 is fixed (if ever).
+* Remove as much of the duplication as possible between ValidatorNu and
+  W3CValidator.
+* Document how to implement Validator.  This is the most likely extension point
+  for contributions and should be a top priority for documentation.
+* Share resource stream between validators (especially to avoid multiple POSTs)
 
-Things to Test:
+Things to test with a testing framework:
 * Test validation of non-cacheable pages works correctly
     * HTTPS and Cache-Control: no-cache
-* Test that slow validator responses and fast tab/page change doesn't result in showing results that are not applicable to the current page
-* Test validation of non-text content
+* Test that slow validator responses and fast tab/page change doesn't result in showing results that are not applicable to the current page (may be unavoidable)
+* Test validation of non-HTML/XML and non-text content
 * Test automatic validation of pages which contain frames which are slow to load (make sure validation starts before frame finishes loading).
+* Test with the following preferences
+    browser.cache.disk.enable false
+    browser.cache.disk_cache_ssl false with HTTPS pages
+    browser.cache.memory.enable false
+    network.http.use-cache false
 
 When dropping support for Firefox 3.6:
 * Remove JSON imports
