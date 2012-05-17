@@ -263,6 +263,7 @@ define(
 
         function openUncachedResourceAsync(cacheid, streamListener, context) {
             var channel,
+                seekableStream,
                 uploadChannel;
 
             logger.trace("Getting uncached resource for " + cacheid);
@@ -277,7 +278,7 @@ define(
             /*jslint bitwise: false */
 
             // FIXME:  Is there any point in setting cacheKey/cacheToken when
-            // bypassing the local cache?  (e.g. for channel flags or something)
+            // bypassing the local cache?
 
             if (cacheid.postData) {
                 if (!confirmRepost()) {
@@ -287,6 +288,16 @@ define(
                     channel.loadFlags |=
                         Ci.nsICachingChannel.LOAD_NO_NETWORK_IO;
                     /*jslint bitwise: false */
+                }
+
+                // Try to reset the post data stream, in case it is being used
+                // multiple times
+                try {
+                    seekableStream =
+                        cacheid.postData.QueryInterface(Ci.nsISeekableStream);
+                    seekableStream.seek(Ci.nsISeekableStream.NS_SEEK_SET, 0);
+                } catch (ex3) {
+                    logger.debug("Unable to rewind POST data stream", ex3);
                 }
 
                 try {
