@@ -422,23 +422,12 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
         function (Cc, Ci, log4moz, globaldefs) {
             var consoleAppender,
                 consoleFormatter,
-                consoleLevel,
                 extProfDir,
                 fileAppender,
                 fileFormatter,
-                fileLevel,
                 logFile,
-                prefs,
-                rootLogger;
-
-            prefs = Cc["@mozilla.org/preferences-service;1"]
-                .getService(Ci.nsIPrefService)
-                .getBranch(globaldefs.EXT_PREF_PREFIX);
-
-            rootLogger = log4moz.repository.rootLogger;
-            consoleLevel = prefs.getIntPref("log.consoleLevel");
-            fileLevel = prefs.getIntPref("log.fileLevel");
-            rootLogger.level = Math.max(consoleLevel, fileLevel);
+                rootBranch,
+                rootLogger = log4moz.repository.rootLogger;
 
             consoleFormatter = {
                 format: function (msg) {
@@ -448,7 +437,6 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
                 }
             };
             consoleAppender = new log4moz.ConsoleAppender(consoleFormatter);
-            consoleAppender.level = consoleLevel;
             rootLogger.addAppender(consoleAppender);
 
             try {
@@ -481,6 +469,49 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
             } catch (ex) {
                 rootLogger.error("Unable to open log file", ex);
             }
+
+            function setLogLevel(branch) {
+                var consoleLevel, fileLevel;
+
+                try {
+                    branch = branch.QueryInterface(Ci.nsIPrefBranch2);
+                } catch (ex) {
+                    rootLogger.warn("Unable to change log level", ex);
+                    return;
+                }
+
+                consoleLevel = branch.getIntPref(
+                    globaldefs.EXT_PREF_PREFIX + "log.consoleLevel"
+                );
+                consoleAppender.level = consoleLevel;
+
+                fileLevel = branch.getIntPref(
+                    globaldefs.EXT_PREF_PREFIX + "log.fileLevel"
+                );
+                if (fileAppender) {
+                    fileAppender.level = fileLevel;
+                }
+
+                rootLogger.level = Math.min(consoleLevel, fileLevel);
+
+                rootLogger.debug("Adjusted log level." +
+                    " consoleLevel: " + consoleLevel +
+                    " fileLevel: " + fileLevel);
+            }
+
+            rootBranch = Cc["@mozilla.org/preferences-service;1"]
+                .getService(Ci.nsIPrefBranch2);
+            setLogLevel(rootBranch);
+            rootBranch.addObserver(
+                globaldefs.EXT_PREF_PREFIX + "log.consoleLevel",
+                { observe: setLogLevel },
+                false
+            );
+            rootBranch.addObserver(
+                globaldefs.EXT_PREF_PREFIX + "log.fileLevel",
+                { observe: setLogLevel },
+                false
+            );
 
             rootLogger.trace("Logging setup complete");
 
