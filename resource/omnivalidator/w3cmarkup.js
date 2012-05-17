@@ -15,17 +15,21 @@ define(
         "dom/xpathresult",
         "gecko/components/classes",
         "gecko/components/interfaces",
+        "gecko/components/results",
         "log4moz",
         "omnivalidator/cacheutils",
         "omnivalidator/domutils",
         "omnivalidator/locale",
         "omnivalidator/mediatypeutils",
         "omnivalidator/multipartformdata",
+        "omnivalidator/nserrorutils",
         "omnivalidator/validator",
-        "omnivalidator/validatormessage"
+        "omnivalidator/validatormessage",
+        "underscore"
     ],
-    function (Node, XPathResult, Cc, Ci, log4moz, cacheutils, domutils, locale,
-            mediatypeutils, MultipartFormData, Validator, ValidatorMessage) {
+    function (Node, XPathResult, Cc, Ci, Cr, log4moz, cacheutils, domutils,
+            locale, mediatypeutils, MultipartFormData, nserrorutils, Validator,
+            ValidatorMessage, underscore) {
         "use strict";
 
         var SOAP_ENV_NS = "http://www.w3.org/2003/05/soap-envelope",
@@ -446,15 +450,15 @@ define(
             this.navigate = function (content, mediaType) {
             };
 
-            this.validate = function (resourceid, callbackValidate) {
-                var channel,
-                    contentHeaders,
-                    contentType,
+            // TODO:  Consider making this public if the differences with
+            // validatornu (gzipped stream) can be addressed well.
+            function validateStream(resourceid, resourceType,
+                    resourceStream, callbackValidate) {
+                var contentHeaders,
                     errorMsg,
                     filename,
                     formData,
                     formDataStream,
-                    stream,
                     url,
                     xhr;
 
@@ -470,14 +474,9 @@ define(
                     filename = "index.htm";
                 }
 
-                channel = cacheutils.getChannel(resourceid);
-                // Note:  Must open channel before getting Content-Type
-                stream = channel.open();
-                contentType = mediatypeutils.getContentTypeFromChannel(channel);
-
                 contentHeaders = {};
-                if (contentType) {
-                    contentHeaders["Content-Type"] = contentType;
+                if (resourceType) {
+                    contentHeaders["Content-Type"] = resourceType;
                 }
 
                 formData = new MultipartFormData();
@@ -486,7 +485,7 @@ define(
                         name: "uploaded_file",
                         filename: filename
                     },
-                    stream,
+                    resourceStream,
                     contentHeaders
                 );
                 formData.append("output", "soap12");
@@ -542,6 +541,122 @@ define(
                     );
                     return;
                 }
+            }
+
+            function logStream(stream) {
+                var mstream = Cc["@mozilla.org/io/multiplex-input-stream;1"]
+                    .createInstance(Ci.nsIMultiplexInputStream);
+                mstream.appendStream(stream);
+                var sstream = Cc["@mozilla.org/io/string-input-stream;1"]
+                    .createInstance(Ci.nsIStringInputStream);
+                sstream.setData("After resource", 14);
+                mstream.appendStream(sstream);
+                var stream = Cc["@mozilla.org/scriptableinputstream;1"]  
+                     .createInstance(Ci.nsIScriptableInputStream);
+                stream.init(mstream);
+                logger.error("Stream contains the following content:\n" +
+                    stream.read(stream.available()));
+            }
+
+            this.validate = function (resourceid, callbackValidate) {
+                var syncListener;
+
+                /* We can only get the Content-Type (and other headers) once we
+                 * have received some channel data and XHR only takes synchronous
+                 * streams for POST data, so we wrap a syncListener and only
+                 * call validateStream once we have received some data.
+                 */
+                syncListener = Cc["@mozilla.org/network/sync-stream-listener;1"]
+                    .createInstance(Ci.nsISyncStreamListener);
+                cacheutils.openResourceAsync(
+                    resourceid,
+                    {
+                        QueryInterface: function (aIID) {
+                            if (aIID.equals(Ci.nsIStreamListener) ||
+                                    aIID.equals(Ci.nsIRequestObserver) ||
+                                    aIID.equals(Ci.nsISupports)) {
+                                return this;
+                            }
+                            throw Cr.NS_NOINTERFACE;
+                        },
+
+                        onDataAvailable: function (request, context, stream,
+                                offset, count) {
+                            // Data received
+                            // Forward this and all subsequent callbacks
+                            syncListener.onDataAvailable.apply(
+                                syncListener,
+                                arguments
+                            );
+                            this.onDataAvailable = underscore.bind(
+                                syncListener.onDataAvailable,
+                                syncListener
+                            );
+                            this.onStopRequest = underscore.bind(
+                                syncListener.onStopRequest,
+                                syncListener
+                            );
+
+                            // Start validation
+                            // Note:  Can't call it here without risking
+                            // a deadlock as XHR slurps the stream, so we defer
+                            underscore.defer(
+                                validateStream,
+                                resourceid,
+                                mediatypeutils.getContentTypeFromChannel(
+                                    request
+                                ),
+                                syncListener.inputStream,
+                                callbackValidate
+                            );
+                        },
+
+                        onStartRequest: underscore.bind(
+                            syncListener.onStartRequest,
+                            syncListener
+                        ),
+
+                        onStopRequest: function (request, context, statusCode) {
+                            var errorMsg;
+
+                            syncListener.onStopRequest.apply(
+                                syncListener,
+                                arguments
+                            );
+                            if (statusCode === 0) {
+                                // Stream with no data was successfully read
+                                logger.error("Received an empty response for " +
+                                    resourceid.uri + " by " + validatorName);
+                                errorMsg = locale.format(
+                                    "validator.errorEmptyResource",
+                                    validatorName,
+                                    resourceid.uri
+                                );
+                            } else {
+                                // Stream reading failed
+                                logger.error("Unable to read " +
+                                    resourceid.uri + " by " + validatorName,
+                                    nserrorutils.nsErrorToException(statusCode));
+                                errorMsg = locale.format(
+                                    "validator.errorGetResource",
+                                    validatorName,
+                                    nserrorutils.nsErrorGetMessage(statusCode),
+                                    resourceid.uri
+                                );
+                            }
+
+                            // Inform caller we have failed
+                            callbackValidate(
+                                thisValidator,
+                                resourceid,
+                                {
+                                    message: new ValidatorMessage(errorMsg),
+                                    state: "done"
+                                }
+                            );
+                        }
+                    }
+                );
             };
         }
         W3CValidator.prototype = new Validator();

@@ -13,16 +13,19 @@ define(
     [
         "gecko/components/classes",
         "gecko/components/interfaces",
+        "gecko/components/results",
         "json",
         "log4moz",
         "omnivalidator/cacheutils",
         "omnivalidator/locale",
         "omnivalidator/mediatypeutils",
+        "omnivalidator/nserrorutils",
         "omnivalidator/validator",
-        "omnivalidator/validatormessage"
+        "omnivalidator/validatormessage",
+        "underscore"
     ],
-    function (Cc, Ci, JSON, log4moz, cacheutils, locale, mediatypeutils,
-            Validator, ValidatorMessage) {
+    function (Cc, Ci, Cr, JSON, log4moz, cacheutils, locale, mediatypeutils,
+            nserrorutils, Validator, ValidatorMessage, underscore) {
         "use strict";
 
         var logger = log4moz.repository.getLogger("omnivalidator.validatornu");
@@ -264,36 +267,13 @@ define(
             this.navigate = function (content, mediaType) {
             };
 
-            this.validate = function (resourceid, callbackValidate) {
-                var channel,
-                    contentType,
-                    errorMsg,
-                    gzipConverter,
-                    gzipListener,
+            // TODO:  Consider making this public if we can find a good way
+            // to accept non-gzipped async streams
+            function validateStream(resourceid, resourceType,
+                    resourceStream, callbackValidate) {
+                var errorMsg,
                     url,
                     xhr;
-
-                contentType = mediatypeutils.getContentType(resourceid);
-
-                logger.debug("Compressing validation request to " +
-                        validatorName);
-
-                gzipConverter = Cc["@mozilla.org/streamconv;1?from=uncompressed&to=gzip"]
-                    .createInstance(Ci.nsIStreamConverter);
-                // Note:  nsDeflateConverter (implements nsIStreamConverter)
-                // doesn't implement synchronous convert, so we need to
-                // adapt the async api to an input stream
-                gzipListener = Cc["@mozilla.org/network/sync-stream-listener;1"]
-                    .createInstance(Ci.nsISyncStreamListener);
-                gzipConverter.asyncConvertData(
-                    // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=732750
-                    "gzip",
-                    "gzip",
-                    gzipListener,
-                    null
-                );
-                channel = cacheutils.getChannel(resourceid);
-                channel.asyncOpen(gzipConverter, null);
 
                 url = validatorURL + "?out=json";
 
@@ -305,18 +285,19 @@ define(
                     }
                 };
 
-                logger.debug("Sending validation request to " + validatorName +
-                        " for " + resourceid.uri + " with type " + contentType);
+                logger.debug("Sending compressed validation request to " +
+                        validatorName + " for " + resourceid.uri +
+                        " with type " + resourceType);
 
                 try {
                     xhr.open("POST", url, true);
                     xhr.setRequestHeader("Accept", "application/json");
-                    if (contentType) {
-                        xhr.setRequestHeader("Content-Type", contentType);
+                    if (resourceType) {
+                        xhr.setRequestHeader("Content-Type", resourceType);
                     }
                     xhr.setRequestHeader("Content-Encoding", "gzip");
 
-                    xhr.send(gzipListener.inputStream);
+                    xhr.send(resourceStream);
 
                     callbackValidate(
                         thisValidator,
@@ -345,6 +326,124 @@ define(
                     );
                     return;
                 }
+            }
+
+            this.validate = function (resourceid, callbackValidate) {
+                var gzipConverter,
+                    syncListener;
+
+                /* We can only get the Content-Type (and other headers) once we
+                 * have received some channel data, XHR only takes synchronous
+                 * streams for POST data, and we want to gzip it, so we wrap a
+                 * gzipConverter for status and attach it to a syncListener
+                 * which is passed to validateStream iff we receive some data.
+                 */
+
+                logger.debug("Compressing validation request to " +
+                        validatorName);
+
+                syncListener = Cc["@mozilla.org/network/sync-stream-listener;1"]
+                    .createInstance(Ci.nsISyncStreamListener);
+                gzipConverter = Cc["@mozilla.org/streamconv;1?from=uncompressed&to=gzip"]
+                    .createInstance(Ci.nsIStreamConverter);
+                // Send gzipConverter output to syncListener
+                gzipConverter.asyncConvertData(
+                    // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=732750
+                    "gzip",
+                    "gzip",
+                    syncListener,
+                    null
+                );
+
+                cacheutils.openResourceAsync(
+                    resourceid,
+                    {
+                        QueryInterface: function (aIID) {
+                            if (aIID.equals(Ci.nsIStreamListener) ||
+                                    aIID.equals(Ci.nsIRequestObserver) ||
+                                    aIID.equals(Ci.nsISupports)) {
+                                return this;
+                            }
+                            throw Cr.NS_NOINTERFACE;
+                        },
+
+                        onDataAvailable: function (request, context, stream,
+                                offset, count) {
+                            // Data received
+                            // Forward this and all subsequent callbacks
+                            gzipConverter.onDataAvailable.apply(
+                                gzipConverter,
+                                arguments
+                            );
+                            this.onDataAvailable = underscore.bind(
+                                gzipConverter.onDataAvailable,
+                                gzipConverter
+                            );
+                            this.onStopRequest = underscore.bind(
+                                gzipConverter.onStopRequest,
+                                gzipConverter
+                            );
+
+                            // Start validation
+                            // Note:  Can't call it here without risking
+                            // a deadlock as XHR slurps the stream, so we defer
+                            underscore.defer(
+                                validateStream,
+                                resourceid,
+                                mediatypeutils.getContentTypeFromChannel(
+                                    request
+                                ),
+                                syncListener.inputStream,
+                                callbackValidate
+                            );
+                        },
+
+                        onStartRequest: underscore.bind(
+                            gzipConverter.onStartRequest,
+                            gzipConverter
+                        ),
+
+                        onStopRequest: function (request, context, statusCode) {
+                            var errorMsg;
+
+                            syncListener.onStopRequest.apply(
+                                syncListener,
+                                arguments
+                            );
+                            if (statusCode === 0) {
+                                // Stream with no data was successfully read
+                                logger.error("Received an empty response for " +
+                                    resourceid.uri + " by " + validatorName);
+                                errorMsg = locale.format(
+                                    "validator.errorEmptyResource",
+                                    validatorName,
+                                    resourceid.uri
+                                );
+                            } else {
+                                // Stream reading failed
+                                logger.error("Unable to read " +
+                                    resourceid.uri + " by " + validatorName,
+                                    nserrorutils.nsErrorToException(statusCode));
+                                errorMsg = locale.format(
+                                    "validator.errorGetResource",
+                                    validatorName,
+                                    nserrorutils.nsErrorGetMessage(statusCode),
+                                    resourceid.uri
+                                );
+                            }
+
+                            // Inform caller we have failed
+                            callbackValidate(
+                                thisValidator,
+                                resourceid,
+                                {
+                                    message: new ValidatorMessage(errorMsg),
+                                    state: "done"
+                                }
+                            );
+                        }
+                    }
+                );
             };
         }
         ValidatorNuValidator.prototype = new Validator();
