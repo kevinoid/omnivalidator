@@ -17,11 +17,12 @@ define(
         "log4moz",
         "omnivalidator/cacheid",
         "omnivalidator/globaldefs",
+        "omnivalidator/locale",
         "omnivalidator/nserrorutils",
         "omnivalidator/preferences",
         "underscore"
     ],
-    function (Cc, Ci, Cr, log4moz, CacheID, globaldefs, nserrorutils,
+    function (Cc, Ci, Cr, log4moz, CacheID, globaldefs, locale, nserrorutils,
             Preferences, underscore) {
         "use strict";
 
@@ -222,6 +223,44 @@ define(
             };
         }
 
+        // Almost exact duplicate of nsDocShell::ConfirmRepost, but with
+        // slightly different prompt text
+        function confirmRepost() {
+            var appStrBundle, btnPress, promptMsg, prompter, resendStr;
+
+            try {
+                // New (post-bug 563274) way to get prompter
+                prompter = Cc["@mozilla.org/prompter;1"]
+                    .getService(Ci.nsIPromptFactory)
+                    .getPrompt(null, Ci.nsIPrompt);
+            } catch (ex) {
+                // Old (pre-bug 563274) way to get prompter
+                prompter = Cc["@mozilla.org/network/default-prompt;1"]
+                    .getService(Ci.nsIPrompt);
+            }
+
+            promptMsg = locale.get("prompt.confirmRepost");
+
+            appStrBundle = Cc["@mozilla.org/intl/stringbundle;1"]
+                .getService(Ci.nsIStringBundleService)
+                .createBundle("chrome://global/locale/appstrings.properties");
+            resendStr = appStrBundle.GetStringFromName("resendButton.label");
+
+            btnPress = prompter.confirmEx(
+                null,       // title
+                promptMsg,  // message
+                (Ci.nsIPrompt.BUTTON_POS_0 * Ci.nsIPrompt.BUTTON_TITLE_IS_STRING) +
+                    (Ci.nsIPrompt.BUTTON_POS_1 * Ci.nsIPrompt.BUTTON_TITLE_CANCEL),
+                resendStr,  // button 0 title
+                null,       // button 1 title
+                null,       // button 2 title
+                null,       // check message
+                {}          // check state
+            );
+
+            return btnPress === 0;
+        }
+
         function openUncachedResourceAsync(cacheid, streamListener, context) {
             var channel,
                 uploadChannel;
@@ -241,6 +280,15 @@ define(
             // bypassing the local cache?  (e.g. for channel flags or something)
 
             if (cacheid.postData) {
+                if (!confirmRepost()) {
+                    logger.info("Loading of " + cacheid + " aborted by user");
+                    // Force the load to fail by preventing network I/O
+                    /*jslint bitwise: true */
+                    channel.loadFlags |=
+                        Ci.nsICachingChannel.LOAD_NO_NETWORK_IO;
+                    /*jslint bitwise: false */
+                }
+
                 try {
                     uploadChannel =
                         channel.QueryInterface(Ci.nsIUploadChannel);
