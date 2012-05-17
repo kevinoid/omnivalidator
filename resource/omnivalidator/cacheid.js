@@ -20,11 +20,12 @@ define(
 
         var logger = log4moz.repository.getLogger("omnivalidator.cacheid");
 
-        function CacheID(uri, cacheKey, cacheToken, postData) {
+        function CacheID(uri, cacheKey, cacheToken, postData, referrerURI) {
             this.uri = uri;
             this.cacheKey = cacheKey;
             this.cacheToken = cacheToken;
             this.postData = postData;
+            this.referrerURI = referrerURI;
         }
 
         CacheID.prototype.equals = function (other) {
@@ -35,7 +36,9 @@ define(
                     (this.cacheToken && !other.cacheToken) ||
                     (!this.cacheToken && other.cacheToken) ||
                     (this.postData && !other.postData) ||
-                    (!this.postData && other.postData)) {
+                    (!this.postData && other.postData) ||
+                    (this.referrerURI && !other.referrerURI) ||
+                    (!this.referrerURI && other.referrerURI)) {
                 return false;
             }
 
@@ -48,6 +51,10 @@ define(
             }
 
             if (this.postData && !this.postData.equals(other.postData)) {
+                return false;
+            }
+
+            if (this.referrerURI && !this.referrerURI.equals(other.referrerURI)) {
                 return false;
             }
 
