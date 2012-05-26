@@ -29,3 +29,4 @@ When dropping support for Firefox 3.6:
 * Freeze objects returned from validatorregistry (and possibly others)
 * Remove addonutils and use AddonManager directly
 * Remove hard-coding of aboutURL and homepageURL outside of install.rdf
+* Switch icons to SVG versions

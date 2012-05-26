@@ -22,9 +22,9 @@
         <em:aboutURL>chrome://omnivalidator/content/aboutdialog.xul</em:aboutURL>
         <em:description>Validate content using any number of configurable validation services.</em:description>
         <em:homepageURL>https://github.com/kevinoid/omnivalidator</em:homepageURL>
-        <!-- FIXME:  SVG not supported in Firefox 3.5 -->
-        <em:iconURL>chrome://omnivalidator/skin/icon.svg</em:iconURL>
-        <em:icon64URL>chrome://omnivalidator/skin/icon.svg</em:icon64URL>
+        <!-- Note:  Can switch to SVG when dropping support for FF < 4 -->
+        <em:iconURL>chrome://omnivalidator/skin/icon-48.png</em:iconURL>
+        <em:icon64URL>chrome://omnivalidator/skin/icon-64.png</em:icon64URL>
         <em:optionsURL>chrome://omnivalidator/content/prefwindow.xul</em:optionsURL>
 
         <em:targetApplication>

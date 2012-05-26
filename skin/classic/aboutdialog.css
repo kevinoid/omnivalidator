@@ -29,8 +29,8 @@ tabpanel > iframe {
 }
 
 #omnivalidator-about-icon {
-	height: 125px;
-	list-style-image: url("chrome://omnivalidator/skin/icon.svg");
+	height: 128px;
+	list-style-image: url("chrome://omnivalidator/skin/icon-128.png");
 	margin: 10px;
 }
 
