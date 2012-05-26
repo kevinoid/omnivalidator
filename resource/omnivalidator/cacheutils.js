@@ -228,12 +228,12 @@ define(
         function confirmRepost() {
             var appStrBundle, btnPress, promptMsg, prompter, resendStr;
 
-            try {
+            if (Cc.hasOwnProperty("@mozilla.org/prompter;1")) {
                 // New (post-bug 563274) way to get prompter
                 prompter = Cc["@mozilla.org/prompter;1"]
                     .getService(Ci.nsIPromptFactory)
                     .getPrompt(null, Ci.nsIPrompt);
-            } catch (ex) {
+            } else {
                 // Old (pre-bug 563274) way to get prompter
                 prompter = Cc["@mozilla.org/network/default-prompt;1"]
                     .getService(Ci.nsIPrompt);

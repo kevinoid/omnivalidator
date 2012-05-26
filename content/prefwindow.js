@@ -39,12 +39,12 @@
                 autoValListbox;
 
             function getPrompter() {
-                try {
+                if (Cc.hasOwnProperty("@mozilla.org/prompter;1")) {
                     // New (post-bug 563274) way to get prompter
                     return Cc["@mozilla.org/prompter;1"]
                         .getService(Ci.nsIPromptFactory)
                         .getPrompt(window, Ci.nsIPrompt);
-                } catch (ex) {
+                } else {
                     // Old (pre-bug 563274) way to get prompter
                     return Cc["@mozilla.org/embedcomp/window-watcher;1"]
                         .getService(Ci.nsIWindowWatcher)
