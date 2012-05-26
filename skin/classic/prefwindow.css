@@ -12,6 +12,14 @@ prefpane {
 	-moz-box-flex: 1;
 }
 
+radio[pane=validators-prefpane] {
+	list-style-image: url("chrome://omnivalidator/skin/preference-validators-32.png");
+}
+
+radio[pane=auto-validate-prefpane] {
+	list-style-image: url("chrome://omnivalidator/skin/preference-autoval-32.png");
+}
+
 radio[pane=advanced-prefpane] {
 	list-style-image: url("chrome://browser/skin/preferences/Options.png");
 	-moz-image-region: rect(0px, 224px, 32px, 192px);
