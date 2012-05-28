@@ -130,7 +130,7 @@
                         }
                     } catch (ex) {
                         logger.debug(
-                            "Unable to parse validator URL for local checking",
+                            "Unable to parse validator URL to check if public",
                             ex
                         );
                     }
@@ -150,7 +150,10 @@
                 if (!Preferences.getValue(
                             globaldefs.EXT_PREF_PREFIX + "warnAutoPublic"
                         )) {
-                    // User has asked not to be warned about this
+                    logger.debug(
+                        "Not checking for automatic public validators, " +
+                            "user has asked not to be warned."
+                    );
                     return true;
                 }
 
@@ -198,7 +201,10 @@
                 if (!Preferences.getValue(
                             globaldefs.EXT_PREF_PREFIX + "warnNoCache"
                         )) {
-                    // User has asked not to be warned about cache problems
+                    logger.debug(
+                        "Not checking for disabled caching and cache " +
+                            "checking, user has asked not to be warned."
+                    );
                     return true;
                 }
 
