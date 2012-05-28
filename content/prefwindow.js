@@ -255,6 +255,19 @@
                 return confirmUncached() && confirmAutoPublic();
             }
 
+            // Return a wrapper around the function which will catch and log
+            // any exceptions
+            // Used as workaround for bug 503244
+            function logUncaught(fun) {
+                return function () {
+                    try {
+                        fun.apply(this, arguments);
+                    } catch (ex) {
+                        logger.error("Uncaught exception", ex);
+                    }
+                };
+            }
+
             function setupAutoAddButton(button) {
                 button.addEventListener("click", function () {
                     var url,
@@ -322,14 +335,14 @@
                     // by the WM.  Accept (and beforeaccept) will never fire.
                     document.documentElement.addEventListener(
                         "dialogcancel",
-                        function (evt) {
+                        logUncaught(function (evt) {
                             canClose = confirmClose();
 
                             if (!canClose) {
                                 evt.preventDefault();
                             }
                             return canClose;
-                        },
+                        }),
                         false
                     );
                 } else {
@@ -345,7 +358,7 @@
                     // are each called exactly once for each dialogaccept event.
                     // Is there a better way to detect event order and
                     // uniqueness?
-                    onAcceptOrBefore = function (evt) {
+                    onAcceptOrBefore = logUncaught(function (evt) {
                         if (firstCall) {
                             canClose = confirmClose();
                         }
@@ -358,7 +371,7 @@
                             evt.preventDefault();
                         }
                         return canClose;
-                    };
+                    });
                     document.documentElement.addEventListener(
                         "beforeaccept",
                         onAcceptOrBefore,
