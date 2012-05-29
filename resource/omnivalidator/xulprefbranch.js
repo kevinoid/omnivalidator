@@ -10,7 +10,7 @@
  *
  * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
  */
-/*jslint indent: 4, plusplus: true, unparam: true */
+/*jslint continue: true, indent: 4, plusplus: true, unparam: true */
 /*global define */
 
 define(
@@ -18,10 +18,11 @@ define(
         "gecko/components/classes",
         "gecko/components/interfaces",
         "gecko/components/results",
+        "log4moz",
         "omnivalidator/globaldefs",
         "underscore"
     ],
-    function (Cc, Ci, Cr, globaldefs, underscore) {
+    function (Cc, Ci, Cr, log4moz, globaldefs, underscore) {
         "use strict";
 
         var complexTypes = {
@@ -29,6 +30,7 @@ define(
                 unichar: Ci.nsISupportsString,
                 wstring: Ci.nsIPrefLocalizedString
             },
+            logger = log4moz.repository.getLogger("omnivalidator.xulprefbranch"),
             simpleNameToType = {
                 "": Ci.nsIPrefBranch.PREF_INVALID,
                 "bool": Ci.nsIPrefBranch.PREF_BOOL,
@@ -46,8 +48,14 @@ define(
         }
 
         function XULPrefBranch(xulprefs, root, nextBranch) {
-            var prefdoc = xulprefs.ownerDocument,
-                prefwindow = prefdoc.documentElement;
+            var nextBranch2,
+                observerInfos = [],
+                prefdoc = xulprefs.ownerDocument,
+                prefObserver,
+                prefwindow = prefdoc.documentElement,
+                thisPrefBranch = this,
+                unusedPrefName = globaldefs.EXT_PREF_PREFIX + "unused",
+                weakObserverInfos = [];
 
             root = String(root || "");
             if (Object.defineProperty) {
@@ -60,25 +68,10 @@ define(
                 nextBranch = Cc["@mozilla.org/preferences-service;1"]
                     .getService(Ci.nsIPrefService)
                     .getBranch(root);
+            } else if (nextBranch.root !== root) {
+                throw new Error("nextBranch must share root with this branch");
             }
-
-            function createPrefElem(prefName, prefType) {
-                var prefElem;
-
-                prefElem = prefdoc.createElementNS(
-                    globaldefs.XUL_NS,
-                    "preference"
-                );
-                xulprefs.appendChild(prefElem);
-                // Note:  Set name after XBL constructor runs to avoid
-                // unnecessary work checking for parent values
-                prefElem.name = root + prefName;
-                if (prefType) {
-                    prefElem.type = prefType;
-                }
-
-                return prefElem;
-            }
+            nextBranch2 = nextBranch.QueryInterface(Ci.nsIPrefBranch2);
 
             // This function is performance-sensitive
             function getAllPrefElems(prefix) {
@@ -132,6 +125,92 @@ define(
                 return null;
             }
 
+            function createPrefElem(prefName, prefType) {
+                var prefElem;
+
+                // Try to reuse an unused preference element, if any
+                prefElem = getPrefElem(unusedPrefName);
+                if (!prefElem) {
+                    prefElem = prefdoc.createElementNS(
+                        globaldefs.XUL_NS,
+                        "preference"
+                    );
+                    xulprefs.appendChild(prefElem);
+                }
+
+                prefElem.name = root + prefName;
+                if (prefType) {
+                    prefElem.type = prefType;
+                }
+
+                return prefElem;
+            }
+
+            /* Note:  We can't removeChild(prefElem) because this will cause
+             * its XBL destructor to throw.  Instead we change the name to
+             * a sentinel value and reuse it as needed.  Note:  Sentinel
+             * should not be a prefix of preferences in use, since a
+             * preferences observer is added by the preference
+             */
+            function removePrefElem(prefElem) {
+                var prefName, prefType;
+
+                if (typeof prefElem === "string") {
+                    prefElem = getPrefElem(prefElem);
+                }
+
+                if (!prefElem) {
+                    return false;
+                }
+
+                // Notify listeners of removal by sending a change event
+                // with the value from the nextBranch
+                // Note:  Can't call notifyObservers directly because it
+                // wouldn't notify all instances of XULPrefBranch.
+
+                // Set the type to match nextBranch where possible
+                // FIXME:  Is there a way to get complex types?
+                prefName = prefElem.name.slice(root.length);
+                prefType = nextBranch.getPrefType(prefName);
+                if (prefType !== Ci.nsIPrefBranch.PREF_INVALID) {
+                    prefElem.type = simpleTypeToName[prefType];
+                }
+                switch (prefType) {
+                case Ci.nsIPrefBranch.PREF_BOOL:
+                    prefElem.value = nextBranch.getBoolPref(prefName);
+                    break;
+                case Ci.nsIPrefBranch.PREF_INT:
+                    prefElem.value = nextBranch.getIntPref(prefName);
+                    break;
+                case Ci.nsIPrefBranch.PREF_STRING:
+                    prefElem.value = nextBranch.getCharPref(prefName);
+                    break;
+                default:
+                    if (prefElem.type) {
+                        try {
+                            prefElem.value = prefElem.valueFromPreferences;
+                        } catch (ex) {
+                            // Happens when nextBranch has complex type and the
+                            // type has changed on the preference element
+                            logger.warn(
+                                "Unable to set pref value to nextBranch value",
+                                ex
+                            );
+                            prefElem.value = undefined;
+                        }
+                    } else {
+                        prefElem.value = undefined;
+                    }
+                }
+
+                prefElem.name = unusedPrefName;
+                // Note: To avoid firing an useless change event for the
+                // unused pref, set the _value field directly
+                prefElem._value = undefined;
+
+                return true;
+            }
+
             function getTypeNameNext(prefName) {
                 return simpleTypeToName[nextBranch.getPrefType(prefName)];
             }
@@ -165,6 +244,113 @@ define(
                 };
             }
 
+            function notifyObservers(prefName) {
+                var i, observer;
+
+                for (i = 0; i < observerInfos.length; ++i) {
+                    if (startsWith(prefName, observerInfos[i].branchName)) {
+                        try {
+                            observerInfos[i].observer.observe(
+                                thisPrefBranch,
+                                "nsPref:changed",
+                                prefName
+                            );
+                        } catch (ex) {
+                            logger.error("Preference observer threw an error",
+                                ex);
+                        }
+                    }
+                }
+
+                i = 0;
+                while (i < weakObserverInfos.length) {
+                    if (startsWith(prefName, weakObserverInfos[i].branchName)) {
+                        try {
+                            /* Don't actually have an nsIWeakReference...
+                             * See addListener
+                            observer = weakObserverInfos[i].observer
+                                .QueryReferent(Ci.nsIObserver);
+                             */
+                            observer = weakObserverInfos[i].observer;
+                        } catch (ex2) {
+                            // Reference expired
+                            weakObserverInfos.splice(i, 1);
+                            continue;
+                        }
+
+                        try {
+                            observer.observe(
+                                thisPrefBranch,
+                                "nsPref:changed",
+                                prefName
+                            );
+                        } catch (ex3) {
+                            logger.error("Preference observer threw an error",
+                                ex3);
+                        }
+
+                        ++i;
+                    }
+                }
+            }
+
+            prefObserver = {
+                QueryInterface: function (aIID) {
+                    if (aIID.equals(Ci.nsIObserver) ||
+                            aIID.equals(Ci.nsISupportsWeakReference) ||
+                            aIID.equals(Ci.nsISupports)) {
+                        return this;
+                    }
+                    throw Cr.NS_NOINTERFACE;
+                },
+
+                observe: function (subject, topic, data) {
+                    if (getPrefElem(data)) {
+                        // XUL preference will fire change if it changes
+                        return;
+                    }
+
+                    notifyObservers(data);
+                }
+            };
+
+            function eventListener(evt) {
+                if (evt.type === "change" &&
+                        evt.target.localName === "preference" &&
+                        evt.target.namespaceURI === globaldefs.XUL_NS) {
+                    notifyObservers(evt.target.name.slice(root.length));
+                }
+            }
+
+            this.addObserver = function (branchName, observer, holdWeak) {
+                if (observerInfos.length === 0 &&
+                        weakObserverInfos.length === 0) {
+                    nextBranch2.addObserver("", prefObserver, true);
+                    prefwindow.addEventListener("change", eventListener, false);
+                }
+
+                if (holdWeak) {
+                    weakObserverInfos.push({
+                        branchName: branchName,
+                        /* FIXME: This doesn't work because we aren't going
+                         * through XPConnect so the observer doesn't get
+                         * wrapped in an nsXPCWrappedJS that inherits
+                         * nsSupportsWeakReference
+                         *
+                        observer: observer
+                            .QueryInterface(Ci.nsISupportsWeakReference)
+                            .getWeakReference()
+                         */
+                        observer: observer
+                    });
+                } else {
+                    observerInfos.push({
+                        branchName: branchName,
+                        observer: observer
+                    });
+                }
+            };
+
             this.clearUserPref = function (prefName) {
                 var prefElem;
 
@@ -172,6 +358,7 @@ define(
 
                 if (nextBranch.prefHasUserValue(prefName)) {
                     // Must have preference element with value undefined
+                    // to cause the stored preference to be reset
 
                     if (!prefElem) {
                         // Note:  Because valueFromPreference setter calls
@@ -186,10 +373,11 @@ define(
 
                     prefElem.value = undefined;
                 } else {
-                    // Allow to revert back to value of next branch
+                    // Clearing a preference only stored as an XUL element,
+                    // just remove the element.
 
                     if (prefElem) {
-                        prefElem.parentNode.removeChild(prefElem);
+                        removePrefElem(prefElem);
                     }
                 }
             };
@@ -204,8 +392,7 @@ define(
                 // Delete any local additions to the branch
                 prefElems = getAllPrefElems(branchName);
                 for (i = prefElems.length - 1; i >= 0; --i) {
-                    prefElem = prefElems[i];
-                    prefElem.parentNode.removeChild(prefElem);
+                    removePrefElem(prefElems[i]);
                 }
 
                 // Add removal element for each pref in the branch
@@ -348,6 +535,58 @@ define(
                 return nextBranch.prefIsLocked(prefName);
             };
 
+            this.removeObserver = function (branchName, observer) {
+                var i, removed = false, weakObserver;
+
+                for (i = 0; i < observerInfos.length; ++i) {
+                    if (observerInfos[i].branchName === branchName &&
+                            observerInfos[i].observer === observer) {
+                        observerInfos.splice(i, 1);
+                        removed = true;
+                        break;
+                    }
+                }
+
+                if (!removed) {
+                    i = 0;
+                    while (i < weakObserverInfos.length) {
+                        if (weakObserverInfos[i].branchName === branchName) {
+                            try {
+                                /* Don't actually have an nsIWeakReference...
+                                 * See addListener
+                                observer = weakObserverInfos[i].observer
+                                    .QueryReferent(Ci.nsIObserver);
+                                 */
+                                weakObserver = weakObserverInfos[i].observer;
+                            } catch (ex) {
+                                // Reference expired
+                                weakObserverInfos.splice(i, 1);
+                                continue;
+                            }
+
+                            if (observer === weakObserver) {
+                                weakObserverInfos.splice(i, 1);
+                                removed = true;
+                                break;
+                            }
+                        }
+
+                        ++i;
+                    }
+                }
+
+                if (removed &&
+                        observerInfos.length === 0 &&
+                        weakObserverInfos.length === 0) {
+                    prefwindow.removeEventListener(
+                        "change",
+                        eventListener,
+                        false
+                    );
+                    nextBranch2.removeObserver("", prefObserver);
+                }
+            };
+
             this.resetBranch = function (branchName) {
                 throw new Error("Not Implemented");
             };
@@ -384,7 +623,8 @@ define(
         }
 
         XULPrefBranch.prototype.QueryInterface = function (aIID) {
-            if (aIID.equals(Ci.nsIPrefBranch) ||
+            if (aIID.equals(Ci.nsIPrefBranch2) ||
+                    aIID.equals(Ci.nsIPrefBranch) ||
                     aIID.equals(Ci.nsISupports)) {
                 return this;
             }
