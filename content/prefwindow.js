@@ -30,13 +30,15 @@
             "omnivalidator/prefavlistbox",
             "omnivalidator/preferences",
             "omnivalidator/validatorregistry",
+            "omnivalidator/xulprefbranch",
             "omnivalidator/xulutils",
             "underscore"
         ],
         function (Cc, Ci, log4moz, globaldefs, locale, PrefAVListbox,
-                Preferences, vregistry, xulutils, underscore) {
+                Preferences, vregistry, XULPrefBranch, xulutils, underscore) {
             var logger = log4moz.repository.getLogger("omnivalidator.prefwindow"),
-                autoValListbox;
+                autoValListbox,
+                windowPrefs;
 
             function getPrompter() {
                 if (Cc.hasOwnProperty("@mozilla.org/prompter;1")) {
@@ -69,48 +71,16 @@
 
             function hasAutoPublic() {
                 var autoVIDs,
-                    changedURLsByVID = {},
                     host,
                     i,
                     ioService,
-                    prefElem,
-                    prefElems,
-                    prefName,
-                    prefPrefixLen,
-                    url,
-                    vid;
+                    url;
 
                 function getValidatorURL(vid) {
-                    if (changedURLsByVID.hasOwnProperty(vid)) {
-                        return changedURLsByVID[vid];
-                    }
-
-                    return Preferences.getValue(
+                    return windowPrefs.getValue(
                         globaldefs.EXT_PREF_PREFIX + "validators." + vid +
                             ".args.validatorURL"
                     );
-                }
-
-                // Gather any pending changes to validator URLs
-                if (!document.documentElement.instantApply) {
-                    prefElems = document.getElementsByTagNameNS(
-                        globaldefs.XUL_NS,
-                        "preference"
-                    );
-                    prefPrefixLen =
-                        (globaldefs.EXT_PREF_PREFIX + "validators.").length;
-                    for (i = 0; i < prefElems.length; ++i) {
-                        prefElem = prefElems[i];
-                        prefName = prefElem.name;
-                        if (prefName.slice(-18) === ".args.validatorURL") {
-                            // extensions.omnivalidator.validators.vid.args...
-                            vid = prefName.slice(
-                                prefPrefixLen,
-                                prefName.length - 18
-                            );
-                            changedURLsByVID[vid] = prefElem.value;
-                        }
-                    }
                 }
 
                 // Get validators which are performing automatic validation
@@ -413,7 +383,11 @@
                 var autoValList,
                     validatorNames;
 
-                validatorNames = vregistry.getNames();
+                validatorNames = vregistry.getNames(
+                    windowPrefs.getBranch(
+                        globaldefs.EXT_PREF_PREFIX + "validators."
+                    )
+                );
 
                 // List on validators pane
                 fillValidatorList(
@@ -455,7 +429,10 @@
 
             function setupValClearButton(button) {
                 button.addEventListener("click", function () {
-                    vregistry.removeAll();
+                    // FIXME:  Overlap with vregistry.removeAll
+                    windowPrefs.deleteBranch(
+                        globaldefs.EXT_PREF_PREFIX + "validators."
+                    );
 
                     fillValidatorLists();
                 }, false);
@@ -505,7 +482,11 @@
                         return;
                     }
 
-                    vregistry.remove(listbox.selectedItem.value);
+                    // FIXME:  Overlap with vregistry.remove(vid)
+                    windowPrefs.deleteBranch(
+                        globaldefs.EXT_PREF_PREFIX + "validators." +
+                            listbox.selectedItem.value
+                    );
 
                     fillValidatorLists();
                 }, false);
@@ -513,6 +494,16 @@
 
             document.addEventListener("DOMContentLoaded", function () {
                 logger.trace("Prefwindow loaded");
+
+                if (document.documentElement.instantApply) {
+                    windowPrefs = Preferences;
+                } else {
+                    windowPrefs = new Preferences(
+                        new XULPrefBranch(
+                            document.getElementById("validator-preferences")
+                        )
+                    );
+                }
 
                 setupAutoAddButton(
                     document.getElementById("auto-validate-add")

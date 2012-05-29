@@ -18,6 +18,10 @@
 
     <prefpane id="validators-prefpane" label="&validatorsGroup.label;">
 
+        <preferences id="validator-preferences">
+            <!-- Preferences added dynamically -->
+        </preferences>
+
         <box id="validators-list-boxandbuttons">
             <listbox id="validators-list-listbox">
                 <!-- Items added dynamically -->
