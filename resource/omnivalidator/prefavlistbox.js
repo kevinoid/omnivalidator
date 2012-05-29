@@ -47,6 +47,19 @@ define(
             }
         }
 
+        // Return a wrapper around the function which will catch and log
+        // any exceptions
+        // Used as workaround for bug 503244
+        function logUncaught(fun) {
+            return function () {
+                try {
+                    fun.apply(this, arguments);
+                } catch (ex) {
+                    logger.error("Uncaught exception", ex);
+                }
+            };
+        }
+
         function namespaceResolver(prefix) {
             var namespaces = {
                     xhtml: globaldefs.XHTML_NS,
@@ -233,7 +246,7 @@ define(
             }
 
             observer = {
-                observe: function (subject, topic, data) {
+                observe: logUncaught(function (subject, topic, data) {
                     var index, listitem, match, url, vid, vname;
 
                     match = /^(\w+)\.autoValidate\.(\d+)$/.exec(data);
@@ -267,7 +280,7 @@ define(
                             listitem.firstChild.setAttribute("value", url);
                         }
                     }
-                }
+                })
             };
 
             this.add = function (url, vid, vname) {
