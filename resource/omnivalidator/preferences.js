@@ -380,6 +380,21 @@ define(
             }
         };
 
+        /**
+         * Note that unlike deleteBranch, this method will notify observers
+         * of each change.
+         */
+        Preferences.resetBranch = function (branchName) {
+            // Note:  nsPrefBranch.resetBranch not implemented
+            this.prefBranch
+                .getChildList(concat(branchName), {})
+                .forEach(function (prefName) {
+                    if (this.prefBranch.prefHasUserValue(prefName)) {
+                        this.prefBranch.clearUserPref(prefName);
+                    }
+                }, this);
+        };
+
         // TODO:  Provide resetObject and/or decide on plain reset behavior
         Preferences.resetValue = function (prefName) {
             prefName = concat(prefName);
