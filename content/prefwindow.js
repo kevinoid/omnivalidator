@@ -249,9 +249,6 @@
                             .selectedItem;
 
                     autoValListbox.add(url, valItem.value, valItem.label);
-                    if (document.documentElement.instantApply) {
-                        autoValListbox.save();
-                    }
                 }, false);
             }
 
@@ -260,9 +257,6 @@
                     "click",
                     function () {
                         autoValListbox.clear();
-                        if (document.documentElement.instantApply) {
-                            autoValListbox.save();
-                        }
                     },
                     false
                 );
@@ -281,17 +275,16 @@
 
                 button.addEventListener("click", function () {
                     autoValListbox.removeSelected();
-                    if (document.documentElement.instantApply) {
-                        autoValListbox.save();
-                    }
                 }, false);
             }
 
             function setupAutoValList(listbox) {
-                autoValListbox = new PrefAVListbox(listbox);
-
-                // Note: Saving for non-instantApply is setup in
-                // setupCloseListeners
+                autoValListbox = new PrefAVListbox(
+                    listbox,
+                    windowPrefs.getBranch(
+                        globaldefs.EXT_PREF_PREFIX + "validators."
+                    )
+                );
             }
 
             function setupCloseListeners() {
@@ -335,9 +328,7 @@
 
                         firstCall = !firstCall;
 
-                        if (canClose) {
-                            autoValListbox.save();
-                        } else {
+                        if (!canClose) {
                             evt.preventDefault();
                         }
                         return canClose;

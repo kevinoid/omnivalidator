@@ -27,78 +27,155 @@ define(
 
         var logger = log4moz.repository.getLogger("omnivalidator.prefavlistbox");
 
-        function compact(array) {
-            var li, ri, result;
-
-            // Attempt to preserve as many index values as possible
-            // This will minimize the number of observer notifications made
-            // by the preferences system.
-            // Fill undefined values from the back of the array.
-
-            li = 0;
-            ri = array.length - 1;
-            result = [];
-
-            while (ri >= 0 && array[ri] === undefined) {
-                --ri;
+        /* listitems appear after all other nodes, sorted in order
+         * of the label of their first element */
+        function compareListitem(a, b) {
+            if (a.localName !== "listitem" ||
+                    a.namespaceURI !== globaldefs.XUL_NS) {
+                return -1;
+            } else if (b.localName !== "listitem" ||
+                    b.namespaceURI !== globaldefs.XUL_NS) {
+                return 1;
+            } else {
+                // Note:  May be called before XBL is attached, so don't
+                // rely on any XBL properties (e.g. label)
+                return a.firstChild.getAttribute("label").localeCompare(
+                    b.firstChild.getAttribute("label")
+                ) || a.childNodes[1].getAttribute("label").localeCompare(
+                    b.childNodes[1].getAttribute("label")
+                );
             }
-            if (ri < 0) {
-                // No non-undefined values in array
-                return result;
+        }
+
+        function namespaceResolver(prefix) {
+            var namespaces = {
+                    xhtml: globaldefs.XHTML_NS,
+                    xul: globaldefs.XUL_NS
+                };
+
+            return namespaces[prefix] || null;
+        }
+
+        function PrefAVListbox(listbox, valPrefs) {
+            var document = listbox.ownerDocument,
+                observer,
+                thisPAVL = this;
+
+            if (!valPrefs) {
+                valPrefs = Preferences.getBranch(
+                    globaldefs.EXT_PREF_PREFIX + "validators."
+                );
             }
 
-            for (li = 0; li <= ri; ++li) {
-                if (array[li] !== undefined) {
-                    result[li] = array[li];
-                } else {
-                    result[li] = array[ri];
-                    do {
-                        --ri;
-                    } while (ri >= li && array[ri] === undefined);
+            function addAVPref(url, vid) {
+                var i = 0;
+
+                thisPAVL.disableUpdateFromPref();
+                try {
+
+                    while (valPrefs.hasUserValue(vid + ".autoValidate." + i)) {
+                        ++i;
+                    }
+
+                    valPrefs.set(vid + ".autoValidate." + i, url);
+
+                } finally {
+                    thisPAVL.enableUpdateFromPref();
                 }
             }
 
-            return result;
-        }
+            function removeAVPref(url, vid) {
+                var autoInds,
+                    autoInd,
+                    autoPrefs,
+                    autoURL,
+                    i,
+                    lastAutoURL,
+                    removed = false;
 
-        function deleteAndTrim(array, index) {
-            delete array[index];
-            while (array.length > 0 && array[array.length - 1] === undefined) {
-                array.pop();
+                thisPAVL.disableUpdateFromPref();
+                try {
+
+                    autoPrefs = valPrefs.getBranch(vid + ".autoValidate.");
+
+                    autoInds = autoPrefs.getChildNames().filter(function (e) {
+                        return (/^\d+$/).test(e);
+                    });
+                    autoInds.sort();
+
+                    for (i = autoInds.length - 1; i >= 0; --i) {
+                        autoInd = autoInds[i];
+                        autoURL = autoPrefs.getValue(autoInd);
+
+                        if (i === autoInds.length - 1) {
+                            // Store for later
+                            lastAutoURL = autoURL;
+                        }
+
+                        if (autoURL === url) {
+                            // Replace with last to avoid moving all subsequent
+                            if (i !== autoInds.length - 1) {
+                                autoPrefs.set(autoInd, lastAutoURL);
+                            }
+                            autoPrefs.resetValue(autoInds[autoInds.length - 1]);
+                            removed = true;
+                            break;
+                        }
+                    }
+
+                } finally {
+                    thisPAVL.enableUpdateFromPref();
+                }
+
+                return removed;
             }
-        }
 
-        function PrefAVListbox(listbox) {
-            var document = listbox.ownerDocument,
-                // State of the preferences represented in the listbox
-                // Map of VID to Array of auto-validate URLs
-                // Array may be non-continuous in order to properly match
-                // underlying preferences (particularly for observer updates)
-                localAVPrefs = {},
-                observer,
-                // Sorted list of VIDs for which localAVPrefs may differ from
-                // the stored preferences
-                unsavedChanges = [],
-                valPrefs = Preferences.getBranch(globaldefs.EXT_PREF_PREFIX +
-                        "validators.");
+            function checkAVListitems(vid) {
+                var autoInd, autoPrefs, autoURLs, i, listitem, url, xpresult;
 
-            /* listitems appear after all other nodes, sorted in order
-             * of the label of their first element */
-            function compareListitem(a, b) {
-                if (a.localName !== "listitem" ||
-                        a.namespaceURI !== globaldefs.XUL_NS) {
-                    return -1;
-                } else if (b.localName !== "listitem" ||
-                        b.namespaceURI !== globaldefs.XUL_NS) {
-                    return 1;
-                } else {
-                    // Note:  May be called before XBL is attached, so don't
-                    // rely on any XBL properties (e.g. label)
-                    return a.firstChild.getAttribute("label").localeCompare(
-                        b.firstChild.getAttribute("label")
-                    ) || a.childNodes[1].getAttribute("label").localeCompare(
-                        b.childNodes[1].getAttribute("label")
-                    );
+                autoPrefs = valPrefs.getBranch(vid + ".autoValidate.");
+                autoURLs = autoPrefs.getChildNames()
+                    .filter(function (e) {
+                        return (/^\d+$/).test(e);
+                    }).map(function (e) {
+                        return autoPrefs.getValue(e);
+                    });
+                autoURLs.sort();
+
+                vid = xpathutils.quote(vid);
+                xpresult = document.evaluate(
+                    "//xul:listitem[" +
+                        "xul:listcell[2][@value = " + vid + "]]",
+                    listbox,
+                    namespaceResolver,
+                    XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
+                    null
+                );
+
+                for (i = 0; i < xpresult.snapshotLength; ++i) {
+                    listitem = xpresult.snapshotItem(i);
+                    url = listitem.firstChild.getAttribute("label");
+                    autoInd = underscore.sortedIndex(autoURLs, url);
+
+                    // Strict mode...
+                    if (autoInd === autoURLs.length ||
+                            autoURLs[autoInd] !== url) {
+                        // The URL for this listitem is not in autoURLs
+                        listitem.parentNode.removeChild(listitem);
+                    }
+                }
+            }
+
+            function clearAVListitems() {
+                var i, listitems;
+
+                listitems = listbox.getElementsByTagNameNS(
+                    globaldefs.XUL_NS,
+                    "listitem"
+                );
+
+                for (i = listitems.length - 1; i >= 0; --i) {
+                    listitems[i].parentNode.removeChild(listitems[i]);
                 }
             }
 
@@ -130,14 +207,6 @@ define(
             }
 
             function findAVListitem(url, vid) {
-                function namespaceResolver(prefix) {
-                    var namespaces = {
-                            xul: globaldefs.XUL_NS
-                        };
-
-                    return namespaces[prefix] || null;
-                }
-
                 url = xpathutils.quote(url);
                 vid = xpathutils.quote(vid);
                 return document.evaluate(
@@ -163,39 +232,9 @@ define(
                 listbox.insertBefore(listitem, listbox.childNodes[index]);
             }
 
-            function markChanged(vid) {
-                var index = underscore.sortedIndex(unsavedChanges, vid);
-                // Extra check to placate Gecko strict mode
-                if (index === unsavedChanges.length ||
-                        unsavedChanges[index] !== vid) {
-                    unsavedChanges.splice(index, 0, vid);
-                }
-            }
-
-            function getAVPrefs() {
-                var autoURLsByVID = {},
-                    i,
-                    match,
-                    prefNames;
-
-                prefNames = valPrefs.getDescendantNames();
-                for (i = 0; i < prefNames.length; ++i) {
-                    match = /^(\w+)\.autoValidate\.(\d+)$/.exec(prefNames[i]);
-                    if (match) {
-                        if (!autoURLsByVID.hasOwnProperty(match[1])) {
-                            autoURLsByVID[match[1]] = [];
-                        }
-                        autoURLsByVID[match[1]][match[2]] =
-                            valPrefs.getValue(prefNames[i]);
-                    }
-                }
-
-                return autoURLsByVID;
-            }
-
             observer = {
                 observe: function (subject, topic, data) {
-                    var autoURLs, index, listitem, match, url, vid, vname;
+                    var index, listitem, match, url, vid, vname;
 
                     match = /^(\w+)\.autoValidate\.(\d+)$/.exec(data);
                     if (!match) {
@@ -205,41 +244,28 @@ define(
 
                     vid = match[1];
                     index = match[2];
-
-                    if (!localAVPrefs.hasOwnProperty(vid)) {
-                        // Auto-validation added for a validator
-                        localAVPrefs[vid] = [];
+                    try {
+                        url = subject.getCharPref(data);
+                    } catch (ex) {
+                        // Pref is unset or not a string, ok
                     }
-                    autoURLs = localAVPrefs[vid];
 
-                    url = valPrefs.getValue(data);
                     if (!url) {
                         // One of the auto-validators has been removed
-                        listitem = findAVListitem(
-                            autoURLs[index],
-                            vid
-                        );
-                        if (listitem) {
-                            listitem.parentNode.removeChild(listitem);
+                        // Don't know the URL that was removed yet
+                        checkAVListitems(vid);
+                    } else {
+                        listitem = findAVListitem(url, vid);
+
+                        if (!listitem) {
+                            // New auto-validator added
+                            vname = vregistry.getNames(valPrefs)[vid];
+                            insertAVListitem(createAVListitem(url, vid, vname));
+                        } else {
+                            // auto-validator has been changed
+                            listitem.firstChild.setAttribute("label", url);
+                            listitem.firstChild.setAttribute("value", url);
                         }
-
-                        deleteAndTrim(autoURLs, index);
-                    } else if (!autoURLs.hasOwnProperty(index)) {
-                        // New auto-validator added
-                        vname = vregistry.getNames()[vid];
-                        insertAVListitem(createAVListitem(url, vid, vname));
-
-                        autoURLs[index] = url;
-                    } else if (autoURLs[index] !== url) {
-                        // auto-validator has been changed
-                        listitem = findAVListitem(
-                            autoURLs[index],
-                            vid
-                        );
-                        listitem.firstChild.setAttribute("label", url);
-                        listitem.firstChild.setAttribute("value", url);
-
-                        autoURLs[index] = url;
                     }
                 }
             };
@@ -248,29 +274,27 @@ define(
                 logger.debug("Adding automatic validation of " + url +
                         " to " + vid + " (" + vname + ")");
 
-                if (!localAVPrefs.hasOwnProperty(vid)) {
-                    localAVPrefs[vid] = [];
-                }
-                localAVPrefs[vid].push(url);
-                markChanged(vid);
-
                 insertAVListitem(createAVListitem(url, vid, vname));
+
+                addAVPref(url, vid);
             };
 
             this.clear = function () {
-                var i, listitems;
+                var i, vids;
 
-                listitems = listbox.getElementsByTagNameNS(
-                    globaldefs.XUL_NS,
-                    "listitem"
-                );
+                clearAVListitems();
 
-                for (i = listitems.length - 1; i >= 0; --i) {
-                    listitems[i].parentNode.removeChild(listitems[i]);
+                this.disableUpdateFromPref();
+                try {
+
+                    vids = valPrefs.getChildNames();
+                    for (i = 0; i < vids.length; ++i) {
+                        valPrefs.deleteBranch(vids[i] + ".autoValidate");
+                    }
+
+                } finally {
+                    this.enableUpdateFromPref();
                 }
-
-                underscore.keys(localAVPrefs).forEach(markChanged);
-                localAVPrefs = {};
             };
 
             this.disableUpdateFromPref = function () {
@@ -283,17 +307,28 @@ define(
                 valPrefs.addObserver("", observer, true);
             };
 
-            /** Gets the (unsaved) URLs to be auto-validated by VID) */
+            /** Gets the URLs to be auto-validated by VID) */
             this.getAutoURLsByVID = function () {
                 var autoByVID = {},
+                    i,
+                    index,
+                    match,
+                    prefNames,
+                    url,
                     vid;
 
-                // Deep clone localAVPrefs
-                for (vid in localAVPrefs) {
-                    if (localAVPrefs.hasOwnProperty(vid)) {
-                        if (localAVPrefs[vid].length !== 0) {
-                            autoByVID[vid] = localAVPrefs[vid].slice(0);
+                prefNames = valPrefs.getDescendantNames();
+                for (i = 0; i < prefNames.length; ++i) {
+                    match = /^(\w+)\.autoValidate\.(\d+)$/.exec(prefNames[i]);
+                    if (match) {
+                        vid = match[1];
+                        index = match[2];
+                        url = valPrefs.getValue(prefNames[i]);
+
+                        if (!autoByVID.hasOwnProperty(vid)) {
+                            autoByVID[vid] = [];
                         }
+                        autoByVID[vid][index] = url;
                     }
                 }
 
@@ -301,46 +336,28 @@ define(
             };
 
             this.reload = function () {
-                var autoURLs,
-                    autoVal = [],
-                    i,
+                var i,
+                    match,
+                    prefNames,
+                    url,
                     validatorNames,
-                    vid;
+                    vid,
+                    vname;
 
-                this.clear();
+                clearAVListitems();
 
-                localAVPrefs = getAVPrefs();
-                unsavedChanges = [];
+                validatorNames = vregistry.getNames(valPrefs);
 
-                validatorNames = vregistry.getNames();
-                for (vid in localAVPrefs) {
-                    if (localAVPrefs.hasOwnProperty(vid)) {
-                        autoURLs = localAVPrefs[vid];
-                        for (i = 0; i < autoURLs.length; ++i) {
-                            if (autoURLs[i] !== undefined) {
-                                autoVal.push({
-                                    url: autoURLs[i],
-                                    vid: vid,
-                                    vname: validatorNames[vid]
-                                });
-                            }
-                        }
+                prefNames = valPrefs.getDescendantNames();
+                for (i = 0; i < prefNames.length; ++i) {
+                    match = /^(\w+)\.autoValidate\.\d+$/.exec(prefNames[i]);
+                    if (match) {
+                        vid = match[1];
+                        url = valPrefs.getValue(prefNames[i]);
+                        vname = validatorNames[vid];
+
+                        insertAVListitem(createAVListitem(url, vid, vname));
                     }
-                }
-
-                autoVal.sort(function (a, b) {
-                    return a.url.localeCompare(b.url) ||
-                        a.vname.localeCompare(b.vname);
-                });
-
-                for (i = 0; i < autoVal.length; ++i) {
-                    listbox.appendChild(
-                        createAVListitem(
-                            autoVal[i].url,
-                            autoVal[i].vid,
-                            autoVal[i].vname
-                        )
-                    );
                 }
             };
 
@@ -360,42 +377,9 @@ define(
                 logger.debug("Removing automatic validation of " + url +
                         " from " + vid);
 
-                deleteAndTrim(
-                    localAVPrefs[vid],
-                    localAVPrefs[vid].indexOf(url)
-                );
-
-                markChanged(vid);
-
                 listbox.removeChild(listitem);
-            };
 
-            this.save = function () {
-                var i,
-                    vid;
-
-                logger.debug("Saving automatic validation preferences");
-
-                this.disableUpdateFromPref();
-                for (i = 0; i < unsavedChanges.length; ++i) {
-                    vid = unsavedChanges[i];
-
-                    logger.trace("Saving automatic validation preferences for " + vid);
-
-                    if (!localAVPrefs.hasOwnProperty(vid) ||
-                            localAVPrefs[vid].length === 0) {
-                        valPrefs.deleteBranch(vid + ".autoValidate");
-                        delete localAVPrefs[vid];
-                    } else {
-                        // Compact the array
-                        localAVPrefs[vid] = compact(localAVPrefs[vid]);
-
-                        valPrefs.set(vid + ".autoValidate", localAVPrefs[vid]);
-                    }
-                }
-                this.enableUpdateFromPref();
-
-                unsavedChanges = [];
+                removeAVPref(url, vid);
             };
 
             this.reload();
