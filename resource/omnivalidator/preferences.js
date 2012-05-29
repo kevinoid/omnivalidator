@@ -249,6 +249,8 @@ define(
                     branchName === null ||
                     branchName === "") {
                 return this;
+            } else if (typeof this.prefBranch.getBranch === "function") {
+                return new Preferences(this.prefBranch.getBranch(branchName));
             } else {
                 return new Preferences(concat(this.branchName, branchName));
             }
