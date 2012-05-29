@@ -225,6 +225,24 @@ define(
             };
 
             this.getBoolPref = makeGetPref("getBoolPref", "bool");
+
+            this.getBranch = function (branchName) {
+                var nextSubBranch;
+                if (typeof nextBranch.getBranch === "function") {
+                    nextSubBranch = nextBranch.getBranch(branchName);
+                } else {
+                    nextSubBranch = Cc["@mozilla.org/preferences-service;1"]
+                        .getService(Ci.nsIPrefService)
+                        .getBranch(root + branchName);
+                }
+
+                return new XULPrefBranch(
+                    xulprefs,
+                    root + branchName,
+                    nextSubBranch
+                );
+            };
+
             this.getCharPref = makeGetPref("getCharPref", "string");
 
             this.getChildList = function (branchName, out) {
