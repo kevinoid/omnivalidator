@@ -232,19 +232,25 @@ define(
 
         // Get the validator names without constructing all the validator
         // objects
-        function getNames() {
+        // FIXME:  Passing prefs here is a bit of a hack.  Consider either
+        // constructing the registry with a prefs object, or something else.
+        function getNames(prefs) {
             var i,
                 match,
                 prefNames,
                 vid,
                 valNames;
 
-            prefNames = validatorsPref.getDescendantNames();
+            if (!prefs) {
+                prefs = validatorsPref;
+            }
+
+            prefNames = prefs.getDescendantNames();
             valNames = {};
             for (i = 0; i < prefNames.length; ++i) {
                 match = /^(\w+)\.name$/.exec(prefNames[i]);
                 if (match) {
-                    valNames[match[1]] = validatorsPref.getValue(prefNames[i]);
+                    valNames[match[1]] = prefs.getValue(prefNames[i]);
                 } else {
                     // Make sure all validators get a name
                     vid = prefNames[i].split(".")[0];
