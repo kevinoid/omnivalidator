@@ -421,7 +421,8 @@
             function setupValClearButton(button) {
                 button.addEventListener("click", function () {
                     // FIXME:  Overlap with vregistry.removeAll
-                    windowPrefs.deleteBranch(
+                    // Note:  Don't deleteBranch, since PrefAVList needs notify
+                    windowPrefs.resetBranch(
                         globaldefs.EXT_PREF_PREFIX + "validators."
                     );
 
@@ -474,7 +475,8 @@
                     }
 
                     // FIXME:  Overlap with vregistry.remove(vid)
-                    windowPrefs.deleteBranch(
+                    // Note:  Don't deleteBranch, since PrefAVList needs notify
+                    windowPrefs.resetBranch(
                         globaldefs.EXT_PREF_PREFIX + "validators." +
                             listbox.selectedItem.value
                     );
