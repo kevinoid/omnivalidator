@@ -143,42 +143,6 @@ define(
                 return removed;
             }
 
-            function checkAVListitems(vid) {
-                var autoInd, autoPrefs, autoURLs, i, listitem, url, xpresult;
-
-                autoPrefs = valPrefs.getBranch(vid + ".autoValidate.");
-                autoURLs = autoPrefs.getChildNames()
-                    .filter(function (e) {
-                        return (/^\d+$/).test(e);
-                    }).map(function (e) {
-                        return autoPrefs.getValue(e);
-                    });
-                autoURLs.sort();
-
-                vid = xpathutils.quote(vid);
-                xpresult = document.evaluate(
-                    "//xul:listitem[" +
-                        "xul:listcell[2][@value = " + vid + "]]",
-                    listbox,
-                    namespaceResolver,
-                    XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
-                    null
-                );
-
-                for (i = 0; i < xpresult.snapshotLength; ++i) {
-                    listitem = xpresult.snapshotItem(i);
-                    url = listitem.firstChild.getAttribute("label");
-                    autoInd = underscore.sortedIndex(autoURLs, url);
-
-                    // Strict mode...
-                    if (autoInd === autoURLs.length ||
-                            autoURLs[autoInd] !== url) {
-                        // The URL for this listitem is not in autoURLs
-                        listitem.parentNode.removeChild(listitem);
-                    }
-                }
-            }
-
             function clearAVListitems() {
                 var i, listitems;
 
@@ -233,6 +197,46 @@ define(
                 ).singleNodeValue;
             }
 
+            function findAVListitems(url, vid) {
+                var i, listitems, predicate = [], xpresult;
+
+                if (url) {
+                    predicate.push(
+                        "xul:listcell[1][@label = " +
+                            xpathutils.quote(url) +
+                            "]"
+                    );
+                }
+                if (vid) {
+                    predicate.push(
+                        "xul:listcell[2][@value = " +
+                            xpathutils.quote(vid) +
+                            "]"
+                    );
+                }
+
+                if (predicate.length > 0) {
+                    predicate = "[" + predicate.join(" and ") + "]";
+                } else {
+                    predicate = "";
+                }
+
+                xpresult = document.evaluate(
+                    "//xul:listitem" + predicate,
+                    listbox,
+                    namespaceResolver,
+                    XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
+                    null
+                );
+
+                listitems = [];
+                for (i = 0; i < xpresult.snapshotLength; ++i) {
+                    listitems.push(xpresult.snapshotItem(i));
+                }
+
+                return listitems;
+            }
+
             function insertAVListitem(listitem) {
                 var index;
 
@@ -245,9 +249,53 @@ define(
                 listbox.insertBefore(listitem, listbox.childNodes[index]);
             }
 
+            function checkAVListitems(vid) {
+                var autoInd, autoPrefs, autoURLs, i, listitem, listitems, url;
+
+                autoPrefs = valPrefs.getBranch(vid + ".autoValidate.");
+                autoURLs = autoPrefs.getChildNames()
+                    .filter(function (e) {
+                        return (/^\d+$/).test(e);
+                    }).map(function (e) {
+                        return autoPrefs.getValue(e);
+                    });
+                autoURLs.sort();
+
+                listitems = findAVListitems(null, vid);
+
+                for (i = 0; i < listitems.length; ++i) {
+                    listitem = listitems[i];
+                    url = listitem.firstChild.getAttribute("label");
+                    autoInd = underscore.sortedIndex(autoURLs, url);
+
+                    // Strict mode...
+                    if (autoInd === autoURLs.length ||
+                            autoURLs[autoInd] !== url) {
+                        // The URL for this listitem is not in autoURLs
+                        listitem.parentNode.removeChild(listitem);
+                    }
+                }
+            }
+
+            function updateValidatorName(vid, name) {
+                findAVListitems(null, vid)
+                    .forEach(function (listitem) {
+                        listitem.childNodes[1].setAttribute("label", name);
+                    });
+            }
+
             observer = {
                 observe: logUncaught(function (subject, topic, data) {
                     var index, listitem, match, url, vid, vname;
+
+                    match = /^(\w+)\.name$/.exec(data);
+                    if (match) {
+                        updateValidatorName(
+                            match[1],
+                            subject.getCharPref(data)
+                        );
+                        return;
+                    }
 
                     match = /^(\w+)\.autoValidate\.(\d+)$/.exec(data);
                     if (!match) {
