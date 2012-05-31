@@ -27,13 +27,14 @@
             "log4moz",
             "omnivalidator/consoledockedwin",
             "omnivalidator/globaldefs",
+            "omnivalidator/preferences",
             "omnivalidator/validationstatusbutton",
             "omnivalidator/validatorregistry",
             "omnivalidator/windowvalidationmanager",
             "omnivalidator/xulutils",
             "underscore"
         ],
-        function (log4moz, ConsoleDockedWin, globaldefs,
+        function (log4moz, ConsoleDockedWin, globaldefs, Preferences,
                 ValidationStatusButton, vregistry, WindowValidationManager,
                 xulutils, underscore) {
             var consoleWin,
@@ -42,10 +43,14 @@
 
             function setupAboutCommand(command) {
                 command.addEventListener("command", function () {
-                    window.open(
+                    /* Open the same as cmd_showItemAbout in
+                     * toolkit/mozapps/extensions/content/extensions.js for
+                     * UI consistency.
+                     */
+                    window.openDialog(
                         "chrome://omnivalidator/content/aboutdialog.xul",
-                        "omnivalidator-about",
-                        "chrome"
+                        "",
+                        "chrome,centerscreen,modal"
                     );
                 }, false);
             }
@@ -156,10 +161,22 @@
 
             function setupPrefsCommand(command) {
                 command.addEventListener("command", function () {
-                    window.open(
+                    /* Open the same as cmd_showItemAbout in
+                     * toolkit/mozapps/extensions/content/extensions.js for
+                     * UI consistency.
+                     */
+                    var features = "chrome,titlebar,toolbar,centerscreen",
+                        instantApply;
+
+                    instantApply = Preferences.getValue(
+                        "browser.preferences.instantApply"
+                    );
+                    features += instantApply ? ",dialog=no" : ",modal";
+
+                    window.openDialog(
                         "chrome://omnivalidator/content/prefwindow.xul",
-                        "omnivalidator-prefs",
-                        "chrome,titlebar,toolbar,centerscreen"
+                        "",
+                        features
                     );
                 }, false);
             }
