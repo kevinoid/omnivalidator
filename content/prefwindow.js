@@ -69,6 +69,31 @@
                     host.slice(-12) === "validator.nu";
             }
 
+            function getAutoVIDs() {
+                var autoVIDs = [],
+                    i,
+                    index,
+                    match,
+                    prefNames,
+                    url,
+                    valPrefs,
+                    vid;
+
+                valPrefs = windowPrefs.getBranch(
+                    globaldefs.EXT_PREF_PREFIX + "validators."
+                );
+
+                prefNames = valPrefs.getDescendantNames();
+                for (i = 0; i < prefNames.length; ++i) {
+                    match = /^(\w+)\.autoValidate\.0$/.exec(prefNames[i]);
+                    if (match) {
+                        autoVIDs.push(match[1]);
+                    }
+                }
+
+                return autoVIDs;
+            }
+
             function hasAutoPublic() {
                 var autoVIDs,
                     host,
@@ -84,9 +109,7 @@
                 }
 
                 // Get validators which are performing automatic validation
-                autoVIDs = underscore.keys(
-                    autoValListbox.getAutoURLsByVID()
-                );
+                autoVIDs = getAutoVIDs();
 
                 ioService = Cc["@mozilla.org/network/io-service;1"]
                     .getService(Ci.nsIIOService);

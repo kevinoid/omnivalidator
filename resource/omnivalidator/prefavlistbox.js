@@ -368,34 +368,6 @@ define(
                 valPrefs.addObserver("", observer, true);
             };
 
-            /** Gets the URLs to be auto-validated by VID) */
-            this.getAutoURLsByVID = function () {
-                var autoByVID = {},
-                    i,
-                    index,
-                    match,
-                    prefNames,
-                    url,
-                    vid;
-
-                prefNames = valPrefs.getDescendantNames();
-                for (i = 0; i < prefNames.length; ++i) {
-                    match = /^(\w+)\.autoValidate\.(\d+)$/.exec(prefNames[i]);
-                    if (match) {
-                        vid = match[1];
-                        index = match[2];
-                        url = valPrefs.getValue(prefNames[i]);
-
-                        if (!autoByVID.hasOwnProperty(vid)) {
-                            autoByVID[vid] = [];
-                        }
-                        autoByVID[vid][index] = url;
-                    }
-                }
-
-                return autoByVID;
-            };
-
             this.reload = function () {
                 var i,
                     match,
