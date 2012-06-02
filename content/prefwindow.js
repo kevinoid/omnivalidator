@@ -27,17 +27,17 @@
             "log4moz",
             "omnivalidator/globaldefs",
             "omnivalidator/locale",
-            "omnivalidator/prefavlistbox",
+            "omnivalidator/prefavtreeview",
             "omnivalidator/preferences",
             "omnivalidator/validatorregistry",
             "omnivalidator/xulprefbranch",
             "omnivalidator/xulutils",
             "underscore"
         ],
-        function (Cc, Ci, log4moz, globaldefs, locale, PrefAVListbox,
+        function (Cc, Ci, log4moz, globaldefs, locale, PrefAVTreeView,
                 Preferences, vregistry, XULPrefBranch, xulutils, underscore) {
             var logger = log4moz.repository.getLogger("omnivalidator.prefwindow"),
-                autoValListbox,
+                autoValTreeView,
                 windowPrefs;
 
             function getPrompter() {
@@ -271,7 +271,7 @@
                         document.getElementById("auto-validate-validator")
                             .selectedItem;
 
-                    autoValListbox.add(url, valItem.value, valItem.label);
+                    autoValTreeView.add(url, valItem.value, valItem.label);
                 }, false);
             }
 
@@ -279,35 +279,38 @@
                 button.addEventListener(
                     "click",
                     function () {
-                        autoValListbox.clear();
+                        autoValTreeView.removeRange(
+                            0,
+                            autoValTreeView.rowCount
+                        );
                     },
                     false
                 );
             }
 
             function setupAutoRemoveButton(button) {
-                var listbox;
+                var tree;
 
-                listbox = document.getElementById("auto-validate-listbox");
+                tree = document.getElementById("auto-validate-tree");
 
                 // Disable/enable the button based on listbox selection
-                listbox.addEventListener("select", function (evt) {
-                    button.disabled = evt.target.selectedIndex === -1;
+                tree.addEventListener("select", function (evt) {
+                    button.disabled = evt.target.view.selection.count === 0;
                 }, false);
-                button.disabled = listbox.selectedIndex === -1;
+                button.disabled = tree.view.selection.count === 0;
 
                 button.addEventListener("click", function () {
-                    autoValListbox.removeSelected();
+                    autoValTreeView.removeSelected();
                 }, false);
             }
 
-            function setupAutoValList(listbox) {
-                autoValListbox = new PrefAVListbox(
-                    listbox,
+            function setupAutoValTree(tree) {
+                autoValTreeView = new PrefAVTreeView(
                     windowPrefs.getBranch(
                         globaldefs.EXT_PREF_PREFIX + "validators."
                     )
                 );
+                tree.view = autoValTreeView;
             }
 
             function setupCloseListeners() {
@@ -533,8 +536,8 @@
                     document.getElementById("auto-validate-remove")
                 );
 
-                setupAutoValList(
-                    document.getElementById("auto-validate-listbox")
+                setupAutoValTree(
+                    document.getElementById("auto-validate-tree")
                 );
 
                 setupValAddButton(

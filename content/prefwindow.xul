@@ -99,17 +99,23 @@
                 </row>
 
                 <row id="auto-validate-row-list">
-                    <listbox id="auto-validate-listbox">
-                        <listhead>
-                            <listheader label="&autoValidateURL.label;" />
-                            <listheader label="&autoValidateValidator.label;" />
-                        </listhead>
-                        <listcols>
-                            <listcol />
-                            <listcol />
-                        </listcols>
+                    <tree id="auto-validate-tree"
+                            hidecolumnpicker="true">
+                        <treecols>
+                            <treecol id="auto-validate-url-treecol"
+                                    label="&autoValidateURL.label;"
+                                    persist="ordinal width" />
+                            <splitter class="tree-splitter"
+                                    resizeafter="grow" />
+                            <treecol id="auto-validate-vid-treecol"
+                                    label="&autoValidateValidator.label;"
+                                    persist="ordinal width" />
+                            <splitter class="tree-splitter"
+                                    resizeafter="grow" />
+                        </treecols>
+                        <treechildren />
                         <!-- Populated dynamically -->
-                    </listbox>
+                    </tree>
 
                     <box id="auto-validate-buttons">
                         <button id="auto-validate-remove"
