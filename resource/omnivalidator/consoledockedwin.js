@@ -177,7 +177,13 @@ define(
             };
 
             this.toggleCollapsed = function () {
-                var collapsed = !dockedElems[0].collapsed;
+                var collapsed;
+
+                if (dockedElems.length === 0) {
+                    return false;
+                }
+
+                collapsed = !dockedElems[0].collapsed;
                 this.setCollapsed(collapsed);
                 return collapsed;
             };
