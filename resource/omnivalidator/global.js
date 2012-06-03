@@ -206,13 +206,15 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
         moduleLoad("requirejs", "resource://omnivalidator/require.js")
     );
 
-    // Override the attach function to use mozIJSSubScriptLoader
-    require.attach = function (url, context, moduleName, callback, type, fetchOnlyFunction) {
+    // Override the load function to use mozIJSSubScriptLoader
+    require.load = function (context, moduleName, url) {
 
         try {
             moduleLoad(moduleName, url, {define: define});
         } catch (ex) {
             logError("Failed to load requested module " + url, ex);
+            // FIXME: Should call hasPathFallback and (internal) onError as
+            // onScriptError does, but don't have access to them...
         }
 
         context.completeLoad(moduleName);
