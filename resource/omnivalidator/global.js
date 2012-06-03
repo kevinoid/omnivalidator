@@ -464,7 +464,6 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
                 // Send a test message to confirm file stream works
                 fileAppender.doAppend(globaldefs.EXT_NAME + " Log\n");
 
-                rootLogger.debug("Logging messages to " + logFile.path);
                 rootLogger.addAppender(fileAppender);
             } catch (ex) {
                 rootLogger.error("Unable to open log file", ex);
@@ -494,7 +493,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
 
                 rootLogger.level = Math.min(consoleLevel, fileLevel);
 
-                rootLogger.debug("Adjusted log level." +
+                rootLogger.debug("Set log level." +
                     " consoleLevel: " + consoleLevel +
                     " fileLevel: " + fileLevel);
             }
@@ -512,6 +511,10 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
                 { observe: setLogLevel },
                 false
             );
+
+            if (logFile) {
+                rootLogger.debug("Logging messages to " + logFile.path);
+            }
 
             rootLogger.trace("Logging setup complete");
 
