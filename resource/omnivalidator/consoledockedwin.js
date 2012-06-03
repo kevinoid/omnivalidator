@@ -54,14 +54,23 @@ define(
             dockedElems = dockedElems || [];
 
             function onTabSelect() {
-                var browserID, currentURI;
+                var browserID, currentURI, openURI;
+
                 browserID = getIDForBrowser(tabbrowser.selectedBrowser);
                 currentURI = tabbrowser.selectedBrowser.currentURI.spec;
+                // Placate SpiderMonkey strict option (ref to undef prop)
+                openURI = openLocations[browserID] || null;
+
+                /* Avoid trace logging in performance-sensitive functions
+                logger.trace("Detected change to tab " + browserID +
+                    " on " + currentURI +
+                    (openURI ? " (was " + openURI + ")" : ""));
+                 */
+
                 // Note:  Location may change while tab is not selected,
-                // in which case onLocationChange doesn't fire
-                thisCDW.setCollapsed(
-                    openLocations[browserID] !== currentURI
-                );
+                // in which case onLocationChange doesn't fire.
+                // So we un-collapse only if the URI is unchanged.
+                thisCDW.setCollapsed(openURI !== currentURI);
             }
 
             function onValidationEvent(wvm, vStatus) {
