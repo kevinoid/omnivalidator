@@ -31,6 +31,9 @@ define(
                 this.flags = message.flags || 0;
                 this.category = message.category;
                 this.level = message.level;
+                this.innerWindowID = 0;
+                this.outerWindowID = 0;
+                this.timeStamp = new Date().valueOf();
 
                 /*jslint bitwise: true */
                 if (message.level) {
