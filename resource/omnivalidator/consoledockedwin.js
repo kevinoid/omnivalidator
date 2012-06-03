@@ -146,6 +146,12 @@ define(
             this.setCollapsed = function (collapsed) {
                 var browserID, i;
 
+                if (dockedElems.length === 0 ||
+                        dockedElems[0].collapsed === collapsed) {
+                    // State is unchanged
+                    return;
+                }
+
                 for (i = 0; i < dockedElems.length; ++i) {
                     dockedElems[i].collapsed = collapsed;
                 }
