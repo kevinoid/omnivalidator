@@ -186,7 +186,13 @@ define(
                 onStateChange: function (aWebProgress, aRequest, aFlag, aStatus) { },
 
                 onLocationChange: function (aWebProgress, aRequest, aURI) {
-                    thisCDW.setCollapsed(true);
+                    // Note:  onLocationChange is fired when tab selection
+                    // changes, before onTabSelect.  In this case aRequest is
+                    // null.  We want to ignore that case here and handle it
+                    // in onTabChange, so we only act if we have aRequest.
+                    if (aRequest) {
+                        thisCDW.setCollapsed(true);
+                    }
                 },
 
                 onProgressChange: function (aWebProgress, aRequest, curSelf, maxSelf, curTot, maxTot) { },
