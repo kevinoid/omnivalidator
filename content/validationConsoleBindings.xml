@@ -104,6 +104,12 @@
                     );
                 }
             ]]></constructor>
+
+            <destructor><![CDATA[
+                // Re-register the listener so that the consoleBox destructor
+                // can unregister it without throwing
+                this.mCService.registerListener(this.mConsoleListener);
+            ]]></destructor>
         </implementation>
     </binding>
 </bindings>
