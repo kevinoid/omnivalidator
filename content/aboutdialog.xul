@@ -42,16 +42,20 @@
         </tabs>
         <tabpanels>
             <tabpanel id="omnivalidator-tabpanel-authors">
-                <iframe id="omnivalidator-frame-authors" />
+                <iframe id="omnivalidator-frame-authors"
+                        type="content-targetable" />
             </tabpanel>
             <tabpanel id="omnivalidator-tabpanel-license">
-                <iframe id="omnivalidator-frame-license" />
+                <iframe id="omnivalidator-frame-license"
+                        type="content-targetable" />
             </tabpanel>
             <tabpanel id="omnivalidator-tabpanel-changelog">
-                <iframe id="omnivalidator-frame-changelog" />
+                <iframe id="omnivalidator-frame-changelog"
+                        type="content-targetable" />
             </tabpanel>
             <tabpanel id="omnivalidator-tabpanel-eventlog">
-                <iframe id="omnivalidator-frame-eventlog" />
+                <iframe id="omnivalidator-frame-eventlog"
+                        type="content-targetable" />
             </tabpanel>
         </tabpanels>
     </tabbox>
