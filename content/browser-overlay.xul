@@ -122,7 +122,7 @@
         <splitter id="omnivalidator-appcontent-splitter"
                 class="omnivalidator-dockedwin-splitter" collapsed="true" />
         <vbox id="omnivalidator-dockedwin"
-                collapsed="true" persist="height,width">
+                collapsed="true" persist="height">
             <hbox id="omnivalidator-dockedwin-header">
                 <spacer flex="1" />
 
