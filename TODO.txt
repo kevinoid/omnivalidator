@@ -10,6 +10,8 @@
 * Document how to implement Validator.  This is the most likely extension point
   for contributions and should be a top priority for documentation.
 * Share resource stream between validators (especially to avoid multiple POSTs)
+* Provide a link to the validator results page in the console messages.
+* Make it easier to copy/paste validator messages.
 
 Things to test with a testing framework:
 * Test validation of non-cacheable pages works correctly
