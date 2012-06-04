@@ -13,7 +13,9 @@
 <!DOCTYPE prefwindow SYSTEM "chrome://omnivalidator/locale/prefwindow.dtd">
 <prefwindow
     id="omnivalidator-prefwindow"
+    persist="width"
     title="&prefWindow.title;"
+    width="600"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
     <prefpane id="validators-prefpane" label="&validatorsGroup.label;">
