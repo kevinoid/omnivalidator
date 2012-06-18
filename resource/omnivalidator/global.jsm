@@ -17,7 +17,11 @@
 
 // Note:  EXPORTED_SYMBOLS and any other globals are loaded from global.js
 
-(function () {
+/**
+ * @param {Object} global Reference to the global scope (Used as the target
+ * object for the exports from this file).
+ */
+(function (global) {
     "use strict";
 
     var globalScriptURL = "resource://omnivalidator/omnivalidator/global.js",
@@ -25,9 +29,7 @@
             .getService(Components.interfaces.mozIJSSubScriptLoader);
 
     function loadInSandbox(url) {
-            // Reference to the global scope
-        var global = new Function("return this;")(),
-            prop,
+        var prop,
             sandbox,
             systemPrincipal = Components.classes["@mozilla.org/systemprincipal;1"]
                 .createInstance(Components.interfaces.nsIPrincipal);
@@ -56,6 +58,6 @@
     } else {
         scriptLoader.loadSubScript(globalScriptURL);
     }
-}());
+}(this));
 
 // vi: set sts=4 sw=4 et ft=javascript :
