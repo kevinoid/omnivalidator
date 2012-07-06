@@ -107,7 +107,7 @@ let Log4Moz = {
   // let logger = Log4Moz.repository.getLogger("foo");
   // logger.info(Log4Moz.enumerateInterfaces(someObject).join(","));
   enumerateInterfaces: function Log4Moz_enumerateInterfaces(aObject) {
-    let interfaces = [];
+    let i, interfaces = [];
 
     for (i in Ci) {
       try {
@@ -125,7 +125,7 @@ let Log4Moz = {
   // logger.info(Log4Moz.enumerateProperties(someObject).join(","));
   enumerateProperties: function Log4Moz_enumerateProps(aObject,
                                                        aExcludeComplexTypes) {
-    let properties = [];
+    let p, properties = [];
 
     for (p in aObject) {
       try {
