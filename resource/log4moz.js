@@ -40,10 +40,10 @@ var Log4Moz = (function () {
 
 const EXPORTED_SYMBOLS = ['Log4Moz'];
 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-const Cr = Components.results;
-const Cu = Components.utils;
+const Cc = typeof Components === "object" ? Components.classes : undefined;
+const Ci = typeof Components === "object" ? Components.interfaces : undefined;
+const Cr = typeof Components === "object" ? Components.results : undefined;
+const Cu = typeof Components === "object" ? Components.utils : undefined;
 
 const MODE_RDONLY   = 0x01;
 const MODE_WRONLY   = 0x02;
