@@ -58,7 +58,7 @@ const ONE_BYTE = 1;
 const ONE_KILOBYTE = 1024 * ONE_BYTE;
 const ONE_MEGABYTE = 1024 * ONE_KILOBYTE;
 
-let Log4Moz = {
+var Log4Moz = {
   Level: {
     Fatal:  70,
     Error:  60,
@@ -104,10 +104,10 @@ let Log4Moz = {
   get RotatingFileAppender() { return RotatingFileAppender; },
 
   // Logging helper:
-  // let logger = Log4Moz.repository.getLogger("foo");
+  // var logger = Log4Moz.repository.getLogger("foo");
   // logger.info(Log4Moz.enumerateInterfaces(someObject).join(","));
   enumerateInterfaces: function Log4Moz_enumerateInterfaces(aObject) {
-    let i, interfaces = [];
+    var i, interfaces = [];
 
     for (i in Ci) {
       try {
@@ -121,11 +121,11 @@ let Log4Moz = {
   },
 
   // Logging helper:
-  // let logger = Log4Moz.repository.getLogger("foo");
+  // var logger = Log4Moz.repository.getLogger("foo");
   // logger.info(Log4Moz.enumerateProperties(someObject).join(","));
   enumerateProperties: function Log4Moz_enumerateProps(aObject,
                                                        aExcludeComplexTypes) {
-    let p, properties = [];
+    var p, properties = [];
 
     for (p in aObject) {
       try {
@@ -208,7 +208,7 @@ Logger.prototype = {
     }
     // Remove ourselves from parent's children
     if (this._parent) {
-      let index = this._parent.children.indexOf(this);
+      var index = this._parent.children.indexOf(this);
       if (index != -1) {
         this._parent.children.splice(index, 1);
       }
@@ -220,7 +220,7 @@ Logger.prototype = {
 
   updateAppenders: function updateAppenders() {
     if (this._parent) {
-      let notOwnAppenders = this._parent.appenders.filter(function(appender) {
+      var notOwnAppenders = this._parent.appenders.filter(function(appender) {
         return this.ownAppenders.indexOf(appender) == -1;
       }, this);
       this.appenders = notOwnAppenders.concat(this.ownAppenders);
@@ -229,7 +229,7 @@ Logger.prototype = {
     }
 
     // Update children's appenders.
-    for (let i = 0; i < this.children.length; i++) {
+    for (var i = 0; i < this.children.length; i++) {
       this.children[i].updateAppenders();
     }
   },
@@ -243,7 +243,7 @@ Logger.prototype = {
   },
 
   removeAppender: function Logger_removeAppender(appender) {
-    let index = this.ownAppenders.indexOf(appender);
+    var index = this.ownAppenders.indexOf(appender);
     if (index == -1) {
       return;
     }
@@ -257,10 +257,10 @@ Logger.prototype = {
 
     // Hold off on creating the message object until we actually have
     // an appender that's responsible.
-    let message;
-    let appenders = this.appenders;
-    for (let i = 0; i < appenders.length; i++){
-      let appender = appenders[i];
+    var message;
+    var appenders = this.appenders;
+    for (var i = 0; i < appenders.length; i++){
+      var appender = appenders[i];
       if (appender.level > level)
         continue;
 
@@ -316,13 +316,13 @@ LoggerRepository.prototype = {
   },
 
   _updateParents: function LogRep__updateParents(name) {
-    let pieces = name.split('.');
-    let cur, parent;
+    var pieces = name.split('.');
+    var cur, parent;
 
     // find the closest parent
     // don't test for the logger name itself, as there's a chance it's already
     // there in this._loggers
-    for (let i = 0; i < pieces.length - 1; i++) {
+    for (var i = 0; i < pieces.length - 1; i++) {
       if (cur)
         cur += '.' + pieces[i];
       else
@@ -338,7 +338,7 @@ LoggerRepository.prototype = {
       this._loggers[name].parent = this._loggers[parent];
 
     // trigger updates for any possible descendants of this logger
-    for (let logger in this._loggers) {
+    for (var logger in this._loggers) {
       if (logger != name && logger.indexOf(name) == 0)
         this._updateParents(logger);
     }
@@ -477,9 +477,9 @@ FileAppender.prototype = {
 
   openStream: function FApp_openStream() {
     try {
-      let __fos = Cc["@mozilla.org/network/file-output-stream;1"].
+      var __fos = Cc["@mozilla.org/network/file-output-stream;1"].
         createInstance(Ci.nsIFileOutputStream);
-      let flags = MODE_WRONLY | MODE_CREATE | MODE_APPEND;
+      var flags = MODE_WRONLY | MODE_CREATE | MODE_APPEND;
       __fos.init(this._file, flags, PERMS_FILE, 0);
 
       this.__fos = Cc["@mozilla.org/intl/converter-output-stream;1"]
@@ -561,14 +561,14 @@ RotatingFileAppender.prototype = {
 
     this.closeStream();
 
-    for (let i = this.maxBackups - 1; i > 0; i--){
-      let backup = this._file.parent.clone();
+    for (var i = this.maxBackups - 1; i > 0; i--){
+      var backup = this._file.parent.clone();
       backup.append(this._file.leafName + "." + i);
       if (backup.exists())
         backup.moveTo(this._file.parent, this._file.leafName + "." + (i + 1));
     }
 
-    let cur = this._file.clone();
+    var cur = this._file.clone();
     if (cur.exists())
       cur.moveTo(cur.parent, cur.leafName + ".1");
 
