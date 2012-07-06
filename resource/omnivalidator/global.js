@@ -346,7 +346,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
         null,
         true
     );
-    defineJSM("log4moz", baseURL + "/log4moz.jsm");
+    definePlain("log4moz", null, [ "Log4Moz" ]);
     defineJSMShared("pluralform", "resource://gre/modules/PluralForm.jsm");
 
     definePlain(

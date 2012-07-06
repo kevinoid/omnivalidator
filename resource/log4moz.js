@@ -36,6 +36,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+var Log4Moz = (function () {
+
 const EXPORTED_SYMBOLS = ['Log4Moz'];
 
 const Cc = Components.classes;
@@ -573,3 +575,6 @@ RotatingFileAppender.prototype = {
     // Note: this._file still points to the same file
   }
 };
+
+return Log4Moz;
+}());
