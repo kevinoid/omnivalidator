@@ -100,7 +100,7 @@ var Log4Moz = {
 
   get Appender() { return Appender; },
   get DumpAppender() { return DumpAppender; },
-  get ConsoleAppender() { return ConsoleAppender; },
+  get ConsoleAppender() { return Ci ? MozConsoleAppender : ConsoleAppender; },
   get FileAppender() { return FileAppender; },
   get RotatingFileAppender() { return RotatingFileAppender; },
 
@@ -429,13 +429,42 @@ DumpAppender.prototype = {
 function ConsoleAppender(formatter) {
   this._name = "ConsoleAppender";
   this._formatter = formatter;
-  this._console = Cc["@mozilla.org/consoleservice;1"].
-    getService(Ci.nsIConsoleService);
+  if (typeof console !== "object" || typeof console.log !== "function") {
+    throw new Error("console.log must be a function");
+  }
 }
 ConsoleAppender.prototype = {
   __proto__: Appender.prototype,
 
   append: function CApp_append(message) {
+    var fmtmessage = this._formatter.format(message);
+    if (message.level <= Log4Moz.Level.Config) {
+      console.log(fmtmessage);
+    } else if (message.level <= Log4Moz.Level.Info) {
+      console.info(fmtmessage);
+    } else if (message.level <= Log4Moz.Level.Warn) {
+      console.warn(fmtmessage);
+    } else {
+      console.error(fmtmessage);
+    }
+  }
+};
+
+/*
+ * MozConsoleAppender
+ * Logs to the javascript console using the Mozilla console service
+ */
+
+function MozConsoleAppender(formatter) {
+  this._name = "MozConsoleAppender";
+  this._formatter = formatter;
+  this._console = Cc["@mozilla.org/consoleservice;1"].
+    getService(Ci.nsIConsoleService);
+}
+MozConsoleAppender.prototype = {
+  __proto__: Appender.prototype,
+
+  append: function MCApp_append(message) {
     var fmtmessage = this._formatter.format(message);
     if (message.level < Log4Moz.Level.Warn && !message.error) {
       this._console.logStringMessage(fmtmessage);
