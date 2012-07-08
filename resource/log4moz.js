@@ -194,7 +194,6 @@ Logger.prototype = {
       return this._level;
     if (this.parent)
       return this.parent.level;
-    dump("log4moz warning: root logger configuration error: no level defined\n");
     return Log4Moz.Level.All;
   },
   set level(level) {
@@ -505,6 +504,18 @@ FileAppender.prototype = {
     return this.__fos;
   },
 
+  _errorInternal: function FApp__logInternal(level, message, error) {
+    if (this._loggingInternal)
+      return;
+
+    try {
+      this._loggingInternal = true;
+      Log4Moz.repository.getLogger("Log4Moz").error(message, error);
+    } finally {
+      delete this._loggingInternal;
+    }
+  },
+
   openStream: function FApp_openStream() {
     try {
       var __fos = Cc["@mozilla.org/network/file-output-stream;1"].
@@ -517,7 +528,7 @@ FileAppender.prototype = {
       this.__fos.init(__fos, "UTF-8", 4096,
             Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
     } catch(e) {
-      dump("Error opening stream:\n" + e);
+      this._errorInternal("Error opening stream", e);
     }
   },
 
@@ -528,17 +539,18 @@ FileAppender.prototype = {
       this.__fos.close();
       this.__fos = null;
     } catch(e) {
-      dump("Failed to close file output stream\n" + e);
+      this._errorInternal("Failed to close file output stream", e);
     }
   },
 
   doAppend: function FApp_doAppend(message) {
-    if (message === null || message.length <= 0)
+    if (message === null || message.length <= 0 || this._loggingInternal)
       return;
+
     try {
       this._fos.writeString(message);
     } catch(e) {
-      dump("Error writing file:\n" + e);
+      this._errorInternal("Error writing file", e);
     }
   },
 
@@ -547,7 +559,7 @@ FileAppender.prototype = {
     try {
       this._file.remove(false);
     } catch (e) {
-      // XXX do something?
+      this._errorInternal("Error removing file", e);
     }
   }
 };
@@ -580,7 +592,7 @@ RotatingFileAppender.prototype = {
       this.rotateLogs();
       FileAppender.prototype.doAppend.call(this, message);
     } catch(e) {
-      dump("Error writing file:" + e + "\n");
+      this._errorInternal("Error writing file", e);
     }
   },
 
