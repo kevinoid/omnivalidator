@@ -72,12 +72,9 @@
             function getAutoVIDs() {
                 var autoVIDs = [],
                     i,
-                    index,
                     match,
                     prefNames,
-                    url,
-                    valPrefs,
-                    vid;
+                    valPrefs;
 
                 valPrefs = windowPrefs.getBranch(
                     globaldefs.EXT_PREF_PREFIX + "validators."

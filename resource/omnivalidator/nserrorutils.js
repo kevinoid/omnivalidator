@@ -74,7 +74,8 @@ define(
             ex = nsErrorToException(err);
 
             // FIXME: This is such an ugly hack.
-            return /^\[Exception... "(.*)"  nsresult: "0x[0-9a-fA-F]* \((.*)\)"  location: ".*"  data: .*\]$/.exec(ex.toString())[1];
+            // Format from js/xpconnect/src/XPCException.cpp:335
+            return (/^\[Exception\.\.\. *"(.*)" *nsresult: *"0x[0-9a-fA-F]* *\((.*)\)" *location: *".*" *data: *(?:yes|no)\]$/).exec(ex.toString())[1];
         }
 
         return {

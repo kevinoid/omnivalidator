@@ -418,10 +418,10 @@ define(
                         resourceid,
                         callbackValidate
                     );
-                } catch (ex) {
+                } catch (ex2) {
                     logger.error("Error processing response from " +
                         thisValidator.logName + " for " + resourceid.uri,
-                        ex);
+                        ex2);
                     errorMsg = locale.format(
                         "validator.errorProcessing",
                         validatorName,
@@ -556,17 +556,18 @@ define(
 
             function logStream(stream) {
                 var mstream = Cc["@mozilla.org/io/multiplex-input-stream;1"]
-                    .createInstance(Ci.nsIMultiplexInputStream);
+                        .createInstance(Ci.nsIMultiplexInputStream),
+                    strstream = Cc["@mozilla.org/io/string-input-stream;1"]
+                        .createInstance(Ci.nsIStringInputStream),
+                    scrstream = Cc["@mozilla.org/scriptableinputstream;1"]
+                        .createInstance(Ci.nsIScriptableInputStream);
+
                 mstream.appendStream(stream);
-                var sstream = Cc["@mozilla.org/io/string-input-stream;1"]
-                    .createInstance(Ci.nsIStringInputStream);
-                sstream.setData("After resource", 14);
-                mstream.appendStream(sstream);
-                var stream = Cc["@mozilla.org/scriptableinputstream;1"]  
-                     .createInstance(Ci.nsIScriptableInputStream);
-                stream.init(mstream);
+                strstream.setData("After resource", 14);
+                mstream.appendStream(strstream);
+                scrstream.init(mstream);
                 logger.error("Stream contains the following content:\n" +
-                    stream.read(stream.available()));
+                    stream.read(scrstream.available()));
             }
 
             this.validate = function (resourceid, callbackValidate) {

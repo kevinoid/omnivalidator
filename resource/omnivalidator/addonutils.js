@@ -15,13 +15,10 @@ define(
     [
         "gecko/components/classes",
         "gecko/components/interfaces",
-        "addonmanager",
-        "log4moz"
+        "addonmanager"
     ],
-    function (Cc, Ci, AddonManager, log4moz) {
+    function (Cc, Ci, AddonManager) {
         "use strict";
-
-        var logger = log4moz.repository.getLogger("omnivalidator.addonutils");
 
         function getAddonByID3(addonid, callbackGABI) {
             callbackGABI(

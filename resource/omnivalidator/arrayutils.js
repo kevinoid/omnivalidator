@@ -16,7 +16,7 @@ define(
         "use strict";
 
         /** Find the lowest index at which an object may be inserted which
-         * maintains sorted order using binary search. 
+         * maintains sorted order using binary search.
          *
          * Same as underscore.sortedIndex, except it takes a comparator rather
          * than an iterator.
