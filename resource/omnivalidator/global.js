@@ -11,12 +11,15 @@
 
 var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
 
-(function () {
+/**
+ * @param {Object} global Reference to the global scope (Used as the target
+ * object for the exports from this file).
+ */
+(function (global) {
     "use strict";
 
     var baseURL = "resource://omnivalidator",
         // Reference to the global scope
-        global = new Function("return this;")(),
         globaldefs = {
             CSS_PREFIX: "omnivalidator-",
             EXT_ID: "omnivalidator@kevinlocke.name",
@@ -538,6 +541,6 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
             versionchange.checkForVersionChange();
         }
     );
-}());
+}(this));
 
 // vi: set sts=4 sw=4 et ft=javascript :
