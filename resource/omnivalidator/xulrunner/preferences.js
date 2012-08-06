@@ -21,131 +21,12 @@ define(
     function (Cc, Ci, Cr, underscore) {
         "use strict";
 
-            // Hold extension pref branch as a convenience for users
-            // To allow extension-wide observers without holding the reference
-            // by each user
         var prefService = Cc["@mozilla.org/preferences-service;1"]
                 .getService(Ci.nsIPrefService);
 
         /* Like String.concat, except null and undefined are "" */
         function concat(/*args*/) {
             return Array.prototype.join.call(arguments, "");
-        }
-
-        /** Add each part of a prefName as a property of the subtree for the
-         * part before it.
-         */
-        function addPrefNameToTree(prefName, tree) {
-            prefName.split(".").reduce(
-                function (subtree, prefPart) {
-                    return (subtree[prefPart] = subtree[prefPart] || {});
-                },
-                tree
-            );
-        }
-
-        function getChildPrefNamesAsTree(prefBranch, prefName) {
-            var childPrefNames,
-                i,
-                tree = {};
-
-            childPrefNames = prefBranch.getChildList(prefName, {});
-            for (i = 0; i < childPrefNames.length; ++i) {
-                addPrefNameToTree(childPrefNames[i], tree);
-            }
-
-            return tree;
-        }
-
-        /** Remove all preferences which are not in refTree */
-        function prunePrefTree(prefBranch, prefName, prefTree, refTree) {
-            var prop;
-
-            for (prop in prefTree) {
-                if (prefTree.hasOwnProperty(prop)) {
-                    if (refTree.hasOwnProperty(prop) && refTree[prop]) {
-                        prunePrefTree(
-                            prefBranch,
-                            prefName + "." + prop,
-                            prefTree[prop],
-                            refTree[prop]
-                        );
-                    } else {
-                        prefBranch.deleteBranch(prefName + "." + prop);
-                    }
-                }
-            }
-        }
-
-        function setPrefInternal(prefBranch, prefName, value, seen) {
-            var prop;
-
-            if (value === null || value === undefined) {
-                // FIXME:  Can't store in preferences.  Ignore or throw?
-                // Probably want to ignore unused array indexes...
-                // Could interpret as "reset to default"...
-                return;
-            }
-
-            // FIXME:  Do we want to check for toPreference on primitive
-            // type wrappers for primitives?
-
-            if (typeof value.toPreference === "function") {
-                value = value.toPreference(prefName);
-            }
-
-            // Unwrap primitive wrappers
-            if (typeof value === "object") {
-                switch (Object.prototype.toString.call(value)) {
-                case '[object Boolean]':
-                case '[object Number]':
-                case '[object String]':
-                    value = value.valueOf();
-                    break;
-                }
-            }
-
-            switch (typeof value) {
-            case "boolean":
-                prefBranch.setBoolPref(prefName, value);
-                break;
-            case "number":
-                // Save non-integers as strings to avoid truncation
-                // Should be safe enough given string->number coercion
-                if (value % 1 === 0) {
-                    prefBranch.setIntPref(prefName, value);
-                } else {
-                    prefBranch.setCharPref(prefName, String(value));
-                }
-                break;
-            case "string":
-                prefBranch.setCharPref(prefName, value);
-                break;
-            default:
-                if (seen.indexOf(value) !== -1) {
-                    throw new TypeError("cyclic object value");
-                }
-                seen.push(value);
-
-                for (prop in value) {
-                    if (value.hasOwnProperty(prop)) {
-                        if (prop.indexOf(".") !== -1) {
-                            throw new TypeError("property name \"" + prop +
-                                "\" creates ambiguity");
-                        }
-
-                        setPrefInternal(
-                            prefBranch,
-                            prefName + "." + prop,
-                            value[prop],
-                            seen
-                        );
-                    }
-                }
-
-                seen.pop();
-                break;
-            }
         }
 
         /** Construct a NSPreferences rooted at a given branch name.
@@ -215,35 +96,6 @@ define(
             this.prefBranch.deleteBranch(concat(branchName));
         };
 
-        /** Gets the object or value at the specified location.
-         * If both an object and value are present, the object is returned
-         */
-        NSPreferences.get = function (branchName) {
-            return this.getObject(branchName) ||
-                this.getValue(branchName);
-        };
-
-        NSPreferences.getArray = function (branchName) {
-            var childName,
-                childNames,
-                i,
-                result = [];
-
-            branchName = concat(branchName, ".");
-            childNames = this.getBranch(branchName).getChildNames();
-
-            for (i = 0; i < childNames.length; ++i) {
-                childName = childNames[i];
-                if (/^\d+$/.test(childName)) {
-                    result[childName] =
-                        this.getObject(branchName + childName) ||
-                        this.getValue(branchName + childName);
-                }
-            }
-
-            return result;
-        };
-
         NSPreferences.getBranch = function (branchName) {
             if (branchName === undefined ||
                     branchName === null ||
@@ -256,71 +108,9 @@ define(
             }
         };
 
-        /** Gets the names of all descendants of the named branch, up to, but
-         * not including the first "." after the named portion.
-         */
-        NSPreferences.getChildNames = function (branchName) {
-            var childNames, prefNames, prefixLength;
-
-            branchName = concat(branchName);
-            prefNames = this.getDescendantNames(branchName);
-
-            prefixLength = branchName.length;
-            if (branchName.slice(-1) === ".") {
-                ++prefixLength;
-            }
-
-            childNames = underscore.uniq(
-                prefNames.map(function (prefName) {
-                    var dotInd = prefName.indexOf(".", prefixLength);
-                    if (dotInd === -1) {
-                        return prefName;
-                    } else {
-                        return prefName.slice(0, dotInd);
-                    }
-                })
-            );
-
-            return childNames;
-        };
-
         NSPreferences.getDescendantNames = function (branchName) {
             return this.prefBranch.getChildList(concat(branchName), {})
                 .filter(function (c) { return c.length > 0; });
-        };
-
-        NSPreferences.getObject = function (branchName) {
-            var childBranchName,
-                childNames,
-                i,
-                result;
-
-            childBranchName = concat(branchName, ".");
-            childNames = this.getBranch(childBranchName).getChildNames();
-            if (childNames.length === 0) {
-                // FIXME:  undefined, null, or {}?  Decide and document.
-                // Note:  Other methods currently depend on falseyness
-                return undefined;
-            }
-
-            // If the branch holds an array, add any named properties onto
-            // the array object.
-            result = this.getArray(branchName);
-            if (result.length === 0) {
-                result = {};
-            }
-
-            for (i = 0; i < childNames.length; ++i) {
-                // Skip properties already added by getArray
-                // Note:  Also protects against setting length on array
-                if (!result.hasOwnProperty(childNames[i])) {
-                    result[childNames[i]] =
-                        this.getObject(childBranchName + childNames[i]) ||
-                        this.getValue(childBranchName + childNames[i]);
-                }
-            }
-
-            return result;
         };
 
         NSPreferences.getValue = function (prefName) {
@@ -338,32 +128,8 @@ define(
             return undefined;
         };
 
-        NSPreferences.hasUserValue = function (prefName) {
+        NSPreferences.hasValue = function (prefName) {
             return this.prefBranch.prefHasUserValue(concat(prefName));
-        };
-
-        /** Overwrites the value of a preference with a given value.
-         *
-         * Functions similarly to {@link set}, with the exception that
-         * sub-branches/properties which are not present in value are not
-         * removed.
-         *
-         * @param {String} [prefName=""] NSPreferences name (relative to instance
-         * root) on which to set the value.
-         * @param value Value to store in the preference.
-         */
-        NSPreferences.overwrite = function (prefName, value) {
-            if (arguments.length === 1) {
-                value = prefName;
-                prefName = "";
-            }
-
-            setPrefInternal(
-                this.prefBranch,
-                concat(prefName),
-                value,
-                []
-            );
         };
 
         NSPreferences.removeObserver = function (branchName, observer) {
@@ -399,7 +165,7 @@ define(
         NSPreferences.resetValue = function (prefName) {
             prefName = concat(prefName);
             // Note:  In Gecko < 6, throws NS_ERROR_UNEXPECTED if no user value
-            if (this.hasUserValue(prefName)) {
+            if (this.hasValue(prefName)) {
                 this.prefBranch.clearUserPref(prefName);
             }
         };
@@ -414,7 +180,7 @@ define(
          * root) on which to set the value.
          * @param value Value to store in the preference.
          */
-        NSPreferences.set = function (prefName, value) {
+        NSPreferences.setValue = function (prefName, value) {
             if (arguments.length === 1) {
                 value = prefName;
                 prefName = null;
@@ -422,32 +188,43 @@ define(
 
             prefName = concat(prefName);
 
-            if (value &&
-                    typeof value === "object" &&
-                    !underscore.isEmpty(value)) {
-                // Clear this preference, if set
-                this.resetValue(prefName);
-                // Delete any child preferences not present in the value
-                prunePrefTree(
-                    this.prefBranch,
-                    prefName,
-                    getChildPrefNamesAsTree(
-                        this.getBranch(prefName + ".").prefBranch,
-                        ""
-                    ),
-                    value
-                );
-            } else {
-                // Value has no children, delete all descendants
-                this.prefBranch.deleteBranch(prefName);
+            // FIXME:  Do we want to check for toPreference on primitive
+            // type wrappers for primitives?
+
+            if (typeof value.toPreference === "function") {
+                value = value.toPreference(prefName);
             }
 
-            setPrefInternal(
-                this.prefBranch,
-                prefName,
-                value,
-                []
-            );
+            // Unwrap primitive wrappers
+            if (typeof value === "object") {
+                switch (Object.prototype.toString.call(value)) {
+                case '[object Boolean]':
+                case '[object Number]':
+                case '[object String]':
+                    value = value.valueOf();
+                    break;
+                }
+            }
+
+            switch (typeof value) {
+            case "boolean":
+                this.prefBranch.setBoolPref(prefName, value);
+                break;
+            case "number":
+                // Save non-integers as strings to avoid truncation
+                // Should be safe enough given string->number coercion
+                if (value % 1 === 0) {
+                    this.prefBranch.setIntPref(prefName, value);
+                } else {
+                    this.prefBranch.setCharPref(prefName, String(value));
+                }
+                break;
+            case "string":
+                this.prefBranch.setCharPref(prefName, value);
+                break;
+            default:
+                throw new Error("Can't set non-primitive value");
+            }
         };
 
         // Allow use of the functions as either static functions or

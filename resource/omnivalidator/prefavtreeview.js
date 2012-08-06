@@ -17,12 +17,13 @@ define(
         "omnivalidator/globaldefs",
         "omnivalidator/objutils",
         "omnivalidator/platform/preferences",
+        "omnivalidator/prefutils",
         "omnivalidator/simpletreeview",
         "omnivalidator/validatorregistry",
         "underscore"
     ],
     function (log4moz, arrayutils, globaldefs, objutils, Preferences,
-            SimpleTreeView, vregistry, underscore) {
+            prefutils, SimpleTreeView, vregistry, underscore) {
         "use strict";
 
         var logger = log4moz.repository.getLogger("omnivalidator.prefavtree");
@@ -61,14 +62,14 @@ define(
                 var i;
 
                 i = 0;
-                while (valPrefs.hasUserValue(vid + ".autoValidate." + i)) {
+                while (valPrefs.hasValue(vid + ".autoValidate." + i)) {
                     ++i;
                 }
 
                 thisPAVTV.disableUpdateFromPref();
                 try {
 
-                    valPrefs.set(vid + ".autoValidate." + i, url);
+                    valPrefs.setValue(vid + ".autoValidate." + i, url);
 
                 } finally {
                     thisPAVTV.enableUpdateFromPref();
@@ -120,7 +121,7 @@ define(
                     rows;
 
                 autoPrefs = valPrefs.getBranch(vid + ".autoValidate.");
-                autoURLs = autoPrefs.getChildNames()
+                autoURLs = prefutils.getChildNames(autoPrefs)
                     .filter(function (e) {
                         return (/^\d+$/).test(e);
                     }).map(function (e) {
@@ -172,7 +173,7 @@ define(
 
                 autoPrefs = valPrefs.getBranch(vid + ".autoValidate.");
 
-                autoInds = autoPrefs.getChildNames().filter(function (e) {
+                autoInds = prefutils.getChildNames(autoPrefs).filter(function (e) {
                     return (/^\d+$/).test(e);
                 });
                 autoInds.sort();
@@ -192,7 +193,7 @@ define(
 
                             // Replace with last to avoid moving all subsequent
                             if (i !== autoInds.length - 1) {
-                                autoPrefs.set(autoInd, lastAutoURL);
+                                autoPrefs.setValue(autoInd, lastAutoURL);
                             }
                             autoPrefs.resetValue(autoInds[autoInds.length - 1]);
 
@@ -322,7 +323,7 @@ define(
                     // Performance optimization for removing everything
                     logger.debug("Removing all automatic validators");
 
-                    vids = valPrefs.getChildNames();
+                    vids = prefutils.getChildNames(valPrefs);
 
                     this.disableUpdateFromPref();
                     try {

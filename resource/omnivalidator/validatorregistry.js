@@ -16,6 +16,7 @@ define(
         "omnivalidator/locale",
         "omnivalidator/platform/preferences",
         "omnivalidator/predicatemultimap",
+        "omnivalidator/prefutils",
         "omnivalidator/urlutils",
         "underscore",
 
@@ -24,7 +25,7 @@ define(
         "omnivalidator/w3cmarkup"
     ],
     function (log4moz, globaldefs, locale, Preferences, PredicateMultimap,
-            urlutils, underscore,
+            prefutils, urlutils, underscore,
 
             /* Supported validator types */
             validatornu, w3cmarkup) {
@@ -61,7 +62,8 @@ define(
         }
 
         function getValidatorPrefs() {
-            return Preferences.getObject(
+            return prefutils.getObject(
+                Preferences,
                 globaldefs.EXT_PREF_PREFIX + "validators"
             ) || {};
         }
@@ -293,7 +295,7 @@ define(
             notifyNameListeners();
         }
 
-        vids = validatorsPref.getChildNames();
+        vids = prefutils.getChildNames(validatorsPref);
         vids.sort();
         validatorsPref.addObserver("", {
             observe: function (subject, topic, data) {

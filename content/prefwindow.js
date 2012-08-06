@@ -163,7 +163,7 @@
                     );
 
                     if (dontWarn.value) {
-                        Preferences.set(
+                        Preferences.setValue(
                             globaldefs.EXT_PREF_PREFIX + "warnAutoPublic",
                             false
                         );
@@ -225,7 +225,7 @@
                     );
 
                     if (dontWarn.value) {
-                        Preferences.set(
+                        Preferences.setValue(
                             globaldefs.EXT_PREF_PREFIX + "warnNoCache",
                             false
                         );

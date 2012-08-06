@@ -17,9 +17,11 @@ define(
         "omnivalidator/globaldefs",
         "omnivalidator/locale",
         "omnivalidator/platform/preferences",
+        "omnivalidator/prefutils",
         "omnivalidator/validatorregistry"
     ],
-    function (Cc, Ci, log4moz, globaldefs, locale, Preferences, vregistry) {
+    function (Cc, Ci, log4moz, globaldefs, locale, Preferences, prefutils,
+            vregistry) {
         "use strict";
 
         var buttonId = "omnivalidator-toolbarbutton",
@@ -105,7 +107,7 @@ define(
                     "validators.");
             for (i = 0; i < ivPrefs.length; ++i) {
                 vid = vregistry.getNewValidatorID();
-                valPrefs.set(vid, ivPrefs[i]);
+                prefutils.set(valPrefs, vid, ivPrefs[i]);
             }
         }
 
@@ -118,12 +120,12 @@ define(
         }
 
         function getInstalledVersion() {
-            return Preferences.get(globaldefs.EXT_PREF_PREFIX +
+            return Preferences.getValue(globaldefs.EXT_PREF_PREFIX +
                     "installedVersion");
         }
 
         function setInstalledVersion(version) {
-            return Preferences.set(globaldefs.EXT_PREF_PREFIX +
+            return Preferences.setValue(globaldefs.EXT_PREF_PREFIX +
                     "installedVersion", version);
         }
 
