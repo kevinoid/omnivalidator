@@ -1,7 +1,7 @@
 /* Misc utility functions for dealing with XUL
  * See also domutils
  *
- * This file is part of the Omnivalidator extension for Firefox.
+ * This file is part of the Omnivalidator extension.
  * It is licensed under the terms of the MIT License.
  * The complete text of the license is available in the project documentation.
  *

@@ -1,7 +1,7 @@
 /* Class to manage the validation state, clear, and initiate validation for a
  * browser.
  *
- * This file is part of the Omnivalidator extension for Firefox.
+ * This file is part of the Omnivalidator extension.
  * It is licensed under the terms of the MIT License.
  * The complete text of the license is available in the project documentation.
  *
