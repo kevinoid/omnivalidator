@@ -224,7 +224,10 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
     };
 
     require.config({
-        baseUrl:    baseURL
+        baseUrl:    baseURL,
+        paths: {
+            "omnivalidator/platform": "omnivalidator/xulrunner"
+        }
     });
 
     // Shared global definitions

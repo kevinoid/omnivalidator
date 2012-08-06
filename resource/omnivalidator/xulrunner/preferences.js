@@ -1,6 +1,6 @@
-/* Defines functions for accessing the Preferences API
+/* Implementation of our unified preferences API based on nsIPrefBranch
  *
- * This file is part of the Omnivalidator extension for Firefox.
+ * This file is part of the Omnivalidator extension.
  * It is licensed under the terms of the MIT License.
  * The complete text of the license is available in the project documentation.
  *
@@ -148,9 +148,9 @@ define(
             }
         }
 
-        /** Construct a Preferences rooted at a given branch name.
+        /** Construct a NSPreferences rooted at a given branch name.
          *
-         * Note:  Preferences can be used as a namespace (e.g. Preferences.get()),
+         * Note:  NSPreferences can be used as a namespace (e.g. NSPreferences.get()),
          * in which case all functions refer to the root branch, or as a
          * class, in which case all methods are relative to the branch for
          * which the instance was constructed
@@ -161,7 +161,7 @@ define(
          * @param {String|nsIPrefBranch} [branch=""] Either the root (prefix)
          * of preferences included in this branch or a branch to wrap.
          */
-        function Preferences(branch) {
+        function NSPreferences(branch) {
             if (branch && typeof branch.QueryInterface === "function") {
                 this.prefBranch = branch.QueryInterface(Ci.nsIPrefBranch);
                 this.branchName = this.prefBranch.root;
@@ -174,12 +174,12 @@ define(
         /** Add an observer to preferences below a given branch.
          *
          * Note:  Unlike the other methods, there is a difference between
-         * Preferences.getBranch("foo").addObserver("bar", ...) and
-         * Preferences.getBranch("foo.bar").addObserver("", ...).  The
+         * NSPreferences.getBranch("foo").addObserver("bar", ...) and
+         * NSPreferences.getBranch("foo.bar").addObserver("", ...).  The
          * observer is called with a preference name relative to the instance
          * root and branchName acts as a filter.
          */
-        Preferences.addObserver = function (branchName, observer, weakRef) {
+        NSPreferences.addObserver = function (branchName, observer, weakRef) {
             if (arguments.length === 1) {
                 observer = branchName;
                 branchName = null;
@@ -211,19 +211,19 @@ define(
             );
         };
 
-        Preferences.deleteBranch = function (branchName) {
+        NSPreferences.deleteBranch = function (branchName) {
             this.prefBranch.deleteBranch(concat(branchName));
         };
 
         /** Gets the object or value at the specified location.
          * If both an object and value are present, the object is returned
          */
-        Preferences.get = function (branchName) {
+        NSPreferences.get = function (branchName) {
             return this.getObject(branchName) ||
                 this.getValue(branchName);
         };
 
-        Preferences.getArray = function (branchName) {
+        NSPreferences.getArray = function (branchName) {
             var childName,
                 childNames,
                 i,
@@ -244,22 +244,22 @@ define(
             return result;
         };
 
-        Preferences.getBranch = function (branchName) {
+        NSPreferences.getBranch = function (branchName) {
             if (branchName === undefined ||
                     branchName === null ||
                     branchName === "") {
                 return this;
             } else if (typeof this.prefBranch.getBranch === "function") {
-                return new Preferences(this.prefBranch.getBranch(branchName));
+                return new NSPreferences(this.prefBranch.getBranch(branchName));
             } else {
-                return new Preferences(concat(this.branchName, branchName));
+                return new NSPreferences(concat(this.branchName, branchName));
             }
         };
 
         /** Gets the names of all descendants of the named branch, up to, but
          * not including the first "." after the named portion.
          */
-        Preferences.getChildNames = function (branchName) {
+        NSPreferences.getChildNames = function (branchName) {
             var childNames, prefNames, prefixLength;
 
             branchName = concat(branchName);
@@ -284,12 +284,12 @@ define(
             return childNames;
         };
 
-        Preferences.getDescendantNames = function (branchName) {
+        NSPreferences.getDescendantNames = function (branchName) {
             return this.prefBranch.getChildList(concat(branchName), {})
                 .filter(function (c) { return c.length > 0; });
         };
 
-        Preferences.getObject = function (branchName) {
+        NSPreferences.getObject = function (branchName) {
             var childBranchName,
                 childNames,
                 i,
@@ -323,7 +323,7 @@ define(
             return result;
         };
 
-        Preferences.getValue = function (prefName) {
+        NSPreferences.getValue = function (prefName) {
             prefName = concat(prefName);
 
             switch (this.prefBranch.getPrefType(prefName)) {
@@ -338,7 +338,7 @@ define(
             return undefined;
         };
 
-        Preferences.hasUserValue = function (prefName) {
+        NSPreferences.hasUserValue = function (prefName) {
             return this.prefBranch.prefHasUserValue(concat(prefName));
         };
 
@@ -348,11 +348,11 @@ define(
          * sub-branches/properties which are not present in value are not
          * removed.
          *
-         * @param {String} [prefName=""] Preferences name (relative to instance
+         * @param {String} [prefName=""] NSPreferences name (relative to instance
          * root) on which to set the value.
          * @param value Value to store in the preference.
          */
-        Preferences.overwrite = function (prefName, value) {
+        NSPreferences.overwrite = function (prefName, value) {
             if (arguments.length === 1) {
                 value = prefName;
                 prefName = "";
@@ -366,7 +366,7 @@ define(
             );
         };
 
-        Preferences.removeObserver = function (branchName, observer) {
+        NSPreferences.removeObserver = function (branchName, observer) {
             if (arguments.length === 1) {
                 observer = branchName;
                 branchName = null;
@@ -384,7 +384,7 @@ define(
          * Note that unlike deleteBranch, this method will notify observers
          * of each change.
          */
-        Preferences.resetBranch = function (branchName) {
+        NSPreferences.resetBranch = function (branchName) {
             // Note:  nsPrefBranch.resetBranch not implemented
             this.prefBranch
                 .getChildList(concat(branchName), {})
@@ -396,7 +396,7 @@ define(
         };
 
         // TODO:  Provide resetObject and/or decide on plain reset behavior
-        Preferences.resetValue = function (prefName) {
+        NSPreferences.resetValue = function (prefName) {
             prefName = concat(prefName);
             // Note:  In Gecko < 6, throws NS_ERROR_UNEXPECTED if no user value
             if (this.hasUserValue(prefName)) {
@@ -410,11 +410,11 @@ define(
          * sub-branches/properties which are not present in value will be
          * removed.
          *
-         * @param {String} [prefName=""] Preferences name (relative to instance
+         * @param {String} [prefName=""] NSPreferences name (relative to instance
          * root) on which to set the value.
          * @param value Value to store in the preference.
          */
-        Preferences.set = function (prefName, value) {
+        NSPreferences.set = function (prefName, value) {
             if (arguments.length === 1) {
                 value = prefName;
                 prefName = null;
@@ -451,12 +451,12 @@ define(
         };
 
         // Allow use of the functions as either static functions or
-        // methods on an instantiated Preferences
-        Preferences.prototype = underscore.extend({}, Preferences);
-        Preferences.branchName = "";
-        Preferences.prefBranch = prefService.QueryInterface(Ci.nsIPrefBranch);
+        // methods on an instantiated NSPreferences
+        NSPreferences.prototype = underscore.extend({}, NSPreferences);
+        NSPreferences.branchName = "";
+        NSPreferences.prefBranch = prefService.QueryInterface(Ci.nsIPrefBranch);
 
-        return Preferences;
+        return NSPreferences;
     }
 );
 

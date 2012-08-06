@@ -16,7 +16,7 @@ define(
         "log4moz",
         "omnivalidator/globaldefs",
         "omnivalidator/locale",
-        "omnivalidator/preferences",
+        "omnivalidator/platform/preferences",
         "omnivalidator/validatorregistry"
     ],
     function (Cc, Ci, log4moz, globaldefs, locale, Preferences, vregistry) {

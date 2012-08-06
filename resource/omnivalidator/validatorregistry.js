@@ -14,8 +14,8 @@ define(
         "log4moz",
         "omnivalidator/globaldefs",
         "omnivalidator/locale",
+        "omnivalidator/platform/preferences",
         "omnivalidator/predicatemultimap",
-        "omnivalidator/preferences",
         "omnivalidator/urlutils",
         "underscore",
 
@@ -23,7 +23,7 @@ define(
         "omnivalidator/validatornu",
         "omnivalidator/w3cmarkup"
     ],
-    function (log4moz, globaldefs, locale, PredicateMultimap, Preferences,
+    function (log4moz, globaldefs, locale, Preferences, PredicateMultimap,
             urlutils, underscore,
 
             /* Supported validator types */

@@ -27,15 +27,16 @@
             "log4moz",
             "omnivalidator/globaldefs",
             "omnivalidator/locale",
+            "omnivalidator/platform/preferences",
             "omnivalidator/prefavtreeview",
-            "omnivalidator/preferences",
             "omnivalidator/validatorregistry",
             "omnivalidator/xulprefbranch",
             "omnivalidator/xulutils",
             "underscore"
         ],
-        function (Cc, Ci, log4moz, globaldefs, locale, PrefAVTreeView,
-                Preferences, vregistry, XULPrefBranch, xulutils, underscore) {
+        function (Cc, Ci, log4moz, globaldefs, locale, Preferences,
+                PrefAVTreeView, vregistry, XULPrefBranch, xulutils,
+                underscore) {
             var logger = log4moz.repository.getLogger("omnivalidator.prefwindow"),
                 autoValTreeView,
                 windowPrefs;

@@ -27,7 +27,7 @@
             "log4moz",
             "omnivalidator/consoledockedwin",
             "omnivalidator/globaldefs",
-            "omnivalidator/preferences",
+            "omnivalidator/platform/preferences",
             "omnivalidator/validationstatusbutton",
             "omnivalidator/validatorregistry",
             "omnivalidator/windowvalidationmanager",

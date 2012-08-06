@@ -19,7 +19,7 @@ define(
         "omnivalidator/globaldefs",
         "omnivalidator/locale",
         "omnivalidator/nserrorutils",
-        "omnivalidator/preferences",
+        "omnivalidator/platform/preferences",
         "underscore"
     ],
     function (Cc, Ci, Cr, log4moz, CacheID, globaldefs, locale, nserrorutils,

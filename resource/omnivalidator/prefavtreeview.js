@@ -16,7 +16,7 @@ define(
         "omnivalidator/arrayutils",
         "omnivalidator/globaldefs",
         "omnivalidator/objutils",
-        "omnivalidator/preferences",
+        "omnivalidator/platform/preferences",
         "omnivalidator/simpletreeview",
         "omnivalidator/validatorregistry",
         "underscore"
