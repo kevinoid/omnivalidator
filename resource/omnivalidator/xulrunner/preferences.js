@@ -29,12 +29,12 @@ define(
             return Array.prototype.join.call(arguments, "");
         }
 
-        /** Construct a NSPreferences rooted at a given branch name.
+        /** Construct an NSPreferences rooted at a given branch name.
          *
-         * Note:  NSPreferences can be used as a namespace (e.g. NSPreferences.get()),
-         * in which case all functions refer to the root branch, or as a
-         * class, in which case all methods are relative to the branch for
-         * which the instance was constructed
+         * Note:  NSPreferences can be used as a singleton object referring
+         * to the root branch (e.g. NSPreferences.getValue("foo")), or as a
+         * constructor, in which case all methods of the constructed class are
+         * relative to the branch name passed to the constructor.
          *
          * @constructor
          * @class Represents the set of all preferences rooted at
@@ -98,10 +98,18 @@ define(
             );
         };
 
+        /** Removes all child preferences of this branch and its default
+         * branches (if any).
+         *
+         * Unspecified if delete on default branch deletes primary
+         * (does in NS, doesn't in LS)
+         */
         NSPreferences.deleteBranch = function (branchName) {
             this.prefBranch.deleteBranch(concat(branchName));
         };
 
+        /** Gets sub-branch by name (preserves defaultness).
+         */
         NSPreferences.getBranch = function (branchName) {
             if (branchName === undefined ||
                     branchName === null ||
@@ -120,18 +128,30 @@ define(
             }
         };
 
+        /** Gets the branch providing fallback/default values for this branch,
+         * if any.
+         */
         NSPreferences.getDefaultBranch = function () {
             return this.isDefault ?
                     null :
                     new NSPreferences(this.branchName, true);
         };
 
+        /** Gets the names of all preferences below this branch (excluding
+         * the preference at this branch name, if any)
+         *
+         * - May return descendant names in any order.
+         * - Includes descendant names from chained (default) branches.
+         * - Unspecified if getDN on default branch includes names in primary
+         *   (does in NS, doesn't in LS).
+         */
         NSPreferences.getDescendantNames = function (branchName) {
             branchName = concat(branchName);
             return this.prefBranch.getChildList(branchName, {})
                 .filter(function (c) { return c.length > branchName.length; });
         };
 
+        /** Gets the preference value stored at with a given name */
         NSPreferences.getValue = function (prefName) {
             var prefType;
 
@@ -159,6 +179,9 @@ define(
             return undefined;
         };
 
+        /** Checks if there is a value in this branch with a given name
+         * (excluding values in any fallback/default branch).
+         */
         NSPreferences.hasValue = function (prefName) {
             prefName = concat(prefName);
 
@@ -167,6 +190,8 @@ define(
                     this.prefBranch.prefHasUserValue(prefName);
         };
 
+        /** Removes a preference observer for a given branch name.
+         */
         NSPreferences.removeObserver = function (branchName, observer) {
             if (arguments.length === 1) {
                 observer = branchName;
@@ -181,9 +206,8 @@ define(
             }
         };
 
-        /**
-         * Note that unlike deleteBranch, this method will notify observers
-         * of each change.
+        /** Removes all child preferences of this branch without modifying the
+         * values in its default branches (if any).
          */
         NSPreferences.resetBranch = function (branchName) {
             // Note:  nsPrefBranch.resetBranch not implemented
@@ -214,7 +238,9 @@ define(
             }
         };
 
-        // TODO:  Provide resetObject and/or decide on plain reset behavior
+        /** Removes a given child preference without modifying the value in its
+         * default branches (if any).
+         */
         NSPreferences.resetValue = function (prefName) {
             var childNames;
 
@@ -248,15 +274,12 @@ define(
             }
         };
 
-        /** Set the value of a preference to a given value.
+        /** Set the value of a named preference to a given value.
          *
-         * Functions similarly to {@link overwrite}, with the exception that
-         * sub-branches/properties which are not present in value will be
-         * removed.
-         *
-         * @param {String} [prefName=""] NSPreferences name (relative to instance
+         * @param {String} [prefName=""] Preference name (relative to instance
          * root) on which to set the value.
-         * @param value Value to store in the preference.
+         * @param value Value to store in the preference.  Must be a primitive
+         * data type (boolean, number, or string).
          */
         NSPreferences.setValue = function (prefName, value) {
             if (arguments.length === 1) {
