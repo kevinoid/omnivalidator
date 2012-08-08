@@ -41,14 +41,20 @@ define(
          * (prefixed with) a given string
          * @param {String|nsIPrefBranch} [branch=""] Either the root (prefix)
          * of preferences included in this branch or a branch to wrap.
+         * @param {Boolean} [isDefault=false] Is this branch accessing a
+         * default preferences branch?
          */
-        function NSPreferences(branch) {
+        function NSPreferences(branch, isDefault) {
             if (branch && typeof branch.QueryInterface === "function") {
                 this.prefBranch = branch.QueryInterface(Ci.nsIPrefBranch);
                 this.branchName = this.prefBranch.root;
+                this.isDefault = !!isDefault;
             } else {
                 this.branchName = concat(branch);
-                this.prefBranch = prefService.getBranch(this.branchName);
+                this.prefBranch = isDefault ?
+                        prefService.getDefaultBranch(this.branchName) :
+                        prefService.getBranch(this.branchName);
+                this.isDefault = !!isDefault;
             }
         }
 
@@ -102,34 +108,63 @@ define(
                     branchName === "") {
                 return this;
             } else if (typeof this.prefBranch.getBranch === "function") {
-                return new NSPreferences(this.prefBranch.getBranch(branchName));
+                return new NSPreferences(
+                    this.prefBranch.getBranch(branchName),
+                    this.isDefault
+                );
             } else {
-                return new NSPreferences(concat(this.branchName, branchName));
+                return new NSPreferences(
+                    concat(this.branchName, branchName),
+                    this.isDefault
+                );
             }
         };
 
+        NSPreferences.getDefaultBranch = function () {
+            return this.isDefault ?
+                    null :
+                    new NSPreferences(this.branchName, true);
+        };
+
         NSPreferences.getDescendantNames = function (branchName) {
-            return this.prefBranch.getChildList(concat(branchName), {})
-                .filter(function (c) { return c.length > 0; });
+            branchName = concat(branchName);
+            return this.prefBranch.getChildList(branchName, {})
+                .filter(function (c) { return c.length > branchName.length; });
         };
 
         NSPreferences.getValue = function (prefName) {
-            prefName = concat(prefName);
+            var prefType;
 
-            switch (this.prefBranch.getPrefType(prefName)) {
-            case Ci.nsIPrefBranch.PREF_BOOL:
-                return this.prefBranch.getBoolPref(prefName);
-            case Ci.nsIPrefBranch.PREF_INT:
-                return this.prefBranch.getIntPref(prefName);
-            case Ci.nsIPrefBranch.PREF_STRING:
-                return this.prefBranch.getCharPref(prefName);
+            prefName = concat(prefName);
+            prefType = this.prefBranch.getPrefType(prefName);
+
+            try {
+                switch (prefType) {
+                case Ci.nsIPrefBranch.PREF_BOOL:
+                    return this.prefBranch.getBoolPref(prefName);
+                case Ci.nsIPrefBranch.PREF_INT:
+                    return this.prefBranch.getIntPref(prefName);
+                case Ci.nsIPrefBranch.PREF_STRING:
+                    return this.prefBranch.getCharPref(prefName);
+                }
+            } catch (ex) {
+                // getPrefType returns the type of either branch, and when
+                // get*Pref is called on the default branch without a default
+                // value it throws 0x8000FFFF (NS_ERROR_UNEXPECTED).
+                if (!this.isDefault || ex.result !== 0x8000FFFF) {
+                    throw ex;
+                }
             }
 
             return undefined;
         };
 
         NSPreferences.hasValue = function (prefName) {
-            return this.prefBranch.prefHasUserValue(concat(prefName));
+            prefName = concat(prefName);
+
+            return this.isDefault ?
+                    this.getValue(prefName) !== undefined :
+                    this.prefBranch.prefHasUserValue(prefName);
         };
 
         NSPreferences.removeObserver = function (branchName, observer) {
@@ -152,21 +187,64 @@ define(
          */
         NSPreferences.resetBranch = function (branchName) {
             // Note:  nsPrefBranch.resetBranch not implemented
-            this.prefBranch
-                .getChildList(concat(branchName), {})
-                .forEach(function (prefName) {
-                    if (this.prefBranch.prefHasUserValue(prefName)) {
-                        this.prefBranch.clearUserPref(prefName);
-                    }
-                }, this);
+            if (this.isDefault) {
+                // TODO:  Implement this fully.
+                // Need to:
+                // - save non-default values for branch
+                // - delete branch
+                // - restore non-default values
+                // FIXME:  Above impl would send bad observer notifications
+                this.prefBranch
+                    .getChildList(concat(branchName), {})
+                    .forEach(function (prefName) {
+                        if (this.prefBranch.prefHasUserValue(prefName)) {
+                            throw new Error("resetBranch not implemented for " +
+                                "default branches under non-default values");
+                        }
+                    }, this);
+                this.deleteBranch(branchName);
+            } else {
+                this.prefBranch
+                    .getChildList(concat(branchName), {})
+                    .forEach(function (prefName) {
+                        if (this.prefBranch.prefHasUserValue(prefName)) {
+                            this.prefBranch.clearUserPref(prefName);
+                        }
+                    }, this);
+            }
         };
 
         // TODO:  Provide resetObject and/or decide on plain reset behavior
         NSPreferences.resetValue = function (prefName) {
+            var childNames;
+
             prefName = concat(prefName);
-            // Note:  In Gecko < 6, throws NS_ERROR_UNEXPECTED if no user value
-            if (this.hasValue(prefName)) {
-                this.prefBranch.clearUserPref(prefName);
+
+            if (this.isDefault) {
+                // TODO:  Implement this fully (see resetBranch).
+                if (this.prefBranch.prefHasUserValue(prefName)) {
+                    throw new Error("resetValue not implemented for " +
+                        "default branches under non-default values");
+                }
+
+                childNames = this.prefBranch.getChildList(prefName, {});
+                if (childNames.length === 0 || childNames[0] !== prefName) {
+                    // No pref with the given name, nothing to reset
+                    return;
+                }
+
+                if (childNames.length !== 1) {
+                    throw new Error("resetValue not implemented for " +
+                        "default branch values with child prefs");
+                }
+
+                // Safe to delete the entire branch (which only has this value)
+                this.deleteBranch(prefName);
+            } else {
+                // Note:  Gecko < 6 throws NS_ERROR_UNEXPECTED if no user value
+                if (this.hasValue(prefName)) {
+                    this.prefBranch.clearUserPref(prefName);
+                }
             }
         };
 
