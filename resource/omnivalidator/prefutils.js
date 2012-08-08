@@ -104,8 +104,11 @@ define(
             }
         }
 
-        /** Gets the names of all descendants of the named prefBranch, up to, but
-         * not including the first "." after the named portion.
+        /** Gets the names of all descendants of the named prefBranch, up to,
+         * but not including the first "." after the branch name.
+         *
+         * Important:  Behaves like getDescendantNames where the given branch
+         * name is a filter relative to the branch root.
          */
         function getChildNames(prefBranch, branchName) {
             var childNames, prefNames, prefixLength;
@@ -114,9 +117,6 @@ define(
             prefNames = prefBranch.getDescendantNames(branchName);
 
             prefixLength = branchName.length;
-            if (branchName.slice(-1) === ".") {
-                ++prefixLength;
-            }
 
             childNames = underscore.uniq(
                 prefNames.map(function (prefName) {
@@ -132,6 +132,15 @@ define(
             return childNames;
         }
 
+        /** Gets a set of preference values representing an array at a given
+         * branch.
+         *
+         * Arrays are represented as preferences with names in object notation
+         * below the branch name for the array. (e.g. x.0, x.1)
+         *
+         * If the branch does not exist, or does not have any numeric children,
+         * undefined is returned.
+         */
         function getArray(prefBranch, branchName) {
             var childName,
                 childNames,
@@ -150,9 +159,22 @@ define(
                 }
             }
 
-            return result;
+            return result.length === 0 ? undefined : result;
         }
 
+        /** Gets a set of preference values representing an object at a given
+         * branch.
+         *
+         * Objects are represented as preferences with names in object notation
+         * below the branch name for the object. (e.g. x.prop0, x.prop1)
+         *
+         * If an object contains numeric properties, an instance of Array
+         * will be returned which contains both numeric and non-numeric
+         * properties.
+         *
+         * If the branch does not exist, or does not have any children,
+         * undefined is returned.
+         */
         function getObject(prefBranch, branchName) {
             var childBranchName,
                 childNames,
@@ -162,17 +184,12 @@ define(
             childBranchName = concat(branchName, ".");
             childNames = getChildNames(prefBranch.getBranch(childBranchName));
             if (childNames.length === 0) {
-                // FIXME:  undefined, null, or {}?  Decide and document.
-                // Note:  Other methods currently depend on falseyness
                 return undefined;
             }
 
             // If the prefBranch holds an array, add any named properties onto
             // the array object.
-            result = getArray(prefBranch, branchName);
-            if (result.length === 0) {
-                result = {};
-            }
+            result = getArray(prefBranch, branchName) || {};
 
             for (i = 0; i < childNames.length; ++i) {
                 // Skip properties already added by getArray
@@ -191,7 +208,8 @@ define(
          * If both an object and value are present, the object is returned
          */
         function get(prefBranch, branchName) {
-            return getObject(prefBranch, branchName) || prefBranch.getValue(branchName);
+            return getObject(prefBranch, branchName) ||
+                prefBranch.getValue(branchName);
         }
 
         /** Overwrites the value of a preference with a given value.
