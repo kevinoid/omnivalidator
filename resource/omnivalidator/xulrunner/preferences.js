@@ -210,32 +210,26 @@ define(
          * values in its default branches (if any).
          */
         NSPreferences.resetBranch = function (branchName) {
-            // Note:  nsPrefBranch.resetBranch not implemented
+            var prefNames;
+
+            prefNames = this.getDescendantNames(branchName);
+
+            // Can't resetValue on default values that have children (since we
+            // use deleteBranch internally).  Sort in decreasing nesting level
+            // to avoid the problem
             if (this.isDefault) {
-                // TODO:  Implement this fully.
-                // Need to:
-                // - save non-default values for branch
-                // - delete branch
-                // - restore non-default values
-                // FIXME:  Above impl would send bad observer notifications
-                this.prefBranch
-                    .getChildList(concat(branchName), {})
-                    .forEach(function (prefName) {
-                        if (this.prefBranch.prefHasUserValue(prefName)) {
-                            throw new Error("resetBranch not implemented for " +
-                                "default branches under non-default values");
-                        }
-                    }, this);
-                this.deleteBranch(branchName);
-            } else {
-                this.prefBranch
-                    .getChildList(concat(branchName), {})
-                    .forEach(function (prefName) {
-                        if (this.prefBranch.prefHasUserValue(prefName)) {
-                            this.prefBranch.clearUserPref(prefName);
-                        }
-                    }, this);
+                prefNames.sort(function (a, b) {
+                    var alen, blen;
+                    alen = a.split(".").length;
+                    blen = b.split(".").length;
+                    return alen > blen ? -1 : alen < blen ? 1 : 0;
+                });
             }
+
+            prefNames.forEach(function (prefName) {
+                this.resetValue(prefName);
+            }, this);
+            this.resetValue(branchName);
         };
 
         /** Removes a given child preference without modifying the value in its

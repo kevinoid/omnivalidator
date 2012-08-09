@@ -229,37 +229,31 @@ require(
                 expect(branch1.getValue("abranch.intPref")).toBe(1);
                 expect(branch1.getValue("abranch.stringPref")).toBe("stuff");
 
-                branch1.resetBranch("abranch.");
-
-                expect(branch1.getValue("abranch.intPref")).toBe(1);
-                expect(branch1.getValue("abranch.stringPref")).toBe("stuff");
-
                 defbranch1.resetValue("abranch.intPref");
 
                 expect(branch1.getValue("abranch.intPref")).toBe(undefined);
                 expect(branch1.getValue("abranch.stringPref")).toBe("stuff");
-
-                defbranch1.resetBranch("abranch.");
-
-                expect(branch1.getValue("abranch.intPref")).toBe(undefined);
-                expect(branch1.getValue("abranch.stringPref")).toBe(undefined);
             });
 
             it("can delete branches", function () {
                 var branch1, branch2;
 
                 branch1 = new Preferences(TEST_PREFIX);
+                branch1.setValue("abranch.", 10);
                 branch1.setValue("abranch.boolPref", false);
                 branch1.setValue("abranch.intPref", 1);
                 branch1.setValue("abranch.stringPref", "stuff");
+                branch1.setValue("bbranch.stringPref", "junk");
 
                 branch2 = new Preferences(TEST_PREFIX);
                 branch2.deleteBranch("abranch.");
 
                 expect(branch1.getDescendantNames("abranch.")).toEqual([]);
+                expect(branch1.getValue("abranch.")).toBe(undefined);
                 expect(branch1.getValue("abranch.boolPref")).toBe(undefined);
                 expect(branch1.getValue("abranch.intPref")).toBe(undefined);
                 expect(branch1.getValue("abranch.stringPref")).toBe(undefined);
+                expect(branch1.getValue("bbranch.stringPref")).toBe("junk");
             });
 
             it("deletes default branch with primary branch", function () {
@@ -282,6 +276,48 @@ require(
                 expect(
                     defbranch1.getValue("abranch.stringPref")
                 ).toBe(undefined);
+            });
+
+            it("can reset branches", function () {
+                var branch1, branch2;
+
+                branch1 = new Preferences(TEST_PREFIX);
+                branch1.setValue("abranch.", 10);
+                branch1.setValue("abranch.boolPref", false);
+                branch1.setValue("abranch.intPref", 1);
+                branch1.setValue("abranch.stringPref", "stuff");
+                branch1.setValue("bbranch.stringPref", "junk");
+
+                branch2 = new Preferences(TEST_PREFIX);
+
+                branch2.resetBranch("abranch.");
+
+                expect(branch1.getDescendantNames("abranch.")).toEqual([]);
+                expect(branch1.getValue("abranch.")).toBe(undefined);
+                expect(branch1.getValue("abranch.boolPref")).toBe(undefined);
+                expect(branch1.getValue("abranch.intPref")).toBe(undefined);
+                expect(branch1.getValue("abranch.stringPref")).toBe(undefined);
+                expect(branch1.getValue("bbranch.stringPref")).toBe("junk");
+            });
+
+            it("can reset default branches", function () {
+                var branch1, branch2;
+
+                branch1 = new Preferences(TEST_PREFIX).getDefaultBranch();
+                branch1.setValue("abranch.boolPref", false);
+                branch1.setValue("abranch.intPref", 1);
+                branch1.setValue("abranch.stringPref", "stuff");
+                branch1.setValue("bbranch.stringPref", "junk");
+
+                branch2 = new Preferences(TEST_PREFIX).getDefaultBranch();
+
+                branch2.resetBranch("abranch.");
+
+                expect(branch1.getDescendantNames("abranch.")).toEqual([]);
+                expect(branch1.getValue("abranch.boolPref")).toBe(undefined);
+                expect(branch1.getValue("abranch.intPref")).toBe(undefined);
+                expect(branch1.getValue("abranch.stringPref")).toBe(undefined);
+                expect(branch1.getValue("bbranch.stringPref")).toBe("junk");
             });
 
             // Delete of value with default should cause one event
