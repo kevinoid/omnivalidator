@@ -21,13 +21,35 @@ define(
     function (Cc, Ci, Cr, underscore) {
         "use strict";
 
-        var prefService = Cc["@mozilla.org/preferences-service;1"]
+        var observers = {},
+            prefService = Cc["@mozilla.org/preferences-service;1"]
                 .getService(Ci.nsIPrefService);
 
         /* Like String.concat, except null and undefined are "" */
         function concat(/*args*/) {
             return Array.prototype.join.call(arguments, "");
         }
+
+        function NSObserver(branch, clientObserve) {
+            this.branch = branch;
+            this.clientObserve = clientObserve;
+        }
+
+        NSObserver.prototype.QueryInterface = function (aIID) {
+            if (aIID.equals(Ci.nsIObserver) ||
+                    aIID.equals(Ci.nsISupports)) {
+                return this;
+            }
+            throw Cr.NS_NOINTERFACE;
+        };
+
+        NSObserver.prototype.observe = function (subject, topic, data) {
+            this.clientObserve.call(
+                null,
+                this.branch,
+                data.slice(this.branch.branchName.length)
+            );
+        };
 
         /** Construct an NSPreferences rooted at a given branch name.
          *
@@ -66,35 +88,33 @@ define(
          * observer is called with a preference name relative to the instance
          * root and branchName acts as a filter.
          */
-        NSPreferences.addObserver = function (branchName, observer, weakRef) {
+        NSPreferences.addObserver = function (branchName, observe) {
+            var fullBranchName, observer;
+
+            if (this.isDefault) {
+                // Observers fire whenever the primary branch is modified
+                // regardless of how the observer was registered.
+                throw new Error(
+                    "addObserver is not supported on default branches"
+                );
+            }
+
             if (arguments.length === 1) {
-                observer = branchName;
+                observe = branchName;
                 branchName = null;
             }
 
-            // Patch up the observer for the client
-            // FIXME: This is intrusive, but it's also an implementation detail
-            // that we would like to hide from the caller... reconsider?
-            if (weakRef && typeof observer.QueryInterface !== "function") {
-                observer.QueryInterface = function (aIID) {
-                    if (aIID.equals(Ci.nsIObserver) ||
-                            aIID.equals(Ci.nsISupportsWeakReference) ||
-                            aIID.equals(Ci.nsISupports)) {
-                        return this;
-                    }
-                    throw Cr.NS_NOINTERFACE;
-                };
+            fullBranchName = concat(this.branchName, branchName);
+            observer = new NSObserver(this, observe);
+            if (!observers.hasOwnProperty(fullBranchName)) {
+                observers[fullBranchName] = [];
             }
+            observers[fullBranchName].push(observer);
 
-            if (!this.prefBranch2) {
-                this.prefBranch2 =
-                    this.prefBranch.QueryInterface(Ci.nsIPrefBranch2);
-            }
-
-            this.prefBranch2.addObserver(
-                concat(branchName),
+            prefService.QueryInterface(Ci.nsIPrefBranch2).addObserver(
+                fullBranchName,
                 observer,
-                Boolean(weakRef)
+                false
             );
         };
 
@@ -192,17 +212,29 @@ define(
 
         /** Removes a preference observer for a given branch name.
          */
-        NSPreferences.removeObserver = function (branchName, observer) {
+        NSPreferences.removeObserver = function (branchName, observe) {
+            var branchObservers, fullBranchName, i;
+
             if (arguments.length === 1) {
-                observer = branchName;
+                observe = branchName;
                 branchName = null;
             }
 
-            if (this.prefBranch2) {
-                this.prefBranch2.removeObserver(
-                    concat(branchName),
-                    observer
-                );
+            fullBranchName = concat(this.branchName, branchName);
+            if (observers.hasOwnProperty(fullBranchName)) {
+                branchObservers = observers[fullBranchName];
+                for (i = 0; i < branchObservers.length; ++i) {
+                    if (branchObservers[i].clientObserve === observe) {
+                        prefService.QueryInterface(Ci.nsIPrefBranch2)
+                            .removeObserver(fullBranchName, branchObservers[i]);
+                        if (branchObservers.length === 1) {
+                            delete observers[fullBranchName];
+                        } else {
+                            branchObservers.splice(i, 1);
+                        }
+                        return;
+                    }
+                }
             }
         };
 

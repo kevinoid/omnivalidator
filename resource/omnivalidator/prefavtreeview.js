@@ -46,9 +46,10 @@ define(
                     "auto-validate-url-treecol": "url",
                     "auto-validate-vid-treecol": "vname"
                 },
-                observer,
+                observe,
                 superRemoveRange,
-                thisPAVTV = this;
+                thisPAVTV = this,
+                updateFromPref = false;
 
             SimpleTreeView.call(this, colIdToProp);
 
@@ -59,20 +60,23 @@ define(
             }
 
             function addAVPref(url, vid) {
-                var i;
+                var i, wasUpdateFromPref;
 
                 i = 0;
                 while (valPrefs.hasValue(vid + ".autoValidate." + i)) {
                     ++i;
                 }
 
+                wasUpdateFromPref = updateFromPref;
                 thisPAVTV.disableUpdateFromPref();
                 try {
 
                     valPrefs.setValue(vid + ".autoValidate." + i, url);
 
                 } finally {
-                    thisPAVTV.enableUpdateFromPref();
+                    if (wasUpdateFromPref) {
+                        thisPAVTV.enableUpdateFromPref();
+                    }
                 }
             }
 
@@ -169,7 +173,8 @@ define(
                     autoURL,
                     i,
                     lastAutoURL,
-                    removed = false;
+                    removed = false,
+                    wasUpdateFromPref;
 
                 autoPrefs = valPrefs.getBranch(vid + ".autoValidate.");
 
@@ -188,6 +193,7 @@ define(
                     }
 
                     if (autoURL === url) {
+                        wasUpdateFromPref = updateFromPref;
                         thisPAVTV.disableUpdateFromPref();
                         try {
 
@@ -198,7 +204,9 @@ define(
                             autoPrefs.resetValue(autoInds[autoInds.length - 1]);
 
                         } finally {
-                            thisPAVTV.enableUpdateFromPref();
+                            if (wasUpdateFromPref) {
+                                thisPAVTV.enableUpdateFromPref();
+                            }
                         }
 
                         removed = true;
@@ -220,20 +228,20 @@ define(
                 thisPAVTV.setColData("auto-validate-vid-treecol", vnames);
             }
 
-            observer = {
-                observe: logUncaught(function (subject, topic, data) {
+            observe = logUncaught(
+                function (branch, prefName) {
                     var index, match, url, vid, vname;
 
-                    match = /^(\w+)\.name$/.exec(data);
+                    match = /^(\w+)\.name$/.exec(prefName);
                     if (match) {
                         updateValidatorName(
                             match[1],
-                            subject.getCharPref(data)
+                            branch.getValue(prefName)
                         );
                         return;
                     }
 
-                    match = /^(\w+)\.autoValidate\.(\d+)$/.exec(data);
+                    match = /^(\w+)\.autoValidate\.(\d+)$/.exec(prefName);
                     if (!match) {
                         // This isn't a preference we're looking for
                         return;
@@ -242,7 +250,7 @@ define(
                     vid = match[1];
                     index = match[2];
                     try {
-                        url = subject.getCharPref(data);
+                        url = branch.getValue(prefName);
                     } catch (ex) {
                         // Pref is unset or not a string, ok
                     }
@@ -258,12 +266,12 @@ define(
                         // FIXME:  This doesn't handle duplicate-reduction
                         // correctly, since the former-duplicate will not
                         // be removed by checkAVRows
-                        vname = subject.getCharPref(vid + ".name");
+                        vname = branch.getValue(vid + ".name");
                         addAVRow(url, vid, vname);
                         checkAVRows(vid);
                     }
-                })
-            };
+                }
+            );
 
             this.add = function (url, vid, vname) {
                 logger.debug("Adding automatic validation of " + url +
@@ -274,13 +282,18 @@ define(
             };
 
             this.disableUpdateFromPref = function () {
-                valPrefs.removeObserver(observer);
+                valPrefs.removeObserver(observe);
+                updateFromPref = false;
             };
 
+            /**
+             * WARNING:  If updates from preferences are enabled, they must
+             * be disabled in order to prevent the leaking of this object and
+             * any associated objects.
+             */
             this.enableUpdateFromPref = function () {
-                // FIXME:  Remove the cycle between observer and valPrefs to
-                // remove the need for a weak reference here
-                valPrefs.addObserver("", observer, true);
+                valPrefs.addObserver(observe);
+                updateFromPref = true;
             };
 
             this.reload = function () {
@@ -317,7 +330,7 @@ define(
 
             superRemoveRange = this.removeRange;
             this.removeRange = function (start, end) {
-                var i, rowData, vids;
+                var i, rowData, vids, wasUpdateFromPref;
 
                 if (start === 0 && end === this.rowCount) {
                     // Performance optimization for removing everything
@@ -325,6 +338,7 @@ define(
 
                     vids = prefutils.getChildNames(valPrefs);
 
+                    wasUpdateFromPref = updateFromPref;
                     this.disableUpdateFromPref();
                     try {
 
@@ -333,7 +347,9 @@ define(
                         }
 
                     } finally {
-                        this.enableUpdateFromPref();
+                        if (wasUpdateFromPref) {
+                            this.enableUpdateFromPref();
+                        }
                     }
                 } else {
                     for (i = start; i < end; ++i) {
@@ -350,7 +366,6 @@ define(
             };
 
             this.reload();
-            this.enableUpdateFromPref();
         }
 
         PrefAVTreeView.prototype = objutils.create(SimpleTreeView.prototype);

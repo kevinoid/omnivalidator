@@ -38,7 +38,6 @@ define(
             }),
             defaultName = locale.get("validatorName.unnamed"),
             nameListeners = [],
-            // Note:  Must hold reference to prevent observer GC
             validatorsPref = Preferences.getBranch(
                 globaldefs.EXT_PREF_PREFIX + "validators."
             ),
@@ -297,42 +296,40 @@ define(
 
         vids = prefutils.getChildNames(validatorsPref);
         vids.sort();
-        validatorsPref.addObserver("", {
-            observe: function (subject, topic, data) {
-                var dataParts, ind, vid;
+        validatorsPref.addObserver(function (branch, prefName) {
+            var prefNameParts, ind, vid;
 
-                // Clear the validators list (causing lazy reload) when
-                // Preferences change
-                logger.debug("Validator preferences changed, clearing validators");
-                clearValidators();
+            // Clear the validators list (causing lazy reload) when
+            // Preferences change
+            logger.debug("Validator preferences changed, clearing validators");
+            clearValidators();
 
-                // Check for name changes
-                dataParts = data.split(".");
-                vid = dataParts[0];
-                if (dataParts.length === 2 &&
-                        dataParts[1] === "name") {
-                    logger.debug("Detected name change for " + vid);
+            // Check for name changes
+            prefNameParts = prefName.split(".");
+            vid = prefNameParts[0];
+            if (prefNameParts.length === 2 &&
+                    prefNameParts[1] === "name") {
+                logger.debug("Detected name change for " + vid);
+                notifyNameListeners(vid);
+            } else {
+                // To handle unnamed validators, check if VID added/removed
+                ind = underscore.sortedIndex(vids, vid);
+                if (!vids.hasOwnProperty(ind) || vids[ind] !== vid) {
+                    // Change to previously non-existant pref => new VID
+                    logger.debug("Detected addition of " + vid);
+                    vids.splice(ind, 0, vid);
                     notifyNameListeners(vid);
                 } else {
-                    // To handle unnamed validators, check if VID added/removed
-                    ind = underscore.sortedIndex(vids, vid);
-                    if (!vids.hasOwnProperty(ind) || vids[ind] !== vid) {
-                        // Change to previously non-existant pref => new VID
-                        logger.debug("Detected addition of " + vid);
-                        vids.splice(ind, 0, vid);
+                    // Change to pref, check for VID removal
+                    if (subject.getChildList(vid + ".", {}).length === 0) {
+                        // No children.  VID removed.
+                        logger.debug("Detected removal of " + vid);
+                        vids.splice(ind, 1);
                         notifyNameListeners(vid);
-                    } else {
-                        // Change to pref, check for VID removal
-                        if (subject.getChildList(vid + ".", {}).length === 0) {
-                            // No children.  VID removed.
-                            logger.debug("Detected removal of " + vid);
-                            vids.splice(ind, 1);
-                            notifyNameListeners(vid);
-                        }
                     }
                 }
             }
-        }, false);
+        });
 
         return {
             addNameListener: addNameListener,

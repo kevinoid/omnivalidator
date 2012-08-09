@@ -303,11 +303,17 @@
             }
 
             function setupAutoValTree(tree) {
+                if (autoValTreeView) {
+                    autoValTreeView.disableUpdateFromPref();
+                    autoValTreeView = null;
+                }
+
                 autoValTreeView = new PrefAVTreeView(
                     windowPrefs.getBranch(
                         globaldefs.EXT_PREF_PREFIX + "validators."
                     )
                 );
+                autoValTreeView.enableUpdateFromPref();
                 tree.view = autoValTreeView;
             }
 
@@ -368,6 +374,17 @@
                         false
                     );
                 }
+
+                window.addEventListener(
+                    "unload",
+                    function () {
+                        if (autoValTreeView) {
+                            autoValTreeView.disableUpdateFromPref();
+                            autoValTreeView = null;
+                        }
+                    },
+                    false
+                );
             }
 
             function fillValidatorList(listNode, validatorNames, tagName) {

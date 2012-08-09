@@ -7,7 +7,12 @@
  * Copyright 2012 Kevin Locke <kevin@kevinlocke.name>
  */
 /*jslint indent: 4, plusplus: true, unparam: true */
-/*global afterEach, beforeEach, describe, expect, it, require, xdescribe, xit */
+/*global afterEach, beforeEach, describe, expect, it, jasmine, require, xdescribe, xit */
+
+/* WARNING:  Jasmine equality comparison modifies objects (temporarily).  This
+ * causes NS_ERROR_XPC_CANT_MODIFY_PROP_ON_WN to be thrown if a WrappedNative
+ * (like nsIPrefBranch) is compared.
+ */
 
 require(
     [
@@ -318,6 +323,203 @@ require(
                 expect(branch1.getValue("abranch.intPref")).toBe(undefined);
                 expect(branch1.getValue("abranch.stringPref")).toBe(undefined);
                 expect(branch1.getValue("bbranch.stringPref")).toBe("junk");
+            });
+
+            it("can observe additions", function () {
+                var branch1, branch2, observe;
+
+                observe = jasmine.createSpy('observe');
+                observe.andCallFake(function (branch, key) {
+                    // Confirm value and descendants are updated
+                    expect(branch.getValue(key)).toBe(false);
+                    expect(branch.getDescendantNames()).toEqual([
+                        "abranch.boolPref"
+                    ]);
+                });
+
+                branch1 = new Preferences(TEST_PREFIX);
+                branch1.addObserver("abranch.", observe);
+
+                branch2 = new Preferences(TEST_PREFIX + "abranch.");
+                branch2.setValue("boolPref", false);
+
+                expect(observe).toHaveBeenCalledWith(
+                    branch1,
+                    "abranch.boolPref"
+                );
+                expect(observe.calls.length).toBe(1);
+
+                branch1.removeObserver("abranch.", observe);
+            });
+
+            it("can observe changes", function () {
+                var branch1, branch2, observe;
+
+                observe = jasmine.createSpy('observe');
+                observe.andCallFake(function (branch, key) {
+                    // Confirm value and descendants are updated
+                    expect(branch.getValue(key)).toBe(false);
+                    expect(branch.getDescendantNames()).toEqual([
+                        "abranch.boolPref"
+                    ]);
+                });
+
+                branch1 = new Preferences(TEST_PREFIX);
+                branch1.setValue("abranch.boolPref", true);
+                branch1.addObserver("abranch.", observe);
+
+                branch2 = new Preferences(TEST_PREFIX + "abranch.");
+                branch2.setValue("boolPref", false);
+
+                expect(observe).toHaveBeenCalledWith(
+                    branch1,
+                    "abranch.boolPref"
+                );
+                expect(observe.calls.length).toBe(1);
+
+                branch1.removeObserver("abranch.", observe);
+            });
+
+            it("doesn't observe non-changes", function () {
+                var branch1, branch2, observe;
+
+                observe = jasmine.createSpy('observe');
+
+                branch1 = new Preferences(TEST_PREFIX);
+                branch1.setValue("abranch.boolPref", true);
+                branch1.addObserver("abranch.", observe);
+
+                branch2 = new Preferences(TEST_PREFIX + "abranch.");
+                branch2.setValue("boolPref", true);
+
+                expect(observe).not.toHaveBeenCalled();
+
+                branch1.removeObserver("abranch.", observe);
+            });
+
+            it("can remove observers", function () {
+                var branch1, branch2, observe;
+
+                observe = jasmine.createSpy('observe');
+
+                branch1 = new Preferences(TEST_PREFIX);
+                branch1.addObserver("abranch.", observe);
+                branch1.removeObserver("abranch.", observe);
+
+                branch2 = new Preferences(TEST_PREFIX + "abranch.");
+                branch2.setValue("boolPref", false);
+
+                expect(observe).not.toHaveBeenCalled();
+            });
+
+            // Disabled due to lack of support in nsIPrefBranch
+            xit("can observe delete branch", function () {
+                var branch1, branch2, observe;
+
+                observe = jasmine.createSpy('observe');
+                observe.andCallFake(function (branch, key) {
+                    // Confirm value and descendants are updated
+                    expect(branch.getValue(key)).toBe(undefined);
+                    expect(branch.getDescendantNames()).not.toContain(key);
+                });
+
+                branch1 = new Preferences(TEST_PREFIX);
+                branch1.setValue("abranch.boolPref", true);
+                branch1.setValue("abranch.intPref", 5);
+                branch1.addObserver("abranch.", observe);
+
+                branch2 = new Preferences(TEST_PREFIX + "abranch.");
+                branch2.deleteBranch();
+
+                expect(observe).toHaveBeenCalledWith(
+                    branch1,
+                    "abranch.boolPref"
+                );
+                expect(observe).toHaveBeenCalledWith(
+                    branch1,
+                    "abranch.intPref"
+                );
+                expect(observe.calls.length).toBe(2);
+
+                branch1.removeObserver("abranch.", observe);
+            });
+
+            it("can observe reset value", function () {
+                var branch1, branch2, observe;
+
+                observe = jasmine.createSpy('observe');
+
+                branch1 = new Preferences(TEST_PREFIX);
+                branch1.setValue("abranch.boolPref", true);
+                branch1.addObserver("abranch.", observe);
+
+                branch2 = new Preferences(TEST_PREFIX + "abranch.");
+                branch2.resetValue("boolPref");
+
+                expect(observe).toHaveBeenCalledWith(
+                    branch1,
+                    "abranch.boolPref"
+                );
+                expect(observe.calls.length).toBe(1);
+
+                branch1.removeObserver("abranch.", observe);
+            });
+
+            xit("can observe default branch", function () {
+                var branch1, branch2, observe;
+
+                observe = jasmine.createSpy('observe');
+
+                branch1 = new Preferences(TEST_PREFIX).getDefaultBranch();
+                branch1.addObserver("abranch.", observe);
+
+                branch2 = new Preferences(TEST_PREFIX + "abranch.")
+                    .getDefaultBranch();
+                branch2.setValue("boolPref", false);
+
+                expect(observe).toHaveBeenCalledWith(
+                    branch1,
+                    "abranch.boolPref"
+                );
+                expect(observe.calls.length).toBe(1);
+
+                branch1.removeObserver("abranch.", observe);
+            });
+
+            // Disabled due to lack of support in nsIPrefBranch
+            xit("doesn't observe default from primary branch", function () {
+                var branch1, branch2, observe;
+
+                observe = jasmine.createSpy('observe');
+
+                branch1 = new Preferences(TEST_PREFIX);
+                branch1.addObserver("abranch.", observe);
+
+                branch2 = new Preferences(TEST_PREFIX + "abranch.")
+                    .getDefaultBranch();
+                branch2.setValue("boolPref", true);
+
+                expect(observe).not.toHaveBeenCalled();
+
+                branch1.removeObserver("abranch.", observe);
+            });
+
+            // Disabled due to lack of support in nsIPrefBranch
+            xit("doesn't observe primary from default branch", function () {
+                var branch1, branch2, observe;
+
+                observe = jasmine.createSpy('observe');
+
+                branch1 = new Preferences(TEST_PREFIX);
+                branch2 = new Preferences(TEST_PREFIX + "abranch.")
+                    .getDefaultBranch();
+                branch2.addObserver(observe);
+
+                branch1.setValue("abranch.boolPref", true);
+
+                expect(observe).not.toHaveBeenCalled();
+
+                branch2.removeObserver(observe);
             });
 
             // Delete of value with default should cause one event
