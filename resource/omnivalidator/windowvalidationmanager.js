@@ -34,11 +34,27 @@ define(
          * http://forums.mozillazine.org/viewtopic.php?f=19&t=1317515
          */
         function getIDForBrowser(browser) {
-            // Get the id from the browser element if it has one,
-            // or from the stack or panel which contains it
-            return browser.id ||
-                browser.parentNode.id ||
-                browser.parentNode.parentNode.id;
+            var idElem;
+
+            function ancestorWithId(elem, upToLocalName) {
+                if (!elem || elem.localName === upToLocalName) {
+                    return null;
+                } else if (elem.id) {
+                    return elem;
+                } else {
+                    return ancestorWithId(elem.parentNode, upToLocalName);
+                }
+            }
+
+            idElem = ancestorWithId(browser, "tabbrowser");
+
+            if (!idElem) {
+                throw new Error("Unable to find ID for browser!");
+            } else if (!/^panel\d+$/.test(idElem.id)) {
+                logger.warn("Browser ID is not \"panelXXXX\".  Is it usable?");
+            }
+
+            return idElem.id;
         }
 
         function WindowValidationManager(tabbrowser) {
