@@ -30,7 +30,7 @@ var EXPORTED_SYMBOLS = ["requirejs", "require", "define"];
             // Should match em:version in install.rdf
             // Note:  Could read it from install.rdf, rather than defining it
             // here, but only async, which introduces issues.
-            EXT_VERSION: "0.1.0",
+            EXT_VERSION: "0.1.1",
             // Note:  Avoid .log extension as type not always displayed inline
             // in the browser
             LOG_FILE_NAME: "omnivalidator-log.txt",

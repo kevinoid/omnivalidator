@@ -1,3 +1,11 @@
+2012-09-29  Kevin Locke <kevin@kevinlocke.name>
+
+    * *.*: Point Release (0.1.1)
+    * consoledockedwin.js, windowvalidationmanager.js: Fix browser (tab)
+    id function to work in Firefox 15 and later.
+    * defaults.js: Increase default file log level to INFO (40)
+    * install.rdf: Bump Firefox compatibility to 18
+
 2012-06-03  Kevin Locke <kevin@kevinlocke.name>
 
     * *.*: Initial Release (0.1.0)
