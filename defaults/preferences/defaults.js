@@ -9,7 +9,7 @@ pref("extensions.omnivalidator.debugMemory", 0);
 
 // Diagnostic logging preferences
 pref("extensions.omnivalidator.log.consoleLevel", 50);
-pref("extensions.omnivalidator.log.fileLevel", 20);
+pref("extensions.omnivalidator.log.fileLevel", 40);
 
 // Prompt warning preferences
 pref("extensions.omnivalidator.warnAutoPublic", true);
