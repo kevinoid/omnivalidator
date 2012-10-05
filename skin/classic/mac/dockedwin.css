@@ -9,6 +9,7 @@
 
 #omnivalidator-dockedwin-header {
     background: #e0e0e0 -moz-linear-gradient(bottom, #D7D7D7, #EDEDED) repeat-x;
+    background: #e0e0e0 linear-gradient(to top, #D7D7D7, #EDEDED) repeat-x;
     border-bottom: 1px solid #BBB9BA;
     padding: 0;
     overflow: hidden;
