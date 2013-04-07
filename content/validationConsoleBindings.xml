@@ -91,7 +91,13 @@
                  * immediately.
                  */
                 // FIXME:  Is there a way to prevent initial registration?
-                this.mCService.unregisterListener(this.mConsoleListener);
+                if (this.mCService) {
+                    // Originally this held a reference to nsIConsoleService
+                    this.mCService.unregisterListener(this.mConsoleListener);
+                } else {
+                    // In 08a7db545880 this was switched to use Services.jsm
+                    Services.console.unregisterListener(this.mConsoleListener);
+                }
                 this.clearConsole();
 
                 /* The console must have an id (which we use as a namespace
@@ -108,7 +114,13 @@
             <destructor><![CDATA[
                 // Re-register the listener so that the consoleBox destructor
                 // can unregister it without throwing
-                this.mCService.registerListener(this.mConsoleListener);
+                if (this.mCService) {
+                    // Originally this held a reference to nsIConsoleService
+                    this.mCService.registerListener(this.mConsoleListener);
+                } else {
+                    // In 08a7db545880 this was switched to use Services.jsm
+                    Services.console.registerListener(this.mConsoleListener);
+                }
             ]]></destructor>
         </implementation>
     </binding>
