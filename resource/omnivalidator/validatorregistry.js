@@ -321,7 +321,7 @@ define(
                     notifyNameListeners(vid);
                 } else {
                     // Change to pref, check for VID removal
-                    if (subject.getChildList(vid + ".", {}).length === 0) {
+                    if (branch.getDescendantNames(vid + ".").length === 0) {
                         // No children.  VID removed.
                         logger.debug("Detected removal of " + vid);
                         vids.splice(ind, 1);
